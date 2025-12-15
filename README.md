@@ -1,6 +1,6 @@
 # VideoReview
 
-<video src="./documents/resources/video-review.mp4" controls="true"></video>
+<img src="./documents/resources/video-review.png" controls="true"></video>
 
 VideoReview is a lightweight review tool where team members can upload videos,
 add timeline comments, draw directly on frames, and communicate like using your everyday social media.  

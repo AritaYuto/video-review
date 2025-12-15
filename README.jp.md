@@ -1,6 +1,6 @@
 # VideoReview
 
-<video src="./documents/resources/video-review.mp4" controls="true"></video>
+<img src="./documents/resources/video-review.png" controls="true"></video>
 
 VideoReview は、動画をアップロードしてコメントしたり、お絵描きしたりしながら  
 軽い SNS のようにレビューできる Web サービスです。  
