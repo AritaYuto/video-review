@@ -18,7 +18,7 @@ model User {
 model Video {
   id              String   @id @default(uuid())
   title           String
-  folderKey       String   // ツリー用に表示する場所 (例: projectA/scene01/hogehoge_movie)
+  folderKey       String   // ツリー用に表示する場所 (例: projectA/scene01/hogehoge_video)
   scenePath       String?
   revisions       VideoRevision[]
   comments        VideoComment[]

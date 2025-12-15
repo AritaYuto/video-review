@@ -291,7 +291,7 @@ export async function hasUnreadVideoComment(userId: string): Promise<string[]> {
     return json.unreadVideoIds;
 }
 
-export function downloadMovie(videoId: string, videoRevId: string): void {
+export function downloadVideo(videoId: string, videoRevId: string): void {
     const url = `/api/videos/download?videoRevId=${videoRevId}&videoId=${videoId}`;
     const a = document.createElement("a");
     a.href = url;

@@ -25,7 +25,7 @@ import { createVideoTimeLink, OpenScene } from "@/lib/url";
 import { useVideoPlayerStore } from "@/stores/video-player-store";
 import { useVideoStore } from "@/stores/video-store";
 import { ShareLinkDialog } from "@/components/share-link";
-import { downloadMovie } from "@/lib/api";
+import { downloadVideo } from "@/lib/api";
 import { useTranslations } from "next-intl";
 
 export default function VideoControlPanel() {
@@ -122,7 +122,7 @@ export default function VideoControlPanel() {
             {/* 右端：リンクコピー */}
             <div className="ml-auto    rounded  ">
                 <OpenSceneButton scenePath={selectedVideo?.scenePath ?? null} />
-                <DownloadMovie videoId={selectedVideo?.id ?? null} videoRevId={selectedRevision?.id ?? null} />
+                <DownloadVideo videoId={selectedVideo?.id ?? null} videoRevId={selectedRevision?.id ?? null} />
                 <ButtonShareLink url={createLink()} />
             </div>
         </div>
@@ -145,7 +145,7 @@ function ButtonShareLink({ url }: { url: string }) {
     );
 }
 
-function DownloadMovie({ videoId, videoRevId }: { videoId: string | null, videoRevId: string | null }) {
+function DownloadVideo({ videoId, videoRevId }: { videoId: string | null, videoRevId: string | null }) {
     if(!videoId || !videoRevId) {
         return <></>
     }
@@ -153,7 +153,7 @@ function DownloadMovie({ videoId, videoRevId }: { videoId: string | null, videoR
     return (
         <>
             <button
-                onClick={() => downloadMovie(videoId, videoRevId)}
+                onClick={() => downloadVideo(videoId, videoRevId)}
                 className="px-3 py-1 bg-[#ff8800] hover:bg-[#ff5500] text-black text-sm font-medium"
             >
                 <FontAwesomeIcon icon={faDownload} />

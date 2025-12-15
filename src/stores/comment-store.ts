@@ -63,7 +63,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         const comment = get().comments.find((c) => c.id === id);
         if (!comment) return;
 
-        const description = `Movie Review LINK\n${createVideoCommentLink(comment.videoId, comment)}`
+        const description = `Video Review LINK\n${createVideoCommentLink(comment.videoId, comment)}`
         const issueId = await api.createJiraIssue(
             user,
             issueType,
@@ -100,7 +100,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         text += `${video.folderKey}/${video.title}\n`;
         text += `${useAuthStore.getState().displayName}\n`;
         text += `${comment.comment} \n`
-        text += `<${createVideoCommentLink(comment.videoId, comment)}|MovieReview LINK> \n`
+        text += `<${createVideoCommentLink(comment.videoId, comment)}|VideoReview LINK> \n`
         if(video.scenePath){
             text += `<${createOpenSceneLink(video.scenePath)}|Open Scene> \n`
         }
