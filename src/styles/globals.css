@@ -155,16 +155,19 @@ body {
     @apply font-sans text-white bg-[#181818] border-[#333];
   }
 
+  .vr-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #333 #181818;
+  }
+
   /* パネル全体の骨格 */
   .vr-panel {
-    /* vr-base の中身を直接展開 */
     @apply font-sans text-white bg-[#181818] border-[#333];
     @apply w-full h-full flex flex-col border-r;
   }
 
   /* ヘッダー/ボディの共通構造 */
   .vr-section {
-    /* 同じく直接展開 */
     @apply font-sans text-white bg-[#181818] border-[#333];
     @apply flex items-center justify-between p-3 border-b;
   }

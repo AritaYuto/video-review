@@ -217,7 +217,7 @@ export default function VideoCommentPanel() {
     }, [selectedComment]);
 
     return (
-        <div className="vr-panel">
+        <div className="vr-panel vr-scrollbar">
             {/* コメント一覧 */}
             <div ref={headerRef} className="vr-header">
                 <div>

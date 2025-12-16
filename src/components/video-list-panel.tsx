@@ -191,7 +191,7 @@ export default function VideoListPanel() {
         <div
             ref={elementRef}
             style={{ minWidth: "210px" }}
-            className="vr-panel"
+            className="vr-panel vr-scrollbar"
         >
             <VideoUploadDialog open={open} onClose={() => handleClose()} />
 
