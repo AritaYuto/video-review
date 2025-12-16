@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import { hasUnreadVideoComment } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
+import { Separator } from "@/ui/separator";
 
 interface VideoNode {
     id: string;
@@ -246,6 +247,8 @@ export default function VideoListPanel() {
                     />
                 )}
             </Tree>
+
+            <Separator className="bg-[#333]" />
         </div>
     );
 }
