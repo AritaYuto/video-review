@@ -1,4 +1,6 @@
-# VideoReview
+# VideoReview 
+
+📘 日本語版 README はこちら → [README.jp.md](./README.jp.md)
 
 <img src="./documents/resources/video-review.png" controls="true"></video>
 
