@@ -27,7 +27,7 @@
       "@/stores/*": ["./src/stores/*"],
       "@/components/*": ["./src/components/*"],
       "@/ui/*": ["./src/components/ui/*"],
-      "@/lib/*": ["./src/lib/*"],
+      "@/lib/*": ["./src/lib/*"]
     }
   },
   "include": [

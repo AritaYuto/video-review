@@ -1,4 +1,6 @@
-# VideoReview
+# VideoReview 
+
+📘 日本語版 README はこちら → [README.jp.md](./README.jp.md)
 
 <img src="./documents/resources/video-review.png" controls="true"></video>
 
@@ -46,6 +48,14 @@ npm run prisma:generate
 ```
 npm run dev
 ```
+
+### 5. Access
+
+- Web UI  
+  http://localhost:3489
+
+- API Documentation (Swagger)  
+  http://localhost:3489/docs
 
 ## 🛠 Build
 
