@@ -41,6 +41,11 @@ docker compose up -d --build
 ```
 
 ## 💻 環境構築：ローカルに構築（オンプレ）
+
+### 必要なツール
+* node v20
+* postgreSQL
+
 ```bash
 # Install dependencies
 npm install
