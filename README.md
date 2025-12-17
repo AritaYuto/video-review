@@ -46,6 +46,10 @@ docker compose up -d --build
 
 Use this option if you want to run everything directly on your local machine.
 
+#### Required tools.
+* node v20
+* postgreSQL
+
 ```bash
 # Install dependencies
 npm install
