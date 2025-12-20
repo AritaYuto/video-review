@@ -25,6 +25,7 @@ const main = async () => {
 
     // create swagger file and build 
     execSync("npm install", { stdio: "inherit" });
+    execSync("npm run prisma:generate", { stdio: "inherit" });
     fs.writeFileSync("./public/swagger.json", JSON.stringify(await getApiDocs(), null, 2));
     execSync("next build", { stdio: "inherit" });
 
