@@ -6,28 +6,28 @@ import { getApiDocs } from "@/lib/swagger";
 
 const content = fs.readFileSync("package.json") as any;
 const productName = JSON.parse(content).name
-let outBase = process.env.VIDEO_REVIEW_BUILD_OUTPUT_DIR;
+let outBase: string | undefined = process.env.VIDEO_REVIEW_BUILD_OUTPUT_DIR;
 if (!outBase) {
-    console.log("Since VIDEO_REVIEW_BUILD_OUTPUT_DIR is not set, output will be directed to ProjectRoot.");
-    outBase = "./";
+    outBase = undefined;
 }
 
-const main = async () => {
-    // Use the name in package.json
-    const outDir = path.join(outBase, productName);
-
-    // create output directories.
+async function build() {
     mkdirSync("public", { recursive: true });
-    mkdirSync(outDir, { recursive: true });
-    if(outBase === "./") {
-        rmSync(path.join(outDir, "node_modules"), { recursive:true, force: true });
-    }
-
-    // create swagger file and build 
     execSync("npm install", { stdio: "inherit" });
     execSync("npm run prisma:generate", { stdio: "inherit" });
     fs.writeFileSync("./public/swagger.json", JSON.stringify(await getApiDocs(), null, 2));
     execSync("next build", { stdio: "inherit" });
+}
+
+async function defaultBuild() {
+    await build();
+}
+
+async function buildAndCopy(outDir: string) {
+    // create output directories.
+    mkdirSync(outDir, { recursive: true });
+
+    await build();
 
     // copy
     cpSync("package.json", path.join(outDir, "package.json"));
@@ -36,8 +36,17 @@ const main = async () => {
     cpSync(".next", path.join(outDir, ".next"), { recursive: true });
     cpSync("node_modules", path.join(outDir, "node_modules"), { recursive: true });
     cpSync("public", path.join(outDir, "public"), { recursive: true });
+}
 
-    console.log(`\nsuccess build: ${outDir}\n`);
+const main = async () => {
+    if(!outBase) {
+        console.log("Since VIDEO_REVIEW_BUILD_OUTPUT_DIR is not set, output will be directed to ProjectRoot.");
+        defaultBuild();
+    } else {
+        const outDir = path.join(outBase, productName);
+        buildAndCopy(outDir);
+    }
+    console.log(`\nsuccess build\n`);
 };
 
 main();
