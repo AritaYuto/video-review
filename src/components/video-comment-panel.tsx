@@ -36,6 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { CommentFilterParam, CommentSearchPopover } from "@/components/comment-search";
 import { readVideoComment } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import { isViewer, Role } from "@/lib/role";
 
 export default function VideoCommentPanel() {
     const t = useTranslations("video-comment-panel");
@@ -43,7 +44,7 @@ export default function VideoCommentPanel() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [newComments, setNewComments] = useState<VideoComment[]>([]);
 
-    const { displayName, email, userId, canUseIssueTracker } = useAuthStore();
+    const { displayName, email, userId, role } = useAuthStore();
 
     const {
         revisions,
@@ -249,7 +250,7 @@ export default function VideoCommentPanel() {
                                 <div className="flex items-center gap-3">
                                     {/* アバター */}
                                     <Avatar className="h-8 w-8">
-                                        {canUseIssueTracker && comment.userEmail ? (
+                                        {isViewer(role) && comment.userEmail ? (
                                             <AvatarImage src={`/api/jira/avatar?email=${comment.userEmail}`} />
                                         ) : (
                                             <AvatarFallback>{comment.userName?.[0]?.toUpperCase()}</AvatarFallback>
@@ -280,11 +281,11 @@ export default function VideoCommentPanel() {
                                     <DropdownMenuContent className="bg-[#181818] text-white border-[#333]">
                                         <DropdownMenuShaderLinkItem url={createLink()} />
 
-                                        <DropdownMenuItem disabled={comment.issueId !== "" || !canUseIssueTracker} className="gap-2" onClick={async () => await handleIssueLinkedComment(comment.id, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK)}>
+                                        <DropdownMenuItem disabled={comment.issueId !== "" || isViewer(role)} className="gap-2" onClick={async () => await handleIssueLinkedComment(comment.id, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK)}>
                                             <FontAwesomeIcon icon={faListCheck} />
                                             {t("commentItemTask")}
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem disabled={comment.issueId !== "" || !canUseIssueTracker} className="gap-2" onClick={async () => await handleIssueLinkedComment(comment.id, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG)}>
+                                        <DropdownMenuItem disabled={comment.issueId !== "" || isViewer(role)} className="gap-2" onClick={async () => await handleIssueLinkedComment(comment.id, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG)}>
                                             <FontAwesomeIcon icon={faBug} />
                                             {t("commentItemBug")}
                                         </DropdownMenuItem>

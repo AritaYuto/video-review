@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { apiError } from "@/lib/api-response";
 import { VideoReviewStorage } from "@/lib/storage";
+import { authorize, JwtError } from "@/lib/jwt";
 
 /**
  * @swagger
@@ -51,6 +52,15 @@ import { VideoReviewStorage } from "@/lib/storage";
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 export async function GET(req: Request) {
+    try {
+        authorize(req, ["viewer", "admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return apiError(e.message, e.status);
+        }
+        return apiError("unauthorized", 401);
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("videoRevId");
     const videoId = searchParams.get("videoId");

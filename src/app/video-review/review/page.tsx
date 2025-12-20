@@ -1,7 +1,6 @@
 "use client"
 import VideoReview from "@/components/video-review";
 import { useAuthStore } from "@/stores/auth-store";
-import { useVideoStore } from "@/stores/video-store";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
@@ -10,7 +9,13 @@ export default function VideoReviewPage() {
 
     const {
         verifyAuth,
+        token,
     } = useAuthStore();
+
+    useEffect(() => {
+        if (!token)
+            router.replace("/video-review/login");
+    }, [token]);
 
     useEffect(() => {
         (async () => {

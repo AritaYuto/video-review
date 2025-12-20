@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { WebClient } from '@slack/web-api';
 import { apiError } from "@/lib/api-response";
+import { authorize, JwtError } from "@/lib/jwt";
 
 /**
  * @swagger
@@ -54,6 +55,15 @@ import { apiError } from "@/lib/api-response";
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 export async function POST(req: Request) {
+    try {
+        authorize(req, ["viewer", "admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return apiError(e.message, e.status);
+        }
+        return apiError("unauthorized", 401);
+    }
+    
     const token = process.env.SLACK_API_TOKEN!;
     const channel = process.env.SLACK_POST_CH!;
     if (!token || !channel) {
@@ -99,7 +109,7 @@ export async function POST(req: Request) {
         channel_id: channel,
         files: [{ id: fileId, title: name }]
     });
-    
+
     if (!res.ok) {
         return apiError("failed to complete slack upload", 502);
     }

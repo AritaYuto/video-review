@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { apiError } from "@/lib/api-response";
+import { JwtError, verifyToken } from "@/lib/jwt";
 
 /**
  * @swagger
@@ -54,24 +55,22 @@ export async function POST(req: Request) {
     try {
         const { token } = await req.json();
 
-        // 400
         if (!token) {
             return apiError("missing token", 400);
         }
 
-        const secret = process.env.JWT_SECRET;
-        if (!secret) {
-            return apiError("jwt configuration is missing", 500);
-        }
-
         try {
-            const decoded = jwt.verify(token, secret);
+            const decoded = verifyToken(token);
             return NextResponse.json(
                 { valid: true, decoded },
                 { status: 200 }
             );
-        } catch {
-            return apiError("invalid token", 401);
+        } catch (e) {
+            if (e instanceof JwtError) {
+                return apiError(e.message, e.status);
+            } else {
+                return apiError("invalid token", 401);
+            }
         }
     } catch {
         return apiError("failed to verify token", 500);

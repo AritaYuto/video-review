@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { Readable } from "stream";
 import { apiError } from "@/lib/api-response";
 import { VideoReviewStorage } from "@/lib/storage";
+import { authorize, JwtError } from "@/lib/jwt";
 
 /**
  * @swagger
@@ -58,6 +59,15 @@ import { VideoReviewStorage } from "@/lib/storage";
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 export async function POST(req: Request): Promise<Response> {
+    try {
+        authorize(req, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return apiError(e.message, e.status);
+        }
+        return apiError("unauthorized", 401);
+    }
+
     return new Promise((resolve) => {
         const contentType = req.headers.get("content-type") || "";
         const busboy = Busboy({ headers: { "content-type": contentType } });
@@ -162,7 +172,7 @@ export async function POST(req: Request): Promise<Response> {
                     },
                 });
 
-                if(fs.existsSync(tmpFilePath)) {
+                if (fs.existsSync(tmpFilePath)) {
                     fs.rmSync(tmpFilePath);
                 }
 

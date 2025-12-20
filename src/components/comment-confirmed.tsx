@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useVideoPlayerStore } from "@/stores/video-player-store";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
+import { isGuest, isViewer } from "@/lib/role";
 
 export type ECommentConfirmedType = "commentUpdate" | "commentAdd";
 
@@ -20,7 +21,7 @@ export default function CommentConfirmed(props: {
     const [comment, setComment] = useState(props.comment);
     const [issueId, setIssueId] = useState(props.issueId);
     const { setIsPlaying } = useVideoPlayerStore();
-    const { canUseIssueTracker } = useAuthStore();
+    const { role } = useAuthStore();
 
     const handleConfirmed = () => {
         props.onConfirmed(comment, issueId);
@@ -47,9 +48,9 @@ export default function CommentConfirmed(props: {
                 className="bg-[#222] border-[#333] text-white resize-none h-20 mb-2"
             />
             <input
-                disabled={!canUseIssueTracker}
+                disabled={isGuest(role)}
                 className={
-                    `bg-zinc-800 p-2 rounded text-white w-full mb-2 transition ${!canUseIssueTracker ? "bg-zinc-900 text-zinc-500 border border-zinc-700 cursor-not-allowed opacity-70" : ""}`
+                    `bg-zinc-800 p-2 rounded text-white w-full mb-2 transition ${isGuest(role) ? "bg-zinc-900 text-zinc-500 border border-zinc-700 cursor-not-allowed opacity-70" : ""}`
                 }
                 value={issueId}
                 onChange={(e) => setIssueId(e.target.value)}

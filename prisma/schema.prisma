@@ -15,13 +15,33 @@ generator openapi {
   generateJson = true
 }
 
+model ApiToken {
+  id        String @id @default(uuid())
+  tokenHash String
+  createdAt DateTime
+}
+
 model User {
-  id          String   @id @default(uuid())
-  email       String?  @unique
-  role        String   @default("viewer")
-  displayName String
-  createdAt   DateTime @default(now())
-  readStatuses UserVideoReadStatus[]
+  id            String                  @id @default(uuid())
+  email         String?                 @unique
+  role          String                  @default("viewer")
+  displayName   String
+  createdAt     DateTime                @default(now())
+  readStatuses  UserVideoReadStatus[]
+  identities    Identity[]
+}
+
+model Identity {
+  id            String @id @default(uuid())
+  userId        String
+  provider      String
+  providerUid   String
+  secretHash    String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUid])
 }
 
 model Video {

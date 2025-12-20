@@ -25,6 +25,7 @@ import { hasUnreadVideoComment } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { Separator } from "@/ui/separator";
+import { isGuest, isViewer } from "@/lib/role";
 
 interface VideoNode {
     id: string;
@@ -41,7 +42,7 @@ export default function VideoListPanel() {
     const elementRef = useRef<HTMLDivElement>(null);
     const size = useSize(elementRef.current);
     const router = useRouter();
-    const { userId } = useAuthStore();
+    const { userId, role } = useAuthStore();
     const { videos, fetchVideos, selectedVideo } = useVideoStore();
     const [videoFilterParam, setVideoFilterParam] = useState<VideoFilterParam>({
         searchMode: "dateFilterOff",
@@ -205,6 +206,7 @@ export default function VideoListPanel() {
                 </div>
 
                 <button
+                    hidden={isGuest(role)}
                     onClick={() => setOpen(true)}
                     className="vr-btn-accent"
                 >

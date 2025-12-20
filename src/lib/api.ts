@@ -1,5 +1,7 @@
 import { useAuthStore } from "@/stores/auth-store";
 import { Video, VideoRevision, VideoComment } from "@prisma/client";
+import { Role } from "@/lib/role";
+import { use } from "react";
 
 export async function fetchVideos(
     from: Date | undefined,
@@ -102,6 +104,7 @@ export async function createJiraIssue(
     description: string,
     screenshot: Blob | null,
 ) {
+    const token = useAuthStore.getState().token;
     const form = new FormData();
     form.append("summary", summary);
     form.append("description", description);
@@ -114,7 +117,16 @@ export async function createJiraIssue(
     const res = await fetch("/api/jira/create", {
         method: "POST",
         body: form,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
+
+    if(res.status === 401) {
+        useAuthStore.getState().logout();
+        throw new Error("unauthorized");
+    }
+
     if (!res.ok) throw new Error("Failed to update comment");
 
     const json = await res.json();
@@ -122,6 +134,8 @@ export async function createJiraIssue(
 }
 
 export async function postSlack(comment: string, screenshot: Blob | null) {
+    const token = useAuthStore.getState().token;
+
     if (screenshot === null) {
         throw new Error("Failed to post slack, not found screenshot");
     }
@@ -132,7 +146,16 @@ export async function postSlack(comment: string, screenshot: Blob | null) {
     const res = await fetch("/api/slack/post", {
         method: "POST",
         body: form,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
+
+    if(res.status === 401) {
+        useAuthStore.getState().logout();
+        throw new Error("unauthorized");
+    }
+
     if (!res.ok) throw new Error("Failed to update slack");
 
     const json = await res.json();
@@ -154,6 +177,8 @@ export async function uploadVideo(data: {
     folderKey: string;
     file: File;
 }): Promise<{ sucess: boolean; msg: string }> {
+    const token = useAuthStore.getState().token;
+
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("folderKey", data.folderKey);
@@ -162,7 +187,15 @@ export async function uploadVideo(data: {
     const res = await fetch("/api/videos/upload", {
         method: "POST",
         body: formData,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
+
+    if(res.status === 401) {
+        useAuthStore.getState().logout();
+        throw new Error("unauthorized");
+    }
 
     if (res.ok) {
         const data = await res.json();
@@ -220,27 +253,6 @@ export async function uploadDrawing(
     return filePath;
 }
 
-export async function login(email: string, displayName: string, noJIRAAccount: boolean) {
-    const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, displayName, noJIRAAccount }),
-    });
-    if (!res.ok) throw new Error("Failed to login");
-    return await res.json();
-}
-
-export async function authVerify(token: string): Promise<boolean> {
-    const res = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-    });
-    if (!res.ok) throw new Error("Failed to verify");
-    const json = await res.json();
-    return json.valid;
-}
-
 export async function fetchLastUpdated(videoId: string): Promise<number> {
     const email = useAuthStore.getState().email;
     const res = await fetch(
@@ -291,12 +303,34 @@ export async function hasUnreadVideoComment(userId: string): Promise<string[]> {
     return json.unreadVideoIds;
 }
 
-export function downloadVideo(videoId: string, videoRevId: string): void {
-    const url = `/api/videos/download?videoRevId=${videoRevId}&videoId=${videoId}`;
+export async function downloadVideo(videoId: string, videoRevId: string): Promise<void> {
+    const token = useAuthStore.getState().token;
+    const res = await fetch(
+        `/api/videos/download?videoId=${videoId}&videoRevId=${videoRevId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    if(res.status === 401) {
+        useAuthStore.getState().logout();
+        throw new Error("unauthorized");
+    }
+
+    if (!res.ok) {
+        throw new Error("download failed");
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "";
     a.click();
+
+    URL.revokeObjectURL(url);
 }
 
 export async function fetchMediaUrl(filePath: string): Promise<string> {

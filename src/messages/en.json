@@ -64,10 +64,10 @@
     },
     "login": {
         "loginFailedMsg": "Login failed",
-        "loginDisplayName": "Display Name",
-        "loginEmail": "Email",
-        "ok": "Login",
-        "noJIRAAccount": "Click here if you don't have a JIRA account"
+        "displayName": "Display Name",
+        "email": "Email",
+        "password": "Password",
+        "ok": "Login"
     },
     "setting": {
         "title": "Setting",
