@@ -9,6 +9,8 @@ RUN apt-get update \
 COPY package*.json ./
 COPY . .
 
+RUN npm install
+
 COPY docker/web/entrypoint.demo.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
