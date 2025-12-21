@@ -4,7 +4,7 @@ services:
       - .env.demo
     build:
       context: ./
-      dockerfile: ./docker/web/Dockerfile
+      dockerfile: ./docker/web/Dockerfile.demo
     container_name: videoreview-web-demo
     ports:
       - "3000:3489"
