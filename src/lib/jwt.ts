@@ -41,7 +41,7 @@ export function authorize(req: Request, passedRoles: Role[]) {
     const apiToken = req.headers.get("x-api-token");
     if (
         apiToken &&
-        apiToken === process.env.VIDEO_UPLOAD_API_TOKEN
+        apiToken === process.env.VIDEO_REVIEW_API_TOKEN
     ) {
         return {
             type: "api-token" as const,

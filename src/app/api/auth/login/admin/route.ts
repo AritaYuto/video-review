@@ -67,7 +67,6 @@ import bcrypt from "bcrypt";
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
-
 export async function POST(req: Request) {
     try {
         const { email, password } = await req.json();
