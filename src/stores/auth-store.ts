@@ -1,22 +1,23 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import * as api from "@/lib/api";
+import * as auth from "@/lib/auth";
+import { Role } from "@/lib/role";
 
 interface AuthState {
-    canUseIssueTracker: boolean;
     displayName: string | null;
     userId: string | null;
     email: string | null;
+    role: Role;
     token: string | null;
 
-    verifyAuth: () => Promise<boolean>;
+    verifyAuth: () => Promise<string | null>;
     setAuth: (
         userId: string,
-        email: string,
+        email: string | null,
+        role: Role,
         token: string,
         displayName: string,
-        canUseIssueTracker: boolean,
     ) => void;
     logout: () => void;
 }
@@ -27,30 +28,29 @@ export const useAuthStore = create<AuthState>()(
             displayName: null,
             userId: null,
             email: null,
+            role: "guest",
             token: null,
             canUseIssueTracker: false,
 
             verifyAuth: async () => {
                 const token = get().token;
-                if (!token) return false;
+                if (!token) return null;
 
                 try {
-                    return await api.authVerify(token);
+                    const { id } = await auth.authVerify(token);
+                    return id;
                 } catch {}
 
                 get().logout();
-                return false;
+                return null;
             },
 
-            setAuth: (userId, email, token, displayName, noIssueTrackerAccount) => {
-                set({ userId, email, token, displayName, canUseIssueTracker: !noIssueTrackerAccount });
+            setAuth: (userId, email, role, token, displayName) => {
+                set({ userId, email, role, token, displayName });
             },
 
             logout: () => {
-                set({
-                    userId: null,
-                    token: null,
-                });
+                set({userId: null, token: null});
             },
         }),
         {

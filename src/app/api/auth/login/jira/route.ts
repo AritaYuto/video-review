@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import { apiError } from "@/lib/api-response";
+import { v4 as uuidv4 } from 'uuid';
+import { Role } from "@/lib/role";
+import { id } from "date-fns/locale";
+import { JwtError, signToken } from "@/lib/jwt";
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/auth/login/jira:
  *   post:
  *     summary: Login user and issue JWT
  *     description: >
@@ -22,10 +26,6 @@ import { apiError } from "@/lib/api-response";
  *             properties:
  *               email:
  *                 type: string
- *               displayName:
- *                 type: string
- *               noJIRAAccount:
- *                 type: boolean
  *     responses:
  *       200:
  *         description: Login succeeded
@@ -39,6 +39,11 @@ import { apiError } from "@/lib/api-response";
  *                 id:
  *                   type: string
  *                 displayName:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                   nullable: true
+ *                 role:
  *                   type: string
  *       400:
  *         description: Invalid request
@@ -59,52 +64,57 @@ import { apiError } from "@/lib/api-response";
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
+
 export async function POST(req: Request) {
     try {
-        const { email, displayName, noJIRAAccount } = await req.json();
+        const { email } = await req.json();
 
-        // 400
         if (!email) {
             return apiError("missing email", 400);
         }
 
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return apiError("jwt configuration is missing", 500);
+        // 1. JIRA 認証
+        let jiraInfo;
+        try {
+            jiraInfo = await authenticateWithJira(email);
+        } catch {
+            return apiError("failed to authenticate with jira", 401);
         }
 
-        let resolvedDisplayName = displayName;
-        let tokenPayload: Record<string, any> = { email };
+        // 2. User upsert
+        const userDB = await upsertUser(
+            email,
+            jiraInfo.displayName
+        );
 
-        if (!noJIRAAccount) {
-            try {
-                const jira = await authenticateWithJira(email);
-                resolvedDisplayName = jira.displayName;
-                tokenPayload = {
-                    ...tokenPayload,
-                    ...jira.jira,
-                };
-            } catch {
-                return apiError("failed to authenticate with jira", 401);
-            }
-        }
+        // 3. Identity upsert
+        await upsertJiraIdentity(
+            userDB.id,
+            jiraInfo.jira.accountId
+        );
 
-        const userDB = await upsertUser(email, resolvedDisplayName);
-
-        const token = jwt.sign(tokenPayload, jwtSecret, {
-            expiresIn: "1d",
-        });
+        const role: Role = 'viewer';
+        let tokenPayload: Record<string, any> = {
+            id: userDB.id, displayName: userDB.displayName, role
+        };
+        const token = signToken(tokenPayload);
 
         return NextResponse.json(
             {
                 token,
                 id: userDB.id,
-                displayName: resolvedDisplayName,
+                email: email,
+                displayName: userDB.displayName,
+                role,
             },
             { status: 200 }
         );
-    } catch {
-        return apiError("failed to login", 500);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return apiError(e.message, e.status);
+        } else {
+            return apiError("failed to login", 500);
+        }
     }
 }
 
@@ -132,6 +142,23 @@ async function authenticateWithJira(email: string) {
             accountId: user.accountId,
         },
     };
+}
+
+async function upsertJiraIdentity(userId: string, accountId: string) {
+    return prisma.identity.upsert({
+        where: {
+            provider_providerUid: {
+                provider: 'jira',
+                providerUid: accountId,
+            }
+        },
+        update: { userId },
+        create: {
+            userId,
+            provider: 'jira',
+            providerUid: accountId,
+        },
+    });
 }
 
 async function upsertUser(email: string, displayName: string) {

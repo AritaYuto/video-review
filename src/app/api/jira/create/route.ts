@@ -1,4 +1,5 @@
 import { apiError } from "@/lib/api-response";
+import { authorize, JwtError } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 
 /**
@@ -54,6 +55,15 @@ import { NextResponse } from "next/server";
  *               $ref: '#/components/schemas/ApiErrorResponse'
  */
 export async function POST(req: Request) {
+    try {
+        authorize(req, ["viewer", "admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return apiError(e.message, e.status);
+        }
+        return apiError("unauthorized", 401);
+    }
+
     const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
     const token = process.env.JIRA_API_TOKEN;
     const project = process.env.JIRA_PROJECT;
