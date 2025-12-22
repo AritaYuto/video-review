@@ -2,6 +2,9 @@ import readline from "readline-sync";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
+
+console.log("DATABASE_URL =", process.env.DATABASE_URL);
+
 const prisma = new PrismaClient();
 
 function getArg(name: string): string | undefined {
