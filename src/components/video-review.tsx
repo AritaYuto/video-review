@@ -198,6 +198,9 @@ export default function VideoReview() {
             if (ctx) {
                 ctx.scale(ratio, ratio);
             }
+
+            v.playbackRate = playbackRate;
+            v.volume = volumeEnabled ? volume : 0.0;
         }
         const onTimeUpdate = () => {
             if (timelineTimeRef.current !== null) {

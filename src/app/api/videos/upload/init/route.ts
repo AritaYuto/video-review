@@ -6,6 +6,8 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/upload-session";
 import { UploadStorageType } from "@prisma/client";
+import Busboy from "busboy";
+import { Readable } from "stream";
 
 export async function POST(req: Request) {
     try {
@@ -17,44 +19,66 @@ export async function POST(req: Request) {
         return apiError("unauthorized", 401);
     }
 
-    const formData = await req.formData();
-    const title = formData.get("title") as string;
-    const folderKey = formData.get("folderKey") as string;
-    const scenePath = formData.get("scenePath") as string;
+    return new Promise((resolve) => {
+        const contentType = req.headers.get("content-type") || "";
+        const busboy = Busboy({ headers: { "content-type": contentType } });
+        const fields: { [key: string]: string } = {};
 
-    if (!title || !folderKey) {
-        return apiError(`missing parameter`, 400);
-    }
+        const fail = (err: any) => {
+            return apiError("Upload failed", 500);
+        };
 
-    let nextRev = 1;
-    let video = await prisma.video.findFirst({ where: { title, folderKey } });
-    if (video) {
-        nextRev = await prisma.$transaction(async (tx) => {
-            const latest = await tx.videoRevision.findFirst({
-                where: { videoId: video.id },
-                orderBy: { revision: "desc" },
-            });
-            return (latest?.revision ?? 0) + 1;
+        busboy.on("field", (name, val) => {
+            fields[name] = val;
         });
-    }
 
-    const filenameOut = `rev_${String(nextRev).padStart(3, "0")}.mp4`;
-    const storageKey = path.join(
-        "videos",
-        folderKey,
-        title,
-        filenameOut
-    ).replace(/\\/g, "/");
+        busboy.on('finish', async function () {
+            const title = fields["title"];
+            const folderKey = fields["folderKey"];
+            const scenePath = fields["scenePath"];
 
-    const type = VideoReviewStorage.type();
-    const session = await createSession({
-        nextRev,
-        title,
-        folderKey,
-        scenePath,
-        storageKey,
-        storage: type as UploadStorageType,
+            if (!title || !folderKey) {
+                return apiError(`missing parameter`, 400);
+            }
+
+            let nextRev = 1;
+            let video = await prisma.video.findFirst({ where: { title, folderKey } });
+            if (video) {
+                nextRev = await prisma.$transaction(async (tx) => {
+                    const latest = await tx.videoRevision.findFirst({
+                        where: { videoId: video.id },
+                        orderBy: { revision: "desc" },
+                    });
+                    return (latest?.revision ?? 0) + 1;
+                });
+            }
+
+            const filenameOut = `rev_${String(nextRev).padStart(3, "0")}.mp4`;
+            const storageKey = path.join(
+                "videos",
+                folderKey,
+                title,
+                filenameOut
+            ).replace(/\\/g, "/");
+
+            const type = VideoReviewStorage.type();
+            const session = await createSession({
+                nextRev,
+                title,
+                folderKey,
+                scenePath,
+                storageKey,
+                storage: type as UploadStorageType,
+            });
+
+            const url = await VideoReviewStorage.uploadURL(session.id, storageKey, "video/mp4");
+            resolve(NextResponse.json({ url, session }));
+        });
+
+        busboy.on("error", err => fail(err));
+
+        const readable = Readable.fromWeb(req.body as any);
+        readable.on("error", err => fail(err));
+        readable.pipe(busboy);
     });
-    const url = await VideoReviewStorage.uploadURL(session.id, storageKey, "video/mp4");
-    return NextResponse.json({ url, session });
 }
