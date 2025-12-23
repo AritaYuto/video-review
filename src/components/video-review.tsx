@@ -198,6 +198,9 @@ export default function VideoReview() {
             if (ctx) {
                 ctx.scale(ratio, ratio);
             }
+
+            v.playbackRate = playbackRate;
+            v.volume = volumeEnabled ? volume : 0.0;
         }
         const onTimeUpdate = () => {
             if (timelineTimeRef.current !== null) {
@@ -262,7 +265,7 @@ export default function VideoReview() {
             return;
         }
         v.playbackRate = playbackRate;
-    }, [playbackRate, selectedRevision]);
+    }, [playbackRate]);
 
     useEffect(() => {
         const v = videoRef.current;
@@ -274,7 +277,7 @@ export default function VideoReview() {
         } else {
             v.volume = 0.0;
         }
-    }, [volume, volumeEnabled, selectedRevision]);
+    }, [volume, volumeEnabled]);
 
     useEffect(() => {
         timelineTimeRef.current = timelineTime;
