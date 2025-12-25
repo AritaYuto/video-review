@@ -106,7 +106,7 @@ export async function GET(req: Request) {
             info.system?.find((a: any) => a.isSelected);
 
         // 404
-        if (!latest) {
+        if (!latest || !latest.owner) {
             return apiError("no avatar found", 404);
         }
 
