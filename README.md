@@ -1,30 +1,55 @@
 # VideoReview 
 
-📘 日本語版 README はこちら → [README.jp.md](./README.jp.md)
+> 🚀 **Live Demo**  
+> Try VideoReview in your browser:  
+> https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/
 
-<img src="./documents/resources/video-review.png" controls="true"></video>
+📘 日本語版 README はこちら → [README.jp.md](./README.jp.md)
 
 VideoReview is a lightweight review tool where team members can upload videos,
 add timeline comments, draw directly on frames, and communicate like using your everyday social media.  
 It is designed to support feedback workflows in game development, video production, and other collaborative environments.  
 
-## ✨ Features
+<img src="./documents/resources/drawing.gif" controls="true" width="800"></video>
 
-- **Video Upload & Timeline Comments**
-  - Add comments at any timestamp on the video.
-  - Draw directly on the canvas for visual feedback.
+## ✨ Key Features
 
-- **Integrations**
-  - Convert comments into **JIRA tickets**.
-  - Automatically post comments to **Slack**.
+### From Discovery to Feedback: A Seamless Workflow
 
-- **Automated Upload Support**
-  - A dedicated upload API allows tools or CI pipelines to
-    **programmatically send videos** to VideoReview.
+* **Fast Search:**   
+Quickly find videos using keywords, even in large libraries.
+* **Tree-Based Organization:**  
+Manage videos using a hierarchical tree structure. This ensures you always have the full context of where a video belongs (e.g., Chapter 1 > Boss Battle).
+* **Activity Indicators:**  
+New comments are marked with a "New" icon, so you never miss an update or a request for review.
 
-- **Lightweight & Simple Architecture**
-  - Built with Next.js, Prisma, and PostgreSQL.
-  - Designed to be easy to operate as an internal tool.
+<img src="./documents/resources/search_movie.gif" controls="true" width="300"></video>
+
+### Integrated Communication & Task Management
+
+* **Slack Integration:**  
+Push comments, timestamps, and screenshots directly to Slack. Team members can see the feedback and jump to the exact video frame with a single click.
+
+<img src="./documents/resources/slack.gif" controls="true" width="300"></video>
+
+
+* **Jira Ticket Creation:**  
+Convert feedback into action. Create Atlassian Jira tickets directly from comments to bridge the gap between "Review" and "Development."
+
+<img src="./documents/resources/create_issue.gif" controls="true" width="300"></video>
+
+* **Visual Annotations:**  
+Draw directly on the video player. Use arrows and sketches to explain nuances like motion, positioning, or VFX timing that words can't describe.
+
+<img src="./documents/resources/drawing.gif" controls="true" width="800"></video>
+
+### Flexible Deployment & Automation
+
+* **REST API for Automation:**   
+Integrate VideoReview into your CI/CD pipeline or build scripts. Automatically upload the latest build recordings for daily reviews.
+* **Security-First Storage:**  
+Run VideoReview entirely on-premises to keep confidential game assets within your internal network, or use AWS S3 for scalable cloud storage.
+
 
 ## 🚀 Development Setup
 This project supports **two development setups**:
@@ -47,7 +72,7 @@ docker compose up -d --build
 Use this option if you want to run everything directly on your local machine.
 
 #### Required tools.
-* node v20
+* node v24
 * postgreSQL
 
 ```bash
@@ -77,30 +102,19 @@ npm run dev
   http://localhost:3489/docs
 
 
-### Optional (Enable Full Features: JIRA / Slack)
+## 🛠 Build & Deploy
 
-To use all features of video reviews, configure the following variables in `.env`:
+```
+# Install dependencies
+npm install
 
-If you do not have a `.env` file yet, create one from `.example.env`.
-
-```bash
 cp .example.env .env
-```
 
-```bash
-JIRA_API_TOKEN="JIRA-Token"
-JIRA_PROJECT="GAMEDEV"
-JIRA_ASSIGNEE_USER="assignn@gmail.com"
-SLACK_API_TOKEN="xoxb-xxxxxToken"
-SLACK_POST_CH="C00XXXXXX"
-```
-
-## 🛠 Build
-
-Set the build output directory:
-```bash
-export VIDEO_REVIEW_BUILD_OUTPUT_DIR="dist"
+# Run build
 npm run build
+
+# Start server
+npm run start
 ```
 
 ## 📄 License
