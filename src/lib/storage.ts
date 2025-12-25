@@ -45,7 +45,11 @@ export class LocalStorage implements FileStorage {
 
     async download(storageKey: string): Promise<NextResponse> {
         return new Promise((resolve) => {
-            const abs = path.join(process.cwd(), "uploads", storageKey); `/api/uploads/${storageKey}`;
+            let key = storageKey;
+            if (storageKey.includes("api/uploads/")) {
+                key = storageKey.replace("api/uploads/", "");
+            }
+            const abs = path.join(process.cwd(), "uploads", key);
             if (!fs.existsSync(abs)) {
                 return resolve(apiError("Video file is missing on server : " + abs, 500));
             }
