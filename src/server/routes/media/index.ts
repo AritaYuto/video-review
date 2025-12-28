@@ -6,11 +6,8 @@ export const mediaRouter = new Hono();
 
 mediaRouter.get('/:path{.*}', async (c) => {
     const relativePath = c.req.param('path'); 
-    console.log("Relative file path:", relativePath);
     const filePath = path.join(process.cwd(), "uploads", relativePath);
-    console.log("Absolute file path:", filePath);
     const ext = path.extname(filePath).toLowerCase();
-    console.log("File extension:", ext);
 
     try {
         if (ext === ".mp4") {

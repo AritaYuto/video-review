@@ -1,50 +1,13 @@
+import { apiError } from "@/lib/api-response";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { apiError } from "@/lib/api-response";
+import { Hono } from "hono";
 
-/**
- * @swagger
- * /api/read-status/unread:
- *   get:
- *     summary: Get unread video IDs for user
- *     description: >
- *       Returns video IDs that have unread comments for the specified user.
- *       A video is considered unread if the latest comment differs from the user's last read comment.
- *     parameters:
- *       - in: query
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: User ID
- *     responses:
- *       200:
- *         description: Unread video IDs
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 unreadVideoIds:
- *                   type: array
- *                   items:
- *                     type: string
- *       400:
- *         description: Missing userId parameter
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       500:
- *         description: Failed to fetch unread video IDs
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- */
-export async function GET(req: Request) {
+export const unreadRouter = new Hono();
+
+unreadRouter.get('/', async (c) => {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = new URL(c.req.url);
         const userId = searchParams.get("userId");
 
         // 400
@@ -85,4 +48,4 @@ export async function GET(req: Request) {
     } catch {
         return apiError("failed to fetch unread video ids", 500);
     }
-}
+});
