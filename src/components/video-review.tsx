@@ -138,7 +138,7 @@ export default function VideoReview() {
             if (!comment.drawingPath) continue;
 
             const img = commentDrawingCache.current.get(comment.drawingPath);
-            if(!img || !img.complete) continue;
+            if(!img || !img.complete || img.width === 0 || img.height === 0) continue;
 
             ctx.save();
             ctx.setTransform(1, 0, 0, 1, 0, 0);

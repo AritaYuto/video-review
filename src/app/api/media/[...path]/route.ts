@@ -51,8 +51,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ path: st
         return apiError("invalid path", 400);
     }
 
-    const s3Key = pathSegments.join("/");
-    const url = await VideoReviewStorage.fallbackURL(s3Key);
+    const key = pathSegments.join("/");
+    const url = await VideoReviewStorage.fallbackURL(key);
 
     if (!url) {
         return apiError("file not found", 404);
