@@ -37,9 +37,9 @@ export class LocalStorage implements FileStorage {
 
     async fallbackURL(storageKey: string): Promise<string> {
         if (storageKey.includes("api/uploads/")) {
-            return await Promise.resolve(`/${storageKey}`);
+            return await Promise.resolve(`/${storageKey.replace("api/uploads/", "api/v1/media/")}`);
         } else {
-            const url = `/api/uploads/${storageKey}`;
+            const url = `/api/v1/media/${storageKey}`;
             return await Promise.resolve(url);
         }
     }
