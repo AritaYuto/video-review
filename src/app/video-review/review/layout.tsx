@@ -23,7 +23,7 @@ export default function VideoReviewLayout({
         <SettingPopover />
       </div>
 
-      {/* 中央 → ここに page.tsx が差し替わる */}
+      {/* 中央 */}
       <div className="flex flex-col h-full min-h-0 border-r border-[#333]">
         {children}
       </div>
