@@ -7,7 +7,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
 import { apiError } from "./api-response";
 import { UploadStorageType } from "@prisma/client";
-
+import { nextCloudClient } from "@/lib/nextcloud";
+import next from "next";
 export interface FileStorage {
     type(): string;
     uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string>;
@@ -27,9 +28,9 @@ export class LocalStorage implements FileStorage {
     }
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
-        if(contentType === "image/png") {
+        if (contentType === "image/png") {
             return `/api/drawing/upload/transfer/local?session_id=${session_id}`
-        } 
+        }
         // "video/mp4"
         return `/api/videos/upload/transfer/local?session_id=${session_id}`
     }
@@ -91,8 +92,6 @@ export class S3Storage implements FileStorage {
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
         if (!s3Client) return Promise.reject(undefined);
 
-
-        
         let url = await getSignedUrl(
             s3Client,
             new PutObjectCommand({
@@ -100,7 +99,7 @@ export class S3Storage implements FileStorage {
                 Key: storageKey,
                 ContentType: contentType,
                 ...(process.env.S3_LOCALSTACK_ENDPOINT !== ""
-                    ? {ChecksumCRC32: ''}
+                    ? { ChecksumCRC32: '' }
                     : {}
                 ),
             }),
@@ -156,10 +155,38 @@ export class S3Storage implements FileStorage {
     }
 }
 
+export class NextCloudStorage implements FileStorage {
+    type(): string {
+        return UploadStorageType.nextCloud;
+    }
+
+    async hasObject(storageKey: string): Promise<boolean> {
+        return nextCloudClient?.hasObject(storageKey) || false;
+    }
+
+    async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
+        if (contentType === "image/png") {
+            return `/api/drawing/upload/transfer/nextcloud?session_id=${session_id}`
+        }
+        // "video/mp4"
+        return `/api/videos/upload/transfer/nextcloud?session_id=${session_id}`
+    }
+
+    async fallbackURL(storageKey: string): Promise<string> {
+        return `/api/nextcloud/media/${storageKey}`;
+    }
+
+    async download(storageKey: string): Promise<NextResponse> {
+        return nextCloudClient!.download(storageKey);
+    }
+}
+
 export const VideoReviewStorage: FileStorage = (() => {
     switch (process.env.VIDEO_REVIEW_STORAGE) {
         case "s3":
             return new S3Storage();
+        case "nextCloud":
+            return new NextCloudStorage();
         default:
             return new LocalStorage();
     }

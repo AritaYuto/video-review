@@ -58,7 +58,7 @@ export async function uploadVideo(data: {
     formData.append("file", data.file);
 
     let res: Response | undefined;
-    if (data.session.storage === UploadStorageType.local) {
+    if (data.session.storage === UploadStorageType.local || data.session.storage === UploadStorageType.nextCloud) {
         res = await fetch(data.url, {
             method: "PUT",
             body: formData,
@@ -66,7 +66,6 @@ export async function uploadVideo(data: {
                 Authorization: `Bearer ${token}`,
             },
         });
-
     } else if (data.session.storage === UploadStorageType.s3) {
         res = await fetch(data.url, {
             method: "PUT",
@@ -117,7 +116,7 @@ export async function uploadDrawing(data : {
     const token = useAuthStore.getState().token;
 
     let res: Response | undefined;
-    if (data.session.storage === UploadStorageType.local) {
+    if (data.session.storage === UploadStorageType.local || data.session.storage === UploadStorageType.nextCloud) {
         const formData = new FormData();
         formData.append("file", data.file);
         res = await fetch(data.url, {
