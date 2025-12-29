@@ -256,6 +256,6 @@ export async function downloadVideo(videoId: string, videoRevId: string): Promis
 }
 
 export async function fetchMediaUrl(filePath: string): Promise<string> {
-    const res = await fetch(`/api/media/${encodeURI(filePath)}`);
+    const res = await fetch(`/api/v1/media/resolver/${encodeURI(filePath)}`);
     return (await res.json()).url;
 }

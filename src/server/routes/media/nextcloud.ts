@@ -1,8 +1,12 @@
+import { Hono } from "hono";
 import { apiError } from "@/lib/api-response";
 import { nextCloudClient } from "@/lib/nextcloud";
 
-export async function GET(req: Request, { params }: { params: Promise<{ path: string[] }> }) {
-    const { path: pathSegments } = await params;
+export const nextCloudRouter = new Hono();
+
+nextCloudRouter.get('/:path{.*}', async (c) => {
+    const relativePath = c.req.param('path');
+    const pathSegments = relativePath.split("/");
 
     if (pathSegments.some(p => p.includes(".."))) {
         return apiError("invalid path", 400);
@@ -14,7 +18,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ path: st
 
     const ncPath = pathSegments.join("/");
     const ncUrl = nextCloudClient.pathUnderRoot(ncPath);
-    const range = req.headers.get("range");
+    const range = c.req.header("range");
     const res = await fetch(ncUrl, {
         method: "GET",
         headers: {
@@ -36,4 +40,4 @@ export async function GET(req: Request, { params }: { params: Promise<{ path: st
         status: res.status,
         headers,
     });
-}
+});

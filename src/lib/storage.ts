@@ -1,14 +1,13 @@
 import path from "path";
 import fs from "fs";
-import fsPromises from "fs/promises";
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "@/lib/s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
-import { apiError } from "./api-response";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3Client } from "@/lib/s3";
+import { apiError } from "@/lib/api-response";
 import { UploadStorageType } from "@prisma/client";
 import { nextCloudClient } from "@/lib/nextcloud";
-import next from "next";
+
 export interface FileStorage {
     type(): string;
     uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string>;
@@ -37,9 +36,9 @@ export class LocalStorage implements FileStorage {
 
     async fallbackURL(storageKey: string): Promise<string> {
         if (storageKey.includes("api/uploads/")) {
-            return await Promise.resolve(`/${storageKey.replace("api/uploads/", "api/v1/media/")}`);
+            return await Promise.resolve(`/${storageKey.replace("api/uploads/", "api/v1/media/local/")}`);
         } else {
-            const url = `/api/v1/media/${storageKey}`;
+            const url = `/api/v1/media/local/${storageKey}`;
             return await Promise.resolve(url);
         }
     }
@@ -173,7 +172,7 @@ export class NextCloudStorage implements FileStorage {
     }
 
     async fallbackURL(storageKey: string): Promise<string> {
-        return `/api/nextcloud/media/${storageKey}`;
+        return `/api/v1/media/nextcloud/${storageKey}`;
     }
 
     async download(storageKey: string): Promise<NextResponse> {
