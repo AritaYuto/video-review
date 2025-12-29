@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
-import { authorize, JwtError } from "@/lib/jwt";
+import { authorize, JwtError } from "@/server/auth/token";
 import { deleteSession, getSession } from "@/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 

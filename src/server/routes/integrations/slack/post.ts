@@ -1,4 +1,4 @@
-import { authorize, JwtError } from "@/lib/jwt";
+import { authorize, JwtError } from "@/server/auth/token";
 import { WebClient } from "@slack/web-api";
 import { Hono } from "hono";
 import { ContentfulStatusCode } from "hono/utils/http-status";

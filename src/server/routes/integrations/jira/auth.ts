@@ -1,4 +1,4 @@
-import { JwtError, signToken } from "@/lib/jwt";
+import { JwtError, signToken } from "@/server/auth/token";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@/lib/role";
 import { Context } from "hono";

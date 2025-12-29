@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import Busboy from "busboy";
-import { apiError } from "@/lib/api-response";
 import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
@@ -19,7 +18,7 @@ export async function receiveMultipart(req: Request, onUploadProcess: (filename:
         const fail = (err: any) => {
             if (responded) return;
             responded = true;
-            return apiError("Upload failed", 500);
+            return NextResponse.json({ error: "Upload failed" }, { status: 500 });
         };
 
         busboy.on("file", (_name, file, info) => {

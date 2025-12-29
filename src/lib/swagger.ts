@@ -17,16 +17,6 @@ export const getApiDocs = async () => {
             components: {
                 schemas: {
                     ...prismaSpec.components.schemas,
-
-                    ApiErrorResponse: {
-                        type: "object",
-                        properties: {
-                            error: {
-                                type: "string",
-                            },
-                        },
-                        required: ["error"],
-                    },
                 },
             },
         },

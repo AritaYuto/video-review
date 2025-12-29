@@ -1,4 +1,4 @@
-import { JwtError, signToken } from "@/lib/jwt";
+import { JwtError, signToken } from "@/server/auth/token";
 import { Role } from "@/lib/role";
 import { Context, Hono } from "hono";
 import { v4 as uuidv4 } from 'uuid';

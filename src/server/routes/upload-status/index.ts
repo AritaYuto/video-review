@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
-import { authorize, JwtError } from "@/lib/jwt";
-import { VideoReviewStorage } from "@/lib/storage";
+import { authorize, JwtError } from "@/server/auth/token";
+import { VideoReviewStorage } from "@/server/storage";
 import { getSession } from "@/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 

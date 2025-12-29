@@ -1,5 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
+import "server-only"
+
 function createS3Client(): S3Client | null {
     let s3: S3Client | null = null;
     if (process.env.VIDEO_REVIEW_STORAGE === "s3") {
