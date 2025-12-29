@@ -1,67 +1,17 @@
-import { apiError } from "@/lib/api-response";
 import { authorize, JwtError } from "@/lib/jwt";
-import { NextResponse } from "next/server";
+import { Hono } from "hono";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 
-/**
- * @swagger
- * /api/jira/create:
- *   post:
- *     summary: Create JIRA issue
- *     description: >
- *       Creates a JIRA issue with optional file attachment.
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - summary
- *               - description
- *               - issueType
- *             properties:
- *               summary:
- *                 type: string
- *               description:
- *                 type: string
- *               issueType:
- *                 type: string
- *               reporterEmail:
- *                 type: string
- *               file:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Issue created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 issueKey:
- *                   type: string
- *       400:
- *         description: Invalid request
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       500:
- *         description: Failed to create JIRA issue
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- */
-export async function POST(req: Request) {
-    try {
-        authorize(req, ["viewer", "admin"]);
+export const createRouter = new Hono();
+
+createRouter.post('/', async (c) => {
+try {
+        authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {
         if (e instanceof JwtError) {
-            return apiError(e.message, e.status);
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
-        return apiError("unauthorized", 401);
+        return c.json({ error: "unauthorized" }, 401);
     }
 
     const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
@@ -71,11 +21,11 @@ export async function POST(req: Request) {
 
     // 500: サーバー設定不備
     if (!base || !token || !project) {
-        return apiError("jira configuration is missing", 500);
+        return c.json({ error: "jira configuration is missing" }, 500);
     }
 
     try {
-        const formData = await req.formData();
+        const formData = await c.req.formData();
         const summary = formData.get("summary") as string;
         const description = formData.get("description") as string;
         const issueType = formData.get("issueType") as string;
@@ -84,7 +34,7 @@ export async function POST(req: Request) {
 
         // 400: 必須項目不足
         if (!summary || !description || !issueType) {
-            return apiError("invalid request body", 400);
+            return c.json({ error: "invalid request body" }, 400);
         }
 
         const res = await fetch(`${base}/rest/api/2/issue`, {
@@ -107,7 +57,7 @@ export async function POST(req: Request) {
         });
 
         if (!res.ok) {
-            return apiError("failed to create jira issue", 500);
+            return c.json({ error: "failed to create jira issue" }, 500);
         }
 
         const data = await res.json();
@@ -130,13 +80,11 @@ export async function POST(req: Request) {
             );
 
             if (!uploadRes.ok) {
-                return apiError("failed to attach file to jira issue", 500);
+                return c.json({ error: "failed to attach file to jira issue" }, 500);
             }
         }
-
-        return NextResponse.json({ issueKey }, { status: 200 });
-
+        return c.json({ issueKey }, { status: 200 });
     } catch {
-        return apiError("internal error", 500);
+        return c.json({ error: "internal error" }, 500);
     }
-}
+});

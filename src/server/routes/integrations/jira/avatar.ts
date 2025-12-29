@@ -1,61 +1,21 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
-import { apiError } from "@/lib/api-response";
+import { Hono } from "hono";
+import path from "path";
+import fs from "fs";
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 
-/**
- * @swagger
- * /api/jira/avatar:
- *   get:
- *     summary: Get JIRA user avatar
- *     description: >
- *       Fetches a JIRA user's avatar by email.
- *       Uses cached image if available and valid; otherwise fetches from JIRA and caches it.
- *     parameters:
- *       - in: query
- *         name: email
- *         required: true
- *         schema:
- *           type: string
- *         description: User email
- *     responses:
- *       200:
- *         description: Avatar image
- *         content:
- *           image/png:
- *             schema:
- *               type: string
- *               format: binary
- *       400:
- *         description: Missing email parameter
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       404:
- *         description: Avatar not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       500:
- *         description: Failed to fetch avatar
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- */
-export async function GET(req: Request) {
+export const avatarRouter = new Hono();
+
+avatarRouter.get('/', async (c) => {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = new URL(c.req.url);
         const email = searchParams.get("email");
 
         // 400
         if (!email) {
-            return apiError("email is required", 400);
+            return c.json({ error: "email is required" }, 400);
         }
 
         // 1. キャッシュ確認
@@ -65,7 +25,7 @@ export async function GET(req: Request) {
         if (cached && now - new Date(cached.cachedAt).getTime() < CACHE_TTL_MS) {
             const localPath = path.join(process.cwd(), "uploads", "avatars", `${email}.png`);
             try {
-                const img = Buffer.from(await fs.readFile(localPath));
+                const img = Buffer.from(await fs.promises.readFile(localPath));
                 return new NextResponse(img, {
                     headers: {
                         "Content-Type": "image/png",
@@ -82,7 +42,7 @@ export async function GET(req: Request) {
         const token = process.env.JIRA_API_TOKEN;
 
         if (!base || !token) {
-            return apiError("jira configuration is missing", 500);
+            return c.json({ error: "jira configuration is missing" }, 500);
         }
 
         // 3. Jiraから最新のアバター情報取得
@@ -97,7 +57,7 @@ export async function GET(req: Request) {
         );
 
         if (!infoRes.ok) {
-            return apiError("failed to fetch jira avatar info", 500);
+            return c.json({ error: "failed to fetch jira avatar info" }, 500);
         }
 
         const info = await infoRes.json();
@@ -107,7 +67,7 @@ export async function GET(req: Request) {
 
         // 404
         if (!latest || !latest.owner) {
-            return apiError("no avatar found", 404);
+            return c.json({ error: "no avatar found" }, 404);
         }
 
         const avatarUrl = `${base}/secure/useravatar?ownerId=${latest.owner}&avatarId=${latest.id}`;
@@ -118,16 +78,16 @@ export async function GET(req: Request) {
         });
 
         if (!imgRes.ok) {
-            return apiError("failed to fetch avatar image", 500);
+            return c.json({ error: "failed to fetch jira avatar" }, 500);
         }
 
         const buffer = Buffer.from(await imgRes.arrayBuffer());
 
         // 5. 保存
         const saveDir = path.join(process.cwd(), "uploads", "avatars");
-        await fs.mkdir(saveDir, { recursive: true });
+        await fs.promises.mkdir(saveDir, { recursive: true });
         const localPath = path.join(saveDir, `${email}.png`);
-        await fs.writeFile(localPath, buffer);
+        await fs.promises.writeFile(localPath, buffer);
 
         // 6. キャッシュDB更新
         await prisma.jiraAvatarCache.upsert({
@@ -155,6 +115,6 @@ export async function GET(req: Request) {
         });
 
     } catch {
-        return apiError("failed to fetch jira avatar", 500);
+        return c.json({ error: "failed to fetch jira avatar" }, 500);
     }
-}
+});

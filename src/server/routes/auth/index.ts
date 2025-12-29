@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { loginRouter } from "./login";
-import { verifyRouter } from "./verify";
+import { loginRouter } from "@/server/routes/auth/login";
+import { verifyRouter } from "@/routes/auth/verify";
 
 export const authRouter = new Hono();
 

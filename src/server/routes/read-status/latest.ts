@@ -1,5 +1,3 @@
-import { apiError } from "@/lib/api-response";
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
 
@@ -28,7 +26,7 @@ latestRouter.get('/', async (c) => {
         const latestCommentId =
             latest.length > 0 ? latest[0].latestCommentId : null;
 
-        return NextResponse.json(
+        return c.json(
             { latestCommentId },
             { status: 200 }
         );

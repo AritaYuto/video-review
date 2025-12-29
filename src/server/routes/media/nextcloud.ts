@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { apiError } from "@/lib/api-response";
 import { nextCloudClient } from "@/lib/nextcloud";
 
 export const nextCloudRouter = new Hono();

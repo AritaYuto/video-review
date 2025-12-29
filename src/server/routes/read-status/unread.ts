@@ -1,5 +1,3 @@
-import { apiError } from "@/lib/api-response";
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
 
@@ -41,7 +39,7 @@ unreadRouter.get('/', async (c) => {
                 );
         `;
 
-        return NextResponse.json({
+        return c.json({
             unreadVideoIds: unreadVideoIds.map((x) => x.videoId),
         }, { status: 200 });
 

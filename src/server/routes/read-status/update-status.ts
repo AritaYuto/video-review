@@ -1,7 +1,5 @@
-import { apiError } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
-import { NextResponse } from "next/server";
 
 export const updateStatusRouter = new Hono();
 
@@ -36,7 +34,7 @@ updateStatusRouter.post('/', async (c) => {
             },
         });
 
-        return NextResponse.json({ ok: true });
+        return c.json({ ok: true });
     } catch {
         return c.json({ error: "failed to update read status" }, 500);
     }

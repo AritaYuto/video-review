@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { Hono } from "hono";
-import { NextResponse } from "next/server";
 
 export const lastUpdatedRouter = new Hono();
 
