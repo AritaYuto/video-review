@@ -80,7 +80,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
 
         const timer = setInterval(async () => {
             try {
-                const res = await apiUpload.checkUploadVideoStatus({
+                const res = await apiUpload.checkUploadStatus({
                     session_id: session.id,
                 });
 

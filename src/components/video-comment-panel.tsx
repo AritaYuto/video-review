@@ -252,7 +252,7 @@ export default function VideoCommentPanel() {
                                     {/* アバター */}
                                     <Avatar className="h-8 w-8">
                                         {isViewer(role) && comment.userEmail ? (
-                                            <AvatarImage src={`/api/jira/avatar?email=${comment.userEmail}`} />
+                                            <AvatarImage src={`/api/v1/jira/avatar?email=${comment.userEmail}`} />
                                         ) : (
                                             <AvatarFallback>{comment.userName?.[0]?.toUpperCase()}</AvatarFallback>
                                         )}

@@ -28,10 +28,10 @@ export class LocalStorage implements FileStorage {
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
         if (contentType === "image/png") {
-            return `/api/drawing/upload/transfer/local?session_id=${session_id}`
+            return `/api/v1/drawing/upload/transfer/local?session_id=${session_id}`
         }
         // "video/mp4"
-        return `/api/videos/upload/transfer/local?session_id=${session_id}`
+        return `/api/v1/videos/upload/transfer/local?session_id=${session_id}`
     }
 
     async fallbackURL(storageKey: string): Promise<string> {
@@ -165,10 +165,10 @@ export class NextCloudStorage implements FileStorage {
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
         if (contentType === "image/png") {
-            return `/api/drawing/upload/transfer/nextcloud?session_id=${session_id}`
+            return `/api/v1/drawing/upload/transfer/nextcloud?session_id=${session_id}`
         }
         // "video/mp4"
-        return `/api/videos/upload/transfer/nextcloud?session_id=${session_id}`
+        return `/api/v1/videos/upload/transfer/nextcloud?session_id=${session_id}`
     }
 
     async fallbackURL(storageKey: string): Promise<string> {

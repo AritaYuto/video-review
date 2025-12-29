@@ -10,6 +10,15 @@ import { adminRouter } from "@/routes/admin";
 import { integrationsRouter } from "@/routes/integrations";
 import { slackRouter } from "@/routes/integrations/slack";
 import { jiraRouter } from "@/routes/integrations/jira";
+import { videosRouter } from "./routes/videos";
+import { drawingRouter } from "./routes/drawing";
+import { oldUploadRouter as oldVideoUploadRouter } from "@/routes/videos/upload/old-upload";
+import { oldUploadRouter as oldDrawingUploadRouter } from "@/routes/drawing/upload/old-upload";
+import { listRouter } from "@/routes/videos/list";
+import { videoByIdRouter } from "@/routes/videos/[id]";
+import { foldersRouter } from "@/routes/videos/folders";
+import { downloadRouter } from "@/routes/media/download";
+import { uploadStatusRouter } from "./routes/upload-status";
 
 export const app = new Hono().basePath("/api");
 
@@ -20,7 +29,9 @@ app.route("/v1/comments", commentsRouter);
 app.route("/v1/auth", authRouter);
 app.route("/v1/admin", adminRouter);
 app.route("/v1/integrations", integrationsRouter);
-
+app.route("/v1/videos", videosRouter);
+app.route("/v1/drawing", drawingRouter);
+app.route("/v1/upload-status", uploadStatusRouter);
 
 // 旧API
 app.route("/uploads", localRouter);
@@ -32,5 +43,11 @@ app.route("/auth", authRouter);
 app.route("/admin", adminRouter);
 app.route("/slack", slackRouter);
 app.route("/jira", jiraRouter);
+app.route('/videos', listRouter);
+app.route("/videos/upload", oldVideoUploadRouter);
+app.route("/videos/:id", videoByIdRouter);
+app.route('/videos/folders', foldersRouter);
+app.route('/videos/download', downloadRouter);
+app.route("/drawing/upload", oldDrawingUploadRouter);
 
 console.log('Hono server is set up for Next.js API routes.', app);

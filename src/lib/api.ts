@@ -12,20 +12,20 @@ export async function fetchVideos(
     if (from) params.set("from", from.getTime().toString());
     if (to) params.set("to", to.getTime().toString());
 
-    const res = await fetch(`/api/videos?${params.toString()}`);
+    const res = await fetch(`/api/v1/videos?${params.toString()}`);
     if (!res.ok) throw new Error("Failed to fetch videos");
     return await res.json();
 }
 
 export async function fetchComments(videoId: string): Promise<VideoComment[]> {
-    const res = await fetch(`/api/comments?videoId=${videoId}`);
+    const res = await fetch(`/api/v1/comments?videoId=${videoId}`);
     if (!res.ok) throw new Error("Failed to fetch comments");
     return res.json();
 }
 
 export async function fetchNewComments(videoId: string, lastFetchedAt: number) {
     const res = await fetch(
-        `/api/comments?videoId=${videoId}&since=${new Date(
+        `/api/v1/comments?videoId=${videoId}&since=${new Date(
             lastFetchedAt,
         ).toISOString()}`,
     );
@@ -41,7 +41,7 @@ export async function createComment(data: {
     comment: string;
     time: number;
 }) {
-    const res = await fetch("/api/comments", {
+    const res = await fetch("/api/v1/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -57,7 +57,7 @@ export async function updateComment(data: {
     drawingPath?: string;
     thumbsUp?: boolean;
 }) {
-    const res = await fetch("/api/comments", {
+    const res = await fetch("/api/v1/comments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -67,7 +67,7 @@ export async function updateComment(data: {
 }
 
 export async function incrementThumbsUpCount(id: string) {
-    const res = await fetch("/api/comments", {
+    const res = await fetch("/api/v1/comments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -80,7 +80,7 @@ export async function incrementThumbsUpCount(id: string) {
 }
 
 export async function deleteComment(id: string) {
-    const res = await fetch("/api/comments", {
+    const res = await fetch("/api/v1/comments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ export async function deleteComment(id: string) {
 }
 
 export async function getComment(commentId: string): Promise<VideoComment> {
-    const res = await fetch(`/api/comments/${commentId}`);
+    const res = await fetch(`/api/v1/comments/${commentId}`);
     if (!res.ok) throw new Error("Failed to comment");
     return res.json();
 }
@@ -115,7 +115,7 @@ export async function createJiraIssue(
         form.append("file", new File([screenshot], "screenshot.png"));
     }
 
-    const res = await fetch("/api/jira/create", {
+    const res = await fetch("/api/v1/jira/create", {
         method: "POST",
         body: form,
         headers: {
@@ -135,7 +135,7 @@ export async function createJiraIssue(
 }
 
 export async function getVideoList(): Promise<Video[]> {
-    const res = await fetch("/api/videos", {
+    const res = await fetch("/api/v1/videos", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -145,13 +145,13 @@ export async function getVideoList(): Promise<Video[]> {
 }
 
 export async function getVideoFromId(videoId: string): Promise<Video> {
-    const res = await fetch(`/api/videos/${videoId}`);
+    const res = await fetch(`/api/v1/videos/${videoId}`);
     if (!res.ok) throw new Error("Failed to fetch video");
     return res.json();
 }
 
 export async function getVideoFolderKeys(): Promise<string[]> {
-    const res = await fetch(`/api/videos/folders`);
+    const res = await fetch(`/api/v1/videos/folders`);
     if (!res.ok) throw new Error("Failed to fetch latest revision");
     return res.json();
 }
@@ -159,7 +159,7 @@ export async function getVideoFolderKeys(): Promise<string[]> {
 export async function getVideoRevisionList(
     videoId: string,
 ): Promise<VideoRevision[]> {
-    const res = await fetch(`/api/videos/${videoId}/revisions`);
+    const res = await fetch(`/api/v1/videos/${videoId}/revisions`);
     if (!res.ok) throw new Error("Failed to fetch all revisions");
     return res.json();
 }
@@ -167,7 +167,7 @@ export async function getVideoRevisionList(
 export async function fetchLatestRevision(
     videoId: string,
 ): Promise<VideoRevision> {
-    const res = await fetch(`/api/videos/${videoId}/latest`);
+    const res = await fetch(`/api/v1/videos/${videoId}/latest`);
     if (!res.ok) throw new Error("Failed to fetch latest revision");
     return res.json();
 }
@@ -175,7 +175,7 @@ export async function fetchLatestRevision(
 export async function fetchLastUpdated(videoId: string): Promise<number> {
     const email = useAuthStore.getState().email;
     const res = await fetch(
-        `/api/comments/last-updated?videoId=${videoId}&email=${email}`,
+        `/api/v1/comments/last-updated?videoId=${videoId}&email=${email}`,
     );
     if (!res.ok) throw new Error("Failed to fetch comments");
     const json = await res.json();
@@ -185,7 +185,7 @@ export async function fetchLastUpdated(videoId: string): Promise<number> {
 export async function fetchLatestCommentId(
     videoId: string,
 ): Promise<string | null> {
-    const res = await fetch(`/api/read-status/latest?videoId=${videoId}`, {
+    const res = await fetch(`/api/v1/read-status/latest?videoId=${videoId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -200,7 +200,7 @@ export async function readVideoComment(userId: string, videoId: string) {
         return;
     }
 
-    await fetch("/api/read-status", {
+    await fetch("/api/v1/read-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -212,7 +212,7 @@ export async function readVideoComment(userId: string, videoId: string) {
 }
 
 export async function hasUnreadVideoComment(userId: string): Promise<string[]> {
-    const res = await fetch(`/api/read-status/unread?userId=${userId}`, {
+    const res = await fetch(`/api/v1/read-status/unread?userId=${userId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -224,7 +224,7 @@ export async function hasUnreadVideoComment(userId: string): Promise<string[]> {
 export async function downloadVideo(videoId: string, videoRevId: string): Promise<void> {
     const token = useAuthStore.getState().token;
     const res = await fetch(
-        `/api/videos/download?videoId=${videoId}&videoRevId=${videoRevId}`,
+        `/api/v1/media/download?videoId=${videoId}&videoRevId=${videoRevId}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,

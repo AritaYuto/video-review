@@ -4,7 +4,7 @@ export type LoginType = "guest" | "jira" | "admin";
 export async function login(type: LoginType, payload: Record<string, any>):
     Promise<{ token: string; id: string; email: string | null; displayName: string, role: Role }> 
 {
-    const res = await fetch(`/api/auth/login/${type}`, {
+    const res = await fetch(`/api/v1/auth/login/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -14,7 +14,7 @@ export async function login(type: LoginType, payload: Record<string, any>):
 }
 
 export async function authVerify(token: string): Promise<{ id: string; displayName: string, role: Role }> {
-    const res = await fetch("/api/auth/verify", {
+    const res = await fetch("/api/v1/auth/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),

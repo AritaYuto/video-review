@@ -24,7 +24,7 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
     const form = new FormData();
     form.append("comment", slackText);
     form.append("file", new File([screenshot], "screenshot.png"));
-    const res = await fetch("/api/slack/post", {
+    const res = await fetch("/api/v1/slack/post", {
         method: "POST",
         body: form,
         headers: {

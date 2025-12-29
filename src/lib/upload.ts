@@ -10,7 +10,7 @@ export async function uploadVideoInit(data: {
     formData.append("title", data.title);
     formData.append("folderKey", data.folderKey);
 
-    const res = await fetch("/api/videos/upload/init", {
+    const res = await fetch("/api/v1/videos/upload/init", {
         method: "POST",
         body: formData,
         headers: {
@@ -24,7 +24,7 @@ export async function uploadVideoFinish(data: {
     session_id: string,
 }): Promise<VideoRevision> {
     const token = useAuthStore.getState().token;
-    const res = await fetch(`/api/videos/upload/finish?session_id=${data.session_id}`, {
+    const res = await fetch(`/api/v1/videos/upload/finish?session_id=${data.session_id}`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -33,11 +33,11 @@ export async function uploadVideoFinish(data: {
     return res.json();
 }
 
-export async function checkUploadVideoStatus(data: {
+export async function checkUploadStatus(data: {
     session_id: string,
 }): Promise<{ status: string }> {
     const token = useAuthStore.getState().token;
-    const res = await fetch(`/api/videos/upload/status?session_id=${data.session_id}`, {
+    const res = await fetch(`/api/v1/upload-status?session_id=${data.session_id}`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ export async function uploadDrawingInit(data: {
     const token = useAuthStore.getState().token;
     const formData = new FormData();
     formData.append("path", data.drawingPath ?? "");
-    const res = await fetch("/api/drawing/upload/init", {
+    const res = await fetch("/api/v1/drawing/upload/init", {
         method: "POST",
         body: formData,
         headers: {
@@ -98,7 +98,7 @@ export async function uploadDrawingFinish(data: {
     session_id: string,
 }): Promise<string> {
     const token = useAuthStore.getState().token;
-    const res = await fetch(`/api/drawing/upload/finish?session_id=${data.session_id}`, {
+    const res = await fetch(`/api/v1/drawing/upload/finish?session_id=${data.session_id}`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,

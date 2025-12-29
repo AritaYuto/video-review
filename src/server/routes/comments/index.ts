@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { Hono } from "hono";
-import { byIdRouter } from "@/routes/comments/by-id";
+import { byIdRouter } from "@/routes/comments/[id]";
 import { lastUpdatedRouter } from "@/routes/comments/last-updated";
 
 export const commentsRouter = new Hono();
