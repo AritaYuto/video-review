@@ -12,7 +12,7 @@ latestRouter.get('/', async (c) => {
 
         // 400
         if (!videoId) {
-            return apiError("missing videoId", 400);
+            return c.json({ error: "missing videoId" }, 400);
         }
 
         const latest = await prisma.$queryRaw<
@@ -33,6 +33,6 @@ latestRouter.get('/', async (c) => {
             { status: 200 }
         );
     } catch {
-        return apiError("failed to fetch latest comment", 500);
+        return c.json({ error: "failed to fetch latest comment" }, 500);
     }
 });

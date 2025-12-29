@@ -10,7 +10,7 @@ updateStatusRouter.post('/', async (c) => {
         const { userId, videoId, lastReadCommentId } = await c.req.json();
 
         if (!userId || !videoId || !lastReadCommentId) {
-            return apiError("invalid request body", 400);
+            return c.json({ error: "invalid request body" }, 400);
         }
 
         const user = await prisma.user.findUnique({
@@ -19,7 +19,7 @@ updateStatusRouter.post('/', async (c) => {
         });
 
         if (!user) {
-            return NextResponse.json({ ok: true });
+            return c.json({ ok: true });
         }
 
         await prisma.userVideoReadStatus.upsert({
@@ -38,6 +38,6 @@ updateStatusRouter.post('/', async (c) => {
 
         return NextResponse.json({ ok: true });
     } catch {
-        return apiError("failed to update read status", 500);
+        return c.json({ error: "failed to update read status" }, 500);
     }
 });

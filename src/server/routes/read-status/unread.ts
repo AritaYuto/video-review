@@ -12,7 +12,7 @@ unreadRouter.get('/', async (c) => {
 
         // 400
         if (!userId) {
-            return apiError("missing userId", 400);
+            return c.json({ error: "missing userId" }, 400);
         }
 
         const unreadVideoIds = await prisma.$queryRaw<{ videoId: string }[]>`
@@ -46,6 +46,6 @@ unreadRouter.get('/', async (c) => {
         }, { status: 200 });
 
     } catch {
-        return apiError("failed to fetch unread video ids", 500);
+        return c.json({ error: "failed to fetch unread video ids" }, 500);
     }
 });

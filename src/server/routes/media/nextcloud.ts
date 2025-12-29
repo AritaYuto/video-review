@@ -9,11 +9,11 @@ nextCloudRouter.get('/:path{.*}', async (c) => {
     const pathSegments = relativePath.split("/");
 
     if (pathSegments.some(p => p.includes(".."))) {
-        return apiError("invalid path", 400);
+        return c.json({ error: "invalid path" }, 400);
     }
 
     if (!nextCloudClient) {
-        return apiError("Nextcloud client not configured", 500);
+        return c.json({ error: "Nextcloud client not configured" }, 500);
     }
 
     const ncPath = pathSegments.join("/");
@@ -28,7 +28,7 @@ nextCloudRouter.get('/:path{.*}', async (c) => {
     });
 
     if (!res.ok || !res.body) {
-        return apiError("failed to fetch media", res.status);
+        return c.json({ error: "failed to fetch media" }, 500);
     }
 
     const headers = new Headers();
