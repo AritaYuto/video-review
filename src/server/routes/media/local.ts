@@ -1,11 +1,30 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import fs from "fs";
 import path from "path";
 
 export const localRouter = new Hono();
 
-localRouter.get('/:path{.*}', async (c) => {
-    const relativePath = c.req.param('path'); 
+localRouter.openapi({
+    method: "get",
+    summary: "Get media from local storage",
+    description: "Returns the media file from local storage.",
+    path: "/:path{.*}",
+    responses: {
+        200: {
+            description: "Get media from local storage",
+        },
+        400: {
+            description: "Invalid path",
+        },
+        404: {
+            description: "File not found",
+        },
+    },
+}, async (c) => {
+    const relativePath = c.req.param('path');
+    if(!relativePath) {
+        return c.json({ error: "missing path" }, 400);
+    }
     const filePath = path.join(process.cwd(), "uploads", relativePath);
     const ext = path.extname(filePath).toLowerCase();
 

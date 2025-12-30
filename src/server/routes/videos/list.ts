@@ -1,9 +1,79 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import * as z from "@/schema/zod"
 
 export const listRouter = new Hono();
 
-listRouter.get('/', async (c) => {
+listRouter.openapi({
+    method: "get",
+    summary: "Returns a list of videos",
+    description: "Returns a list of videos filtered by date range, folder key, and title.",
+    path: "/",
+    parameters: [
+        {
+            name: "from",
+            in: "query",
+            description: "Start of the date range (inclusive) in milliseconds since epoch",
+            required: false,
+            schema: {
+                type: "string",
+                format: "date-time",
+            },
+        },
+        {
+            name: "to",
+            in: "query",
+            description: "End of the date range (inclusive) in milliseconds since epoch",
+            required: false,
+            schema: {
+                type: "string",
+                format: "date-time",
+            },
+        },
+        {
+            name: "target",
+            in: "query",
+            description: "Fetch videos updated before this date (in milliseconds since epoch)",
+            required: false,
+            schema: {
+                type: "string",
+                format: "date-time",
+            },
+        },
+        {
+            name: "folderKey",
+            in: "query",
+            description: "Filter videos by folder key (partial match)",
+            required: false,
+            schema: {
+                type: "string",
+            },
+        },
+        {
+            name: "title",
+            in: "query",
+            description: "Filter videos by exact title match",
+            required: false,
+            schema: {
+                type: "string",
+            },
+        },
+    ],
+    responses: {
+        200: {
+            description: "List videos",
+            content: {
+                "application/json": {
+                    schema: z.VideoSchema.array(),
+                },
+            },
+        },
+        500: {
+            description: "Internal Server Error",
+        }
+    },
+},
+async (c) => {
     const { searchParams } = new URL(c.req.url);
     const fromMs = searchParams.get("from");
     const toMs = searchParams.get("to");

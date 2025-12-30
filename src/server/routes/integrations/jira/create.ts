@@ -1,10 +1,26 @@
 import { authorize, JwtError } from "@/server/lib/token";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const createRouter = new Hono();
 
-createRouter.post('/', async (c) => {
+createRouter.openapi({
+    method: "post",
+    summary: "Create Jira Issue",
+    description: "Creates a new Jira issue.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Issue created successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
 try {
         authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {

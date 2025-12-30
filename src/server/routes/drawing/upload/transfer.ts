@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
@@ -9,7 +9,52 @@ import { nextCloudClient } from "@/server/lib/storage/integrations/nextcloud";
 
 export const transferRouter = new Hono();
 
-transferRouter.put('/local', async (c) => {
+transferRouter.openapi({
+    method: "put",
+    summary: "Transfer drawing",
+    description: "Transfers a drawing to the specified storage.",
+    path: "/local",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        file: {
+                            type: "string",
+                            format: "binary",
+                            description: "The drawing file to upload",
+                        },
+                    },
+                    required: ["file"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Drawing transferred successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["viewer", "admin", "guest"]);
     } catch (e) {
@@ -53,7 +98,52 @@ transferRouter.put('/local', async (c) => {
     return c.json({ ok: true });
 });
 
-transferRouter.put('/nextcloud', async (c) => {
+transferRouter.openapi({
+    method: "put",
+    summary: "Transfer drawing to Nextcloud",
+    description: "Transfers a drawing to the Nextcloud storage.",
+    path: "/nextcloud",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        file: {
+                            type: "string",
+                            format: "binary",
+                            description: "The drawing file to upload",
+                        },
+                    },
+                    required: ["file"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Drawing transferred successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["viewer", "admin", "guest"]);
     } catch (e) {

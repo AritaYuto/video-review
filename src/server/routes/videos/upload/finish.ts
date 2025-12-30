@@ -1,12 +1,39 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { deleteSession, getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const finishRouter = new Hono();
 
-finishRouter.post('/', async (c) => {
+finishRouter.openapi({
+    method: "post",
+    summary: "Finish upload",
+    description: "Finalizes the upload session and creates video and revision records in the database.",
+    path: "/",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    responses: {
+        200: {
+            description: "Finish upload",
+        },
+        400: {
+            description: "Bad request",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["admin"]);
     } catch (e) {

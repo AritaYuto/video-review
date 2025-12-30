@@ -1,5 +1,5 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import path from "path";
@@ -11,7 +11,40 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const initRouter = new Hono();
 
-initRouter.post('/', async (c) => {
+initRouter.openapi({
+    method: "post",
+    summary: "Init upload",
+    description: "Initializes an upload session and provides a pre-signed URL for uploading the video.",
+    path: "/",
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string",
+                            description: "The path where the drawing will be saved",
+                        },
+                    },
+                    required: ["path"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Init upload",
+        },
+        400: {
+            description: "Bad request",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["admin"]);
     } catch (e) {

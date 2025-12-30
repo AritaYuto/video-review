@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { avatarRouter } from "@/routes/integrations/jira/avatar";
 import { createRouter } from "@/routes/integrations/jira/create";
 

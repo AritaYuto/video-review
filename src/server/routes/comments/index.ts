@@ -1,12 +1,25 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { byIdRouter } from "@/routes/comments/[id]";
 import { lastUpdatedRouter } from "@/routes/comments/last-updated";
 
 export const commentsRouter = new Hono();
 
-commentsRouter.get("/", async (c) => {
+commentsRouter.openapi({
+    method: "get",
+    summary: "Get comments",
+    description: "Retrieves comments for a specific video.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Comments retrieved successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+    },
+}, async (c) => {
     try {
         const { searchParams } = new URL(c.req.url);
         const videoId = searchParams.get("videoId");

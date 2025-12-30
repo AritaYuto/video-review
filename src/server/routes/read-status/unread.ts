@@ -1,9 +1,31 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const unreadRouter = new Hono();
 
-unreadRouter.get('/', async (c) => {
+unreadRouter.openapi({
+    method: "get",
+    summary: "Get unread videos",
+    description: "Returns the list of unread video IDs for a user.",
+    path: "/",
+    parameters: [
+        {
+            name: "userId",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "ID of the user to retrieve unread videos for",
+        },
+    ],
+    responses: {
+        200: {
+            description: "Get unread videos",
+        },
+        400: {
+            description: "Missing userId",
+        },
+    },
+}, async (c) => {
     try {
         const { searchParams } = new URL(c.req.url);
         const userId = searchParams.get("userId");

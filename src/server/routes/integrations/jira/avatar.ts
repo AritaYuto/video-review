@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import path from "path";
 import fs from "fs";
 
@@ -8,7 +8,26 @@ const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 
 export const avatarRouter = new Hono();
 
-avatarRouter.get('/', async (c) => {
+avatarRouter.openapi({
+    method: "get",
+    summary: "Get Jira Avatar",
+    description: "Retrieves the avatar image for a user from Jira.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Avatar retrieved successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        404: {
+            description: "Avatar not found",
+        },
+        500: {
+            description: "Internal server error",
+        },
+    },
+}, async (c) => {
     try {
         const { searchParams } = new URL(c.req.url);
         const email = searchParams.get("email");

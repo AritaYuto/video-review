@@ -1,6 +1,6 @@
 import { JwtError, signToken } from "@/server/lib/token";
 import { Role } from "@/lib/role";
-import { Context, Hono } from "hono";
+import { Context } from "hono";
 import bcrypt from "bcrypt";
 import { prisma } from "@/server/lib/db";
 

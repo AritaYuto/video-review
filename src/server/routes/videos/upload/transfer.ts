@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
@@ -9,7 +9,52 @@ import { nextCloudClient } from "@/server/lib/storage/integrations/nextcloud";
 
 export const transferRouter = new Hono();
 
-transferRouter.put('/local', async (c) => {
+transferRouter.openapi({
+    method: "put",
+    summary: "Transfer upload data",
+    description: "Transfers the uploaded video data to the server storage.",
+    path: "/local",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        file: {
+                            type: "string",
+                            format: "binary",
+                            description: "The drawing file to upload",
+                        },
+                    },
+                    required: ["file"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Transfer local",
+        },
+        400: {
+            description: "Bad request",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["admin"]);
     } catch (e) {
@@ -41,7 +86,52 @@ transferRouter.put('/local', async (c) => {
     });
 });
 
-transferRouter.put('/nextcloud', async (c) => {
+transferRouter.openapi({
+    method: "put",
+    summary: "Transfer upload data to Nextcloud",
+    description: "Transfers the uploaded video data to Nextcloud storage.",
+    path: "/nextcloud",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        file: {
+                            type: "string",
+                            format: "binary",
+                            description: "The drawing file to upload",
+                        },
+                    },
+                    required: ["file"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Transfer nextcloud",
+        },
+        400: {
+            description: "Bad request",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["admin"]);
     } catch (e) {

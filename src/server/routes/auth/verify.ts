@@ -1,10 +1,42 @@
 import { JwtError, verifyToken } from "@/server/lib/token";
-import { Hono } from "hono";
-
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const verifyRouter = new Hono();
 
-verifyRouter.post("/", async (c) => {
+verifyRouter.openapi({
+    method: "post",
+    summary: "Verify token",
+    description: "Verifies a JWT token.",
+    path: "/",
+    requestBody: {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        token: {
+                            type: "string",
+                            description: "JWT token to verify",
+                        },
+                    },
+                    required: ["token"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Token is valid",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         const { token } = await c.req.json();
 

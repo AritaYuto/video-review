@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { slackRouter } from "@/routes/integrations/slack";
 import { jiraRouter } from "@/routes/integrations/jira";
 

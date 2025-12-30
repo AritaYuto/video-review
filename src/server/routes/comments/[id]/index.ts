@@ -1,9 +1,22 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const byIdRouter = new Hono();
 
-byIdRouter.get("/", async (c) => {
+byIdRouter.openapi({
+    method: "get",
+    summary: "Get comment by ID",
+    description: "Retrieves a comment by its ID.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Comment retrieved successfully",
+        },
+        404: {
+            description: "Comment not found",
+        },
+    },
+}, async (c) => {
     try {
         const id = c.req.param("id");
 

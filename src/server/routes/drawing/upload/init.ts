@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { createSession } from "@/server/lib/upload-session";
@@ -8,7 +8,40 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const initRouter = new Hono();
 
-initRouter.post('/', async (c) => {
+initRouter.openapi({
+    method: "post",
+    summary: "Initialize drawing upload",
+    description: "Initializes the drawing upload process.",
+    path: "/",
+    requestBody: {
+        required: true,
+        content: {
+            "multipart/form-data": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string",
+                            description: "The path where the drawing will be saved",
+                        },
+                    },
+                    required: ["path"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Drawing upload initialized successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["viewer", "admin", "guest"]);
     } catch (e) {

@@ -1,11 +1,27 @@
 import { authorize, JwtError } from "@/server/lib/token";
 import { WebClient } from "@slack/web-api";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const postRouter = new Hono();
 
-postRouter.post('/', async (c) => {
+postRouter.openapi({
+    method: "post",
+    summary: "Post to Slack",
+    description: "Posts a message with an image to a Slack channel.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Message posted successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {

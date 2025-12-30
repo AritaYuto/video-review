@@ -1,5 +1,5 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { authorize, JwtError } from "@/server/lib/token";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { getSession } from "@/server/lib/upload-session";
@@ -7,7 +7,37 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 
 export const uploadStatusRouter = new Hono();
 
-uploadStatusRouter.get('/', async (c) => {
+uploadStatusRouter.openapi({
+    method: "get",
+    summary: "Get upload status",
+    description: "Returns the upload status of a video.",
+    path: "/",
+    parameters: [
+        {
+            name: "session_id",
+            in: "query",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "The upload session ID",
+        },
+    ],
+    responses: {
+        200: {
+            description: "Get upload status",
+        },
+        400: {
+            description: "Missing session_id",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+        404: {
+            description: "Session not found",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["admin"]);
     } catch (e) {

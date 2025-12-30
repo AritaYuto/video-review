@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { authorize, JwtError } from "@/server/lib/token";
 import { VideoReviewStorage } from "@/server/lib/storage";
@@ -6,7 +6,26 @@ import { prisma } from "@/server/lib/db";
 
 export const downloadRouter = new Hono();
 
-downloadRouter.get('/', async (c) => {
+downloadRouter.openapi({
+    method: "get",
+    summary: "Download media",
+    description: "Returns the media file for download.",
+    path: "/",
+    responses: {
+        200: {
+            description: "Download media",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        401: {
+            description: "Unauthorized",
+        },
+        404: {
+            description: "Video revision not found",
+        },
+    },
+}, async (c) => {
     try {
         authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {

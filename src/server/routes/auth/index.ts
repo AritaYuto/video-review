@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { loginRouter } from "@/server/routes/auth/login";
 import { verifyRouter } from "@/routes/auth/verify";
 

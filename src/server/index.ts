@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { mediaRouter } from "@/routes/media";
 import { readStatusRouter } from "@/routes/read-status";
 import { localRouter } from "@/routes/media/local";
@@ -19,8 +19,7 @@ import { videoByIdRouter } from "@/routes/videos/[id]";
 import { foldersRouter } from "@/routes/videos/folders";
 import { downloadRouter } from "@/routes/media/download";
 import { uploadStatusRouter } from "./routes/upload-status";
-import { openapiSpec } from "@/server/routes/openapi/spec";
-import { swagger } from "@/server/routes/openapi/swagger";
+import { swaggerUI } from "@hono/swagger-ui";
 
 export const app = new Hono().basePath("/api");
 
@@ -53,7 +52,18 @@ app.route('/videos/download', downloadRouter);
 app.route("/drawing/upload", oldDrawingUploadRouter);
 
 // OpenAPI and Swagger UI
-app.route("/", openapiSpec);
-app.route("/swagger", swagger);
+app.doc('/specification', {
+    openapi: '3.0.0',
+    info: {
+        title: 'API',
+        version: '1.0.0',
+    },
+});
+
+app.get('/docs',
+    swaggerUI({
+        url: '/api/specification',
+    })
+);
 
 console.log('Hono server is set up for Next.js API routes.', app);

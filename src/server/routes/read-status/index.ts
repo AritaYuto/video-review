@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { unreadRouter } from "@/routes/read-status/unread";
 import { latestRouter } from "@/routes/read-status/latest";
 import { updateStatusRouter } from "@/routes/read-status/update-status";

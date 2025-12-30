@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { uploadRouter } from "@/routes/videos/upload";
 import { foldersRouter } from "@/routes/videos/folders";
 import { listRouter } from "@/routes/videos/list";

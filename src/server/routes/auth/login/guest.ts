@@ -1,6 +1,6 @@
 import { JwtError, signToken } from "@/server/lib/token";
 import { Role } from "@/lib/role";
-import { Context, Hono } from "hono";
+import { Context } from "hono";
 import { v4 as uuidv4 } from 'uuid';
 
 export async function loginAsGuest(c: Context) {

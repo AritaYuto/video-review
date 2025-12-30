@@ -1,9 +1,31 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const latestRouter = new Hono();
 
-latestRouter.get('/', async (c) => {
+latestRouter.openapi({
+    method: "get",
+    summary: "Get latest comment",
+    description: "Returns the latest comment of a video by its ID.",
+    path: "/",
+    parameters: [
+        {
+            name: "videoId",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "ID of the video to retrieve the latest comment for",
+        },
+    ],
+    responses: {
+        200: {
+            description: "Get latest comment",
+        },
+        400: {
+            description: "Missing videoId",
+        },
+    },
+}, async (c) => {
     try {
         const { searchParams } = new URL(c.req.url);
         const videoId = searchParams.get("videoId");

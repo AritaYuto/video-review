@@ -1,9 +1,47 @@
 import { prisma } from "@/server/lib/db";
-import { Hono } from "hono";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const updateStatusRouter = new Hono();
 
-updateStatusRouter.post('/', async (c) => {
+updateStatusRouter.openapi({
+    method: "post",
+    summary: "Update read status",
+    description: "Updates the read status of a video for a user.",
+    path: "/",
+    requestBody: {
+        required: true,
+        content: {
+            "application/json": {
+                schema: {
+                    type: "object",
+                    properties: {
+                        userId: {
+                            type: "string",
+                            description: "ID of the user",
+                        },
+                        videoId: {
+                            type: "string",
+                            description: "ID of the video",
+                        },
+                        lastReadCommentId: {
+                            type: "string",
+                            description: "ID of the last read comment",
+                        },
+                    },
+                    required: ["userId", "videoId", "lastReadCommentId"],
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Update read status",
+        },
+        400: {
+            description: "Invalid request body",
+        },
+    },
+}, async (c) => {
     try {
         const { userId, videoId, lastReadCommentId } = await c.req.json();
 
