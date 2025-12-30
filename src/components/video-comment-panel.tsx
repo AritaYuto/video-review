@@ -39,6 +39,10 @@ import { useTranslations } from "next-intl";
 import { isViewer, Role } from "@/lib/role";
 import { slackToast } from "@/components/slack";
 
+import { UploadStorageType } from "@/lib/db-types";
+
+console.log(UploadStorageType);
+
 export default function VideoCommentPanel() {
     const t = useTranslations("video-comment-panel");
     const headerRef = useRef<HTMLDivElement>(null);

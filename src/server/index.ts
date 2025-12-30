@@ -65,5 +65,3 @@ app.get('/docs',
         url: '/api/specification',
     })
 );
-
-console.log('Hono server is set up for Next.js API routes.', app);

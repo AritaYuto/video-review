@@ -22,7 +22,7 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
     const slackText = createSlackTextFromContext(ctx)!;
     const toastData = createSlackToastFromContext(ctx)!;
 
-    const ret = api.postToSlack(slackText, screenshot);
+    const ret = await api.postToSlack(slackText, screenshot);
     if(!ret) {
         return false;
     }

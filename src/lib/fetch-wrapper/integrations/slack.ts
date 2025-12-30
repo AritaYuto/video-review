@@ -23,9 +23,5 @@ export async function postToSlack(
             Authorization: `Bearer ${token}`,
         },
     });
-
-    if (res.status === 401 || !res.ok) {
-        return false;
-    }
-    return true;
+    return res.ok;
 }
