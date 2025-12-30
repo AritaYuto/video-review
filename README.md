@@ -99,7 +99,7 @@ npm run dev
   http://localhost:3489
 
 - API Documentation (Swagger)  
-  http://localhost:3489/docs
+  http://localhost:3489/api/docs
 
 
 ## 🛠 Build & Deploy

@@ -8,11 +8,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator openapi {
-  provider = "prisma-openapi"
-  output   = "./schemas"
-  generateYaml = false
-  generateJson = true
+generator zod {
+  provider                         = "zod-prisma-types"
+  output                           = "../src/schema/zod"
 }
 
 model ApiToken {

@@ -2,7 +2,6 @@ import { execSync, exec } from "node:child_process";
 import { mkdirSync, cpSync, rmSync } from "fs";
 import path from "path";
 import fs from "fs";
-import { getApiDocs } from "@/lib/swagger";
 
 const content = fs.readFileSync("package.json") as any;
 const productName = JSON.parse(content).name
@@ -15,7 +14,6 @@ async function build() {
     mkdirSync("public", { recursive: true });
     execSync("npm install", { stdio: "inherit" });
     execSync("npm run prisma:generate", { stdio: "inherit" });
-    fs.writeFileSync("./public/swagger.json", JSON.stringify(await getApiDocs(), null, 2));
     execSync("next build", { stdio: "inherit" });
 }
 
