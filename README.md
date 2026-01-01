@@ -48,7 +48,7 @@ Draw directly on the video player. Use arrows and sketches to explain nuances li
 * **REST API for Automation:**   
 Integrate VideoReview into your CI/CD pipeline or build scripts. Automatically upload the latest build recordings for daily reviews.
 * **Security-First Storage:**  
-Run VideoReview entirely on-premises to keep confidential game assets within your internal network, or use AWS S3 for scalable cloud storage.
+Run VideoReview entirely on-premises to keep confidential game assets within your internal network, or use AWS S3, NextCloud for scalable cloud storage.
 
 
 ## 🚀 Development Setup
