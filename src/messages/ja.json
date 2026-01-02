@@ -16,6 +16,7 @@
         "errorUpload": "動画のアップロードに失敗しました。管理者へ連絡してください"
     },
     "video-search": {
+        "title": "動画検索",
         "shortcutKey": "Ctrl + K",
         "dateFilterOff": "日付フィルターOFF",
         "dateRange": "日付範囲指定",

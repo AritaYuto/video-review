@@ -16,6 +16,7 @@
         "errorUpload": "Video upload failed. Please contact the admin"
     },
     "video-search": {
+        "title": "Video Search",
         "shortcutKey": "Ctrl + K",
         "dateFilterOff": "Date filter off",
         "dateRange": "Select date range",

@@ -294,11 +294,10 @@ export default function VideoReview() {
 
     return (
         <>
-            {/* 中央 */}
             <div className={`flex flex-col h-full w-full border-r border-[#333]`}>
+                <VideoTitle />
                 {selectedRevision ? (
                     <>
-                        <VideoTitle />
                         <div className="flex-1 flex flex-col items-center justify-center bg-black rounded mb-3 relative">
                             <div className="relative inline-block">
                                 <video

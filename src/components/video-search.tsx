@@ -7,114 +7,83 @@ import { Calendar } from "@/ui/calendar";
 import { Switch } from "@/ui/switch";
 import { Popover, PopoverTrigger, PopoverContent } from "@/ui/popover";
 import { useTranslations } from "next-intl";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
 
 export type EDateSearchMode = "dateFilterOff" | "dateRange";
 
 export type VideoFilterParam = {
-    searchMode: EDateSearchMode | undefined;
+    searchMode: EDateSearchMode;
     dateRange: DateRange | undefined;
     filterText: string;
 }
 
-export function VideoSearchPopover({
+export function VideoSearchDialog({
+    open, onClose,
     videoFilterParam,
     updateVideoFilter
 }: {
+    open: boolean; onClose: () => void,
     videoFilterParam: VideoFilterParam | undefined,
     updateVideoFilter: (param: VideoFilterParam) => void;
 }) {
     const t = useTranslations("video-search");
     const inputRef = useRef<HTMLInputElement>(null);
-    const [open, setOpen] = useState(false);
-    const [searchMode, setSearchMode] = useState<EDateSearchMode | undefined>(undefined);
-    const [filterText, setFilterText] = useState<string>("");
-    const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [localParam, setLocalParam] = useState<VideoFilterParam | undefined>(videoFilterParam);
 
     useEffect(() => {
-        applyParam();
-        const to = new Date();
-        const from = new Date();
-        from.setDate(from.getDate() - 7);
-        setDateRange({ from, to });
-
-        const onKey = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-                setOpen(x => !x);
-                setTimeout(() => {
-                    inputRef.current?.focus();
-                }, 100);
-            }
-            if (e.key === "Enter") {
-                setOpen(false);
-            }
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-    }, []);
-
-    const applyParam = () => {
-        if (videoFilterParam) {
-            setSearchMode(videoFilterParam.searchMode);
-            setFilterText(videoFilterParam.filterText);
-            setDateRange(videoFilterParam.dateRange);
-        }
-    }
-
-    const handleOpenChange = (open: boolean) => {
         if (open) {
-            applyParam();
+            setLocalParam(videoFilterParam);
         }
-        setOpen(open);
+    }, [open, videoFilterParam]);
+
+    const setSearchMode = (x: EDateSearchMode) => {
+        setLocalParam(p => p ? { ...p, searchMode: x } : p);
     };
 
-    useEffect(() => {
-        updateVideoFilter({
-            searchMode,
-            filterText,
-            dateRange
-        });
-    }, [searchMode, filterText, dateRange]);
+    const setDateRange = (x: DateRange | undefined) => {
+        setLocalParam(p => p ? { ...p, dateRange: x } : p);
+    };
+
+    const setFilterText = (x: string) => {
+        setLocalParam(p => p ? { ...p, filterText: x } : p);
+    };
+
+    const apply = () => {
+        if (!localParam) return;
+        updateVideoFilter(localParam);
+        onClose();
+    };
 
     return (
-        <Popover open={open} onOpenChange={handleOpenChange}>
-            <PopoverTrigger asChild>
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    className="relative">
-                    <FontAwesomeIcon icon={faGear} className="text-[#ff8800]" />
+        <Dialog open={open} onOpenChange={x => apply()}>
+            <DialogContent className="bg-[#202020]">
+                <DialogHeader>
+                    <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
+                </DialogHeader>
 
-                    <span className="
-                        -bottom-1.5 absolute  -right-5 text-[9px] -px-1 py-2 rounded bg-[#00000000] text-gray-300 pointer-events-none">
-                        {t("shortcutKey")}
-                    </span>
-                </Button>
-            </PopoverTrigger>
-
-            <PopoverContent align="end" className="w-full bg-[#1f1f1f] border border-[#333] text-white">
                 <div className="flex items-center space-x-3 py-2">
                     <Switch
                         className="border-white"
-                        checked={searchMode === "dateRange"}
+                        checked={localParam?.searchMode === "dateRange"}
                         onCheckedChange={(x) =>
                             setSearchMode(x ? "dateRange" : "dateFilterOff")
                         }
                     />
                     <span className="text-sm text-gray-100">
-                        {searchMode ? t(searchMode) : ""}
+                        {localParam?.searchMode ? t(localParam?.searchMode) : ""}
                     </span>
                 </div>
 
 
-                {searchMode === "dateRange" ? (
+                {localParam?.searchMode === "dateRange" ? (
                     <div className="flex items-center space-x-3">
                         <Calendar
                             mode="range"
-                            defaultMonth={dateRange?.to}
-                            selected={dateRange}
+                            defaultMonth={localParam?.dateRange?.to}
+                            selected={localParam?.dateRange}
                             onSelect={setDateRange}
                             numberOfMonths={1}
-                            className='rounded-md border'
+                            className='rounded-md border bg-[#1f1f1f]'
                             classNames={{
                                 range_start: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-l-full',
                                 range_end: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-r-full',
@@ -148,13 +117,13 @@ export function VideoSearchPopover({
                     <input
                         ref={inputRef}
                         type="text"
-                        value={filterText}
+                        value={localParam?.filterText}
                         onChange={(e) => setFilterText(e.target.value)}
                         className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white"
-                        placeholder=""
+                        placeholder="Filter..."
                     />
                 </div>
-            </PopoverContent>
-        </Popover>
+            </DialogContent>
+        </Dialog>
     );
 }

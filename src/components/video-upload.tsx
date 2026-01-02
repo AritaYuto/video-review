@@ -114,7 +114,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
 
     return (
         <Dialog open={open} onOpenChange={() => step === "done" || onClose()}>
-            <DialogContent className="bg-[#202020] text-white border border-[#333]">
+            <DialogContent className="bg-[#202020]">
                 <DialogClose hidden={true} />
                 <DialogHeader>
                     <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
