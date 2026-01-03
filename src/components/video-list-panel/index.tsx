@@ -17,7 +17,7 @@ import { NodeRenderer } from "@/components/video-list-panel/node-renderer";
 import { buildTree, findPath } from "@/components/video-list-panel/tree/utils";
 import VideoUploadDialog from "@/components/video-upload";
 import VideoListPanelHeader from "@/components/video-list-panel/header";
-import { VideoFilterParam, VideoSearchDialog } from "@/components/video-search";
+import { VideoSearchDialog } from "@/components/video-search";
 import { useVideoStore } from "@/stores/video-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";
@@ -29,11 +29,6 @@ export default function VideoListPanel() {
     const router = useRouter();
     const { userId } = useAuthStore();
     const { videos, fetchVideos, selectedVideo } = useVideoStore();
-    const [videoFilterParam, setVideoFilterParam] = useState<VideoFilterParam>({
-        searchMode: "dateFilterOff",
-        dateRange: undefined,
-        filterText: "",
-    });
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [unReadVideoIds, setUnReadVideoIds] = useState<string[]>([]);
@@ -48,20 +43,6 @@ export default function VideoListPanel() {
     });
     const treeRef = useRef<TreeApi<VideoNode>>(null);
 
-    const filteredVideos = useMemo(() => {
-        if (!videoFilterParam || !videoFilterParam.filterText) return videos;
-
-        const lower = videoFilterParam.filterText.toLowerCase();
-
-        return videos.filter((v) => {
-            return (
-                v.title?.toLowerCase().includes(lower) ||
-                v.folderKey?.toLowerCase().includes(lower) ||
-                v.scenePath?.toLowerCase().includes(lower)
-            );
-        });
-    }, [videos, videoFilterParam?.filterText]);
-
     const headerHeight = useMemo(() => {
         return headerRef.current ? headerRef.current.getBoundingClientRect().height : 0;
     }, [headerRef.current]);
@@ -69,6 +50,12 @@ export default function VideoListPanel() {
     const treeHeight = useMemo(() => {
         return Math.max(0, bounds.height - headerHeight);
     }, [bounds.height, headerHeight]);
+
+    useEffect(() => {
+        (async () => {
+            await fetchVideos();
+        })();
+    }, [])
 
     useEffect(() => {
         if (!userId) {
@@ -87,41 +74,7 @@ export default function VideoListPanel() {
         };
     }, [userId]);
 
-    const data = useMemo(
-        () =>
-            buildTree(
-                filteredVideos,
-                videoFilterParam.searchMode,
-                unReadVideoIds,
-            ),
-        [filteredVideos],
-    );
-
-    const handleFetch = () => {
-        if (!videoFilterParam) return;
-        if (videoFilterParam.searchMode === undefined) return;
-
-        const mode = videoFilterParam.searchMode;
-        const dateRange = videoFilterParam.dateRange;
-
-        switch (mode) {
-            case "dateFilterOff":
-                fetchVideos(undefined, undefined);
-                break;
-            case "dateRange":
-                fetchVideos(dateRange?.from, dateRange?.to);
-                break;
-        }
-    };
-
-    const handleUploadDialogClose = () => {
-        handleFetch();
-        setUploadDialogOpen(false);
-    };
-
-    const handleSearchDialogClose = () => {
-        setSearchDialogOpen(false);
-    }
+    const data = useMemo(() => buildTree(videos, unReadVideoIds), [videos]);
 
     useLayoutEffect(() => {
         // react-arborist requires explicit width/height, so we measure the panel manually
@@ -142,11 +95,6 @@ export default function VideoListPanel() {
             });
         }
     }, [size?.width, size?.height]);
-
-
-    useEffect(() => {
-        handleFetch();
-    }, [videoFilterParam?.searchMode, videoFilterParam?.dateRange]);
 
     useEffect(() => {
         localStorage.setItem("videoTreeOpenNodes", JSON.stringify(openNodes));
@@ -203,8 +151,6 @@ export default function VideoListPanel() {
                 ref={headerRef}
                 onSearchDialogShow={() => setSearchDialogOpen(true)}
                 onUploadDialogShow={() => setUploadDialogOpen(true)}
-                filterText={videoFilterParam.filterText}
-                onSetFilterText={(text) => setVideoFilterParam({ ...videoFilterParam, filterText: text })}
             />
 
             <SidebarContent className="font-sans text-white bg-[#181818] border-[#333]">
@@ -249,11 +195,11 @@ export default function VideoListPanel() {
                 <SettingPopover />
             </SidebarFooter>
 
-            <VideoSearchDialog
-                open={searchDialogOpen} onClose={() => handleSearchDialogClose()}
-                videoFilterParam={videoFilterParam}
-                updateVideoFilter={setVideoFilterParam} />
-            <VideoUploadDialog open={uploadDialogOpen} onClose={() => handleUploadDialogClose()} />
+            <VideoSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
+            <VideoUploadDialog open={uploadDialogOpen} onClose={() => {
+                fetchVideos();
+                setUploadDialogOpen(false);
+            }} />
         </Sidebar>
     );
 }

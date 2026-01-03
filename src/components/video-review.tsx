@@ -154,7 +154,6 @@ export default function VideoReview() {
         const eps = 0.3;
         const activeIndex = findFirstWithinEps(commentTimeList, currentTime, eps);
         if (activeIndex !== null) {
-            console.log("ActiveIndex:", activeIndex, currentTime);
             const active = commentTimeBasedMap.get(commentTimeList[activeIndex]) ?? [];
             setActiveComments(active);
         } else {
@@ -217,7 +216,6 @@ export default function VideoReview() {
             setCurrentTime(v.currentTime);
         };
         const onEnded = () => {
-            console.log(playMode, playModeRef.current)
             switch (playModeRef.current) {
                 case "normal": break;
                 case "loop": {

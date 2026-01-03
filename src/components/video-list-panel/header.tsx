@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Search } from "lucide-react";
+import React, { useEffect } from "react";
+import { Plus, Search } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { isGuest, isViewer } from "@/lib/role";
@@ -13,18 +13,25 @@ import {
 } from "@/ui/sidebar"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { useVideoSearchStore } from "@/stores/video-search-store";
+import { useVideoStore } from "@/stores/video-store";
 
 export default function VideoListPanelHeader(
-    { ref, onSearchDialogShow, onUploadDialogShow, filterText, onSetFilterText } 
+    { ref, onSearchDialogShow, onUploadDialogShow } 
 : {
         ref: React.RefObject<HTMLDivElement | null>;
         onSearchDialogShow: () => void;
         onUploadDialogShow: () => void;
-        filterText: string;
-        onSetFilterText: (text: string) => void;
 }) {
     const t = useTranslations("video-list-panel");
     const { role } = useAuthStore();
+    const { fetchVideos } = useVideoStore();
+    const { filterTree, setFilterTree } = useVideoSearchStore();
+
+    useEffect(() => {
+        fetchVideos();
+    }, [filterTree]);
+
     return (
         <SidebarHeader
             ref={ref}
@@ -35,7 +42,6 @@ export default function VideoListPanelHeader(
                 <div>
                     <span>{t("title")}</span>
                     <button
-                        hidden={isGuest(role)}
                         onClick={() => onSearchDialogShow()}
                         style={{ color: "#ff8800" }}
                         className="text-lg px-2 leading-none hover:text-[#fbba5e]"
@@ -50,14 +56,14 @@ export default function VideoListPanelHeader(
                     style={{ color: "#ff8800" }}
                     className="text-lg leading-none hover:text-[#fbba5e]"
                 >
-                    ＋
+                    <Plus/>
                 </button>
             </div>
             <SidebarGroup className="py-0">
                 <SidebarGroupContent className="relative">
                     <SidebarInput
-                        value={filterText}
-                        onChange={(e) => onSetFilterText(e.target.value)}
+                        value={filterTree}
+                        onChange={(e) => setFilterTree(e.target.value)}
                         placeholder="Filter..." 
                         className="pl-8 border-[#444] w-full h-8 rounded bg-[#181818] border text-sm text-white"/>
                     <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none" />

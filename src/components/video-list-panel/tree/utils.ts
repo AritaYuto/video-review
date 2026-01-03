@@ -1,4 +1,3 @@
-import { EDateSearchMode } from "@/components/video-search";
 import { Video } from "@/lib/db-types";
 import { VideoNode } from "@/components/video-list-panel/tree/types";import dayjs from "dayjs";
 import { NodeApi } from "react-arborist";
@@ -6,7 +5,6 @@ import { NodeApi } from "react-arborist";
 
 export function buildTree(
     videos: Video[],
-    searchMode: EDateSearchMode | undefined,
     unReadVideoIds: string[],
 ): VideoNode[] {
     const root: Record<string, any> = {};
@@ -49,9 +47,7 @@ export function buildTree(
         }));
 
     const final = [
-        ...(searchMode === "dateFilterOff"
-            ? [buildTodayUpdateFolder(videos)]
-            : []),
+        ...[buildTodayUpdateFolder(videos)],
         ...toArray(root)
             .map(pruneVideoNode)
             .filter((n): n is VideoNode => n !== null),
