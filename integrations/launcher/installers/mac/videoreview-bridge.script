@@ -1,0 +1,4 @@
+on open location theURL
+    set goBin to POSIX path of (path to resource "videoreview-launcher")
+    do shell script quoted form of goBin & " " & quoted form of theURL & " >/tmp/videoreview-launcher.log 2>&1 &"
+end open location
