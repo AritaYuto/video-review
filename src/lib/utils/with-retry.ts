@@ -21,7 +21,7 @@ function defaultShouldRetry(err: any) {
 export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
     const {
         retries = 3,
-        baseDelayMs = 500,
+        baseDelayMs = 3000,
         factor = 2,
         shouldRetry = defaultShouldRetry,
     } = options;

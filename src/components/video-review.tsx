@@ -14,6 +14,8 @@ import { useTranslations } from "next-intl";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { Badge } from "@/ui/badge";
+import { Spinner } from "@/ui/spinner";
 
 export default function VideoReview() {
     const t = useTranslations("video-review");
@@ -136,7 +138,7 @@ export default function VideoReview() {
             if (!comment.drawingPath) continue;
 
             const img = commentDrawingCache.current.get(comment.drawingPath);
-            if(!img || !img.complete || img.width === 0 || img.height === 0) continue;
+            if (!img || !img.complete || img.width === 0 || img.height === 0) continue;
 
             ctx.save();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -278,7 +280,7 @@ export default function VideoReview() {
         if (!v) {
             return;
         }
-        if(volumeEnabled) {
+        if (volumeEnabled) {
             v.volume = volume;
         } else {
             v.volume = 0.0;
@@ -293,37 +295,49 @@ export default function VideoReview() {
     return (
         <>
             <div className={`flex flex-col h-full w-full border-r border-[#333]`}>
-                <VideoTitle />
-                {selectedRevision ? (
-                    <>
-                        <div className="flex-1 flex flex-col items-center justify-center bg-black rounded mb-3 relative">
-                            <div className="relative inline-block">
-                                <video
-                                    ref={videoRef}
-                                    src={playbackUrl ?? undefined}
-                                    onClick={togglePlay}
-                                    className="max-h-[80vh] max-w-full rounded cursor-pointer object-contain"
-                                />
-                                <canvas
-                                    ref={canvasRef}
-                                    className="absolute top-0 left-0 w-full h-full"
-                                    style={{
-                                        pointerEvents: canvasEditing ? "auto" : "none",
-                                        cursor: canvasEditing ? "crosshair" : "default",
-                                    }}
-                                />
-                                <CanvasControlPanel />
-                            </div>
-                        </div>
-
-                        <VideoTimelineBar />
-                        <VideoControlPanel />
-                    </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center text-[#555]">
-                        {t("noVideoSelected")}
+                {loading
+                    ?
+                    <div className="flex-1 flex flex-col items-center justify-center bg-[#181818]">
+                        <Badge className="bg-[#181818]">
+                            <Spinner className="text-[#ff9a1a]" />
+                            Videos Syncing...
+                        </Badge>
                     </div>
-                )}
+                    :
+                    <>
+                        <VideoTitle />
+                        {selectedRevision ? (
+                            <>
+                                <div className="flex-1 flex flex-col items-center justify-center bg-black rounded mb-3 relative">
+                                    <div className="relative inline-block">
+                                        <video
+                                            ref={videoRef}
+                                            src={playbackUrl ?? undefined}
+                                            onClick={togglePlay}
+                                            className="max-h-[80vh] max-w-full rounded cursor-pointer object-contain"
+                                        />
+                                        <canvas
+                                            ref={canvasRef}
+                                            className="absolute top-0 left-0 w-full h-full"
+                                            style={{
+                                                pointerEvents: canvasEditing ? "auto" : "none",
+                                                cursor: canvasEditing ? "crosshair" : "default",
+                                            }}
+                                        />
+                                        <CanvasControlPanel />
+                                    </div>
+                                </div>
+
+                                <VideoTimelineBar />
+                                <VideoControlPanel />
+                            </>
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center text-[#555]">
+                                {t("noVideoSelected")}
+                            </div>
+                        )}
+                    </>
+                }
             </div>
         </>
     );
