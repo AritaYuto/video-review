@@ -1,45 +1,53 @@
 $ErrorActionPreference = "Stop"
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ExeName = "videoreview-launcher.exe"
-$SourceExe = Join-Path $ScriptDir $ExeName
+# --------------------------------------------------
+# paths
+# --------------------------------------------------
+$ScriptDir = Resolve-Path $PSScriptRoot
+$RootDir   = Resolve-Path (Join-Path $ScriptDir "..\..")
 
-if (!(Test-Path $SourceExe)) {
-    Write-Error "Launcher exe not found: $SourceExe"
-    exit 1
+# --------------------------------------------------
+# config
+# --------------------------------------------------
+$BinName = "videoreview-launcher.exe"
+$AppName = "VideoReview Launcher"
+
+$BinPath = Join-Path $ScriptDir $BinName
+$InstallBase = Join-Path $env:LOCALAPPDATA "VideoReview"
+$AppDir = Join-Path $InstallBase $AppName
+
+# --------------------------------------------------
+# install
+# --------------------------------------------------
+Write-Host "== Install VideoReview Launcher (Windows) =="
+
+# Check prerequisites
+Write-Host "Checking prerequisites..."
+
+if (!(Test-Path $BinPath)) {
+    Write-Error "ERROR: binary not found: $BinPath"
 }
 
-# default install dir
-$DefaultInstallDir = "$env:LOCALAPPDATA\VideoReview"
-$InstallDir = Read-Host "Install directory (default: $DefaultInstallDir)"
-if ([string]::IsNullOrWhiteSpace($InstallDir)) {
-    $InstallDir = $DefaultInstallDir
-}
+# Create install directory
+Write-Host "Creating install directory..."
 
-New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+New-Item -ItemType Directory -Force -Path $AppDir | Out-Null
+Copy-Item $BinPath (Join-Path $AppDir $BinName) -Force
 
-$DestExe = Join-Path $InstallDir $ExeName
-Copy-Item $SourceExe $DestExe -Force
+# Register URL scheme
+Write-Host "Registering URL scheme (videoreview://)..."
 
-# register protocol
-$Command = "`"$DestExe`" `"%1`""
+$ExePath = Join-Path $AppDir $BinName
 
-$RootKey    = "Registry::HKEY_CURRENT_USER\Software\Classes\videoreview"
-$CommandKey = "$RootKey\shell\open\command"
+New-Item -Path "HKCU:\Software\Classes\videoreview" -Force | Out-Null
+Set-ItemProperty "HKCU:\Software\Classes\videoreview" -Name "(Default)" -Value "URL:VideoReview Protocol"
+Set-ItemProperty "HKCU:\Software\Classes\videoreview" -Name "URL Protocol" -Value ""
 
-New-Item -Force $CommandKey | Out-Null
-
+New-Item -Path "HKCU:\Software\Classes\videoreview\shell\open\command" -Force | Out-Null
 Set-ItemProperty `
-    -Path $RootKey `
-    -Name "URL Protocol" `
-    -Value ""
+    "HKCU:\Software\Classes\videoreview\shell\open\command" `
+    -Name "(Default)" `
+    -Value "`"$ExePath`" `"%1`""
 
-# mark as URL protocol
-Set-ItemProperty `
-    -Path $CommandKey `
-    -Name "(default)" `
-    -Value $Command
-
-Write-Host ""
-Write-Host "VideoReview launcher installed successfully."
-Write-Host "Installed to: $DestExe"
+Write-Host "Installed to: $AppDir"
+Write-Host "done"
