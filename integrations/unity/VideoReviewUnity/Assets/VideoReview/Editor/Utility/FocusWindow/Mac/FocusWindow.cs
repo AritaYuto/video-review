@@ -5,7 +5,7 @@ namespace VideoReview.Editor.Utility
 {
     static class FocusWindow
     {
-        [DllImport("__Internal")]
+        [DllImport("FocusWindow")]
         private static extern void FocusUnityApp();
 
         public static void Run()
