@@ -1,26 +1,30 @@
 $ErrorActionPreference = "Stop"
 
-$Root = Split-Path -Parent $PSScriptRoot
-$Dist = Join-Path $Root "installers/windows"
+# --------------------------------------------------
+# config
+# --------------------------------------------------
+$RootDir = Resolve-Path "$PSScriptRoot\.."
+$OutDir  = Join-Path $RootDir "installers\win"
+$AppName = "videoreview-launcher.exe"
 
-$ExeName = "videoreview-launcher.exe"
+$Platform = "Windows"
+$Arch     = "amd64"
 
-Write-Host "Building VideoReview Launcher (Windows)..."
+# --------------------------------------------------
+# build
+# --------------------------------------------------
+Write-Host "== build $Platform ($Arch) =="
 
-Set-Location -Path $Root
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+Set-Location $RootDir
 
-if (!(Test-Path $Dist)) {
-    New-Item -ItemType Directory -Path $Dist | Out-Null
-}
-
-$env:GOOS = "windows"
+$env:GOOS   = "windows"
 $env:GOARCH = "amd64"
 
-go build -o (Join-Path $Dist $ExeName) .
+go build `
+    -trimpath `
+    -ldflags "-s -w" `
+    -o (Join-Path $OutDir $AppName) .
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build failed"
-    exit 1
-}
-
-Write-Host "Build succeeded: $Dist\$ExeName"
+Write-Host "output: $(Join-Path $OutDir $AppName)"
+Write-Host "done"

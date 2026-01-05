@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")"/.. && pwd)"
-OUT="$ROOT/installers/mac"
-APP="videoreview-launcher"
+# --------------------------------------------------
+# config
+# --------------------------------------------------
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+OUT_DIR="$ROOT_DIR/installers/mac"
+APP_NAME="videoreview-launcher"
 
-mkdir -p "$OUT"
+PLATFORM="macOS"
+ARCH="arm64"
 
-echo "== build macOS (arm64) =="
-cd $ROOT
+# --------------------------------------------------
+# build
+# --------------------------------------------------
+echo "== build ${PLATFORM} (${ARCH}) =="
+
+mkdir -p "$OUT_DIR"
+cd "$ROOT_DIR"
 
 GOOS=darwin GOARCH=arm64 \
-  go build -trimpath -ldflags="-s -w" \
-  -o "$OUT/$APP" .
+  go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o "$OUT_DIR/$APP_NAME" .
 
-echo "done: $OUT/$APP"
+echo "output: $OUT_DIR/$APP_NAME"
+echo "done"
