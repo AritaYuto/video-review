@@ -26,7 +26,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             try {
                 const keys = await api.getVideoFolderKeys();
                 setFolderKeys(keys);
-            } finally {
+            } catch {
 
             }
         })();

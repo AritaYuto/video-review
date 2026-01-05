@@ -21,7 +21,7 @@ export async function fetchVideos(data: {
     if (data.hasComment) params.set("hasComment", data.hasComment ? "true" : "false");
 
     const res = await fetch(`/api/v1/videos?${params.toString()}`);
-    if (!res.ok) [];
+    if (!res.ok) throw new Error("Failed to fetch video");
     return await res.json();
 }
 

@@ -1,3 +1,4 @@
+import { withRetry } from "@/lib/utils";
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
@@ -13,12 +14,14 @@ foldersRouter.openapi({
             description: "List of folder keys",
         },
     },
-}, 
+},
 async (c) => {
-    const keys = await prisma.video.findMany({
-        select: { folderKey: true },
-        distinct: ["folderKey"],
-        orderBy: { folderKey: "asc" },
+    const keys = await withRetry(async () => {
+        return await prisma.video.findMany({
+            select: { folderKey: true },
+            distinct: ["folderKey"],
+            orderBy: { folderKey: "asc" },
+        });
     });
     return c.json(keys.map((k) => k.folderKey));
 });
