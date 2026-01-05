@@ -32,7 +32,7 @@ export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions =
     while (attempt <= retries) {
         try {
             return await fn();
-        } catch (e) {
+        } catch (e: any) {
             lastErr = e;
             // if we've exhausted attempts, break and rethrow
             if (attempt >= retries) break;
