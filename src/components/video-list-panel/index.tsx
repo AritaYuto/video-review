@@ -67,6 +67,9 @@ export default function VideoListPanel() {
 
         hasUnreadVideoComment(userId).then((ids) => {
             if (!cancelled) setUnReadVideoIds(ids);
+        }).catch((reason) => {
+            cancelled = true;
+            console.error(reason);
         });
 
         return () => {

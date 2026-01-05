@@ -3,6 +3,7 @@ import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { VideoSchema } from "@/schema/zod"
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
+import { withRetry } from "@/lib/utils";
 
 export const listRouter = new Hono();
 
@@ -91,7 +92,7 @@ listRouter.openapi({
         whereVideoComment.issueId = { not: null };
     }
 
-    if(hasComment) {
+    if (hasComment) {
         whereVideo.comments = { some: whereVideoComment }
     }
 
@@ -103,16 +104,18 @@ listRouter.openapi({
     }
 
     try {
-        const videos = await prisma.video.findMany({
-            where: whereVideo,
-            select: {
-                id: true,
-                title: true,
-                folderKey: true,
-                scenePath: true,
-                latestUpdatedAt: true,
-            },
-            orderBy: { title: "asc" },
+        const videos = await withRetry(async () => {
+            return await prisma.video.findMany({
+                where: whereVideo,
+                select: {
+                    id: true,
+                    title: true,
+                    folderKey: true,
+                    scenePath: true,
+                    latestUpdatedAt: true,
+                },
+                orderBy: { title: "asc" },
+            });
         });
 
         return c.json(videos);
