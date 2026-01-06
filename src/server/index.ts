@@ -20,6 +20,7 @@ import { foldersRouter } from "@/routes/videos/folders";
 import { downloadRouter } from "@/routes/media/download";
 import { uploadStatusRouter } from "./routes/upload-status";
 import { swaggerUI } from "@hono/swagger-ui";
+import { ensurePrismaWarmup } from "@/server/lib/db";
 
 export const app = new Hono().basePath("/api");
 
@@ -65,3 +66,9 @@ app.get('/docs',
         url: '/api/specification',
     })
 );
+
+app.get('/internal/warmup', async (c) => {
+   const ret = await ensurePrismaWarmup();
+   if (ret) return c.json({ status: true });
+   return c.json({ status: false });
+});

@@ -1,7 +1,6 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import * as z from "@/schema/zod"
-import { withRetry } from "@/lib/utils";
 
 export const getVideoRouter = new Hono();
 
@@ -35,15 +34,13 @@ getVideoRouter.openapi({
 }, async (c) => {
     const id = c.req.param("id");
     try {
-        const video = await withRetry(async () => {
-            return await prisma.video.findUnique({
-                where: { id },
-                include: {
-                    revisions: {
-                        orderBy: { revision: "desc" },
-                    },
+        const video = await prisma.video.findUnique({
+            where: { id },
+            include: {
+                revisions: {
+                    orderBy: { revision: "desc" },
                 },
-            });
+            },
         });
 
         if (!video) {

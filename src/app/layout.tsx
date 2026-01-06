@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner"
+import "@/styles/globals.css";
+import "@xyflow/react/dist/style.css";
 
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
@@ -19,7 +21,7 @@ export default function RootLayout({
 }) {
     return (
         <html>
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen`}>
                 {children}
                 <Toaster />
             </body>

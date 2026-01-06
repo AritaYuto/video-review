@@ -48,8 +48,16 @@ export const prisma =
         }
 
         client.$connect();
-        if (isDev) {
-            globalForPrisma.prisma = client;
-        }
+        globalForPrisma.prisma = client;
         return client;
     })();
+
+export async function ensurePrismaWarmup() {
+    try {
+        await prisma.$connect();
+        await prisma.$queryRaw`SELECT 1`;
+        return true;
+    } catch {
+        return false;
+    }
+}
