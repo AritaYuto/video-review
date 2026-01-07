@@ -7,7 +7,7 @@ import ComboBox from "@/ui/combo-box";
 import { Checkbox } from "@/ui/checkbox";
 import CalendarPopover from "@/ui/calendar-popover";
 import { useVideoSearchStore } from "@/stores/video-search-store";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useVideoStore } from "@/stores/video-store";
 import { BrushCleaning } from "lucide-react";
 
