@@ -86,11 +86,12 @@ export default function VideoCommentPanel() {
             return;
         }
 
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].time <= currentTime) {
-                target = comments[i];
+        for (const comment of comments) {
+            if (comment.time <= currentTime) {
+                target = comment;
+            } else {
+                break;
             }
-            else break;
         }
 
         const headerHeight = headerRef.current.getBoundingClientRect().height + 5;
@@ -129,7 +130,7 @@ export default function VideoCommentPanel() {
                     <div className="h-6">
                         <span className="px-2">{t("title")}</span>
                         <button
-                            onClick={() => setSearchDialogOpen(true)}
+                            onClick={() => { setSearchDialogOpen(true) }}
                             className={`
                             inline-flex items-center justify-center
                             text-lg px-1 leading-none hover:text-[#ff5500]
@@ -142,7 +143,7 @@ export default function VideoCommentPanel() {
                             ? (
                                 <>
                                     <button
-                                        onClick={() => handleClear()}
+                                        onClick={() => {handleClear()}}
                                         className="inline-flex items-center justify-center hover:text-[#ff5500]"
                                     >
                                         <X className="size-5" />
@@ -179,9 +180,9 @@ export default function VideoCommentPanel() {
                 comment={editingComment ? editingComment.comment : ""}
                 issueId={editingComment ? editingComment.issueId ?? null : null}
                 onCancel={() => setEditing(null)}
-                onConfirmed={async (comment, issueId) => await handleCommentConfirmed(comment, issueId)}
+                onConfirmed={async (comment, issueId) => { await handleCommentConfirmed(comment, issueId) }}
             />
-            <CommentSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
+            <CommentSearchDialog open={searchDialogOpen} onClose={() => { setSearchDialogOpen(false) }} />
         </div>
     );
 }

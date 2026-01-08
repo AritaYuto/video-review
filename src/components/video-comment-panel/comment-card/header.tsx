@@ -51,8 +51,8 @@ function DropdownMenu_SharedLink() {
     return (
         <>
             <DropdownMenuItem className="gap-2"
-                onClick={() => setOpen(true)}
-                onSelect={(e) => e.preventDefault()}>
+                onClick={() => {setOpen(true)}}
+                onSelect={(e) => {e.preventDefault()}}>
                 <FontAwesomeIcon icon={faLink} />
                 {t("commentItemCopyLink")}
             </DropdownMenuItem>
@@ -72,9 +72,9 @@ function DropdownMenu_CreateIssue(props: { disabled: boolean, comment: VideoComm
 
     return (
         <DropdownMenuItem disabled={props.disabled} className="gap-2" onClick={async () => {
-            if (issueType === undefined) return;
+            if (issueType === undefined || email === null) return;
             const screenshot = await captureFrame(videoRefElement)
-            await issueLinkedComment(props.comment.id, email!, issueType, screenshot);
+            await issueLinkedComment(props.comment.id, email, issueType, screenshot);
         }}>
             <FontAwesomeIcon icon={icon} />
             {t(props.translateID)}
