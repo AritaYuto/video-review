@@ -7,21 +7,21 @@ import { PopoverContent, PopoverTrigger } from '@/ui/popover';
 import { Button } from '@/ui/button';
 import { cn } from '@/lib/utils';
 
-interface ComboBoxProps extends React.ComponentProps<"div"> {
-    options: { value: any, label: string }[];
+interface ComboBoxProps<T> extends React.ComponentProps<"div"> {
+    options: { value: T, label: string }[];
     placeholder?: string;
-    value: any | undefined;
-    setValue: (value: any) => void;
+    value: T | undefined;
+    setValue: (value: T) => void;
 }
 
-export default function ComboBox({
+export default function ComboBox<T>({
     options,
     value,
     setValue,
     placeholder,
     className,
     ...props
-}: ComboBoxProps) {
+}: ComboBoxProps<T>) {
     const [open, setOpen] = React.useState(false);
 
     if (!options) return <> </>
@@ -44,10 +44,10 @@ export default function ComboBox({
                             {options.map((option) => (
                                 <CommandItem
                                     className={`text-[#fff] data-[selected=true]:bg-[#eee] data-[selected=true]:text-[#222]`}
-                                    key={option.value}
-                                    value={option.value}
-                                    onSelect={(currentValue) => {
-                                        setValue(currentValue === value ? "" : currentValue)
+                                    key={String(option.label)}
+                                    value={String(option.value)}
+                                    onSelect={() => {
+                                        setValue(option.value);
                                         setOpen(false)
                                     }}
                                 >

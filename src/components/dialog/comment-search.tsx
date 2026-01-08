@@ -45,14 +45,14 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
     }, [open]);
 
     const handleSearch = () => {
-        if(selectedRevision) {
+        if (selectedRevision) {
             fetchComments(selectedRevision);
         }
         onClose();
     }
 
     return (
-        <Dialog open={open} onOpenChange={x => onClose()}>
+        <Dialog open={open} onOpenChange={x => { onClose() }}>
             <DialogContent className="bg-[#202020]">
                 <DialogHeader>
                     <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
@@ -69,7 +69,7 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
                                     className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white mx-2"
                                     placeholder="Filter tree..."
                                 />
-                                <Button onClick={() => {setDateRange(undefined)}} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
+                                <Button onClick={() => { setDateRange(undefined) }} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
                                     <X />
                                 </Button>
                             </div>
@@ -83,12 +83,12 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
                             </div>
                         );
                     })}
-                    
+
                     {ControlRow(t("hasDrawing"), () => {
                         return (
                             <Checkbox
                                 defaultChecked={hasDrawing}
-                                onCheckedChange={(x) => {setHasDrawing(x as boolean)}}
+                                onCheckedChange={(x) => { setHasDrawing(x as boolean) }}
                                 className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
                             />
                         );
@@ -98,7 +98,7 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
                         return (
                             <Checkbox
                                 defaultChecked={hasIssue}
-                                onCheckedChange={(x) => {setHasIssue(x as boolean)}}
+                                onCheckedChange={(x) => { setHasIssue(x as boolean) }}
                                 className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
                             />
                         );
@@ -108,7 +108,7 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
                         return (
                             <Checkbox
                                 defaultChecked={fetchAllComments}
-                                onCheckedChange={(x) => {setFetchAllComments(x as boolean)}}
+                                onCheckedChange={(x) => { setFetchAllComments(x as boolean) }}
                                 className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
                             />
                         );
@@ -123,7 +123,7 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
                                     value={user}
                                     placeholder="Select user..."
                                     className="mx-2" />
-                                <Button onClick={() => {setCommentUser(undefined)}} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
+                                <Button onClick={() => { setCommentUser(undefined) }} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
                                     <X />
                                 </Button>
                             </div>
