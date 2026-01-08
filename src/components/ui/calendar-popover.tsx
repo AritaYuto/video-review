@@ -49,7 +49,7 @@ export default function CalendarPopover({
                             range_start: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-l-full',
                             range_end: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-r-full',
                             day_button: [
-                                // 選択状態
+                                // range selected
                                 "data-[range-start=true]:rounded-full!",
                                 "data-[range-start=true]:bg-[#ff8800]!",
                                 "data-[range-start=true]:text-white!",
@@ -58,12 +58,12 @@ export default function CalendarPopover({
                                 "data-[range-end=true]:bg-[#ff8800]!",
                                 "data-[range-end=true]:text-white!",
 
-                                // 中間の範囲
+                                // range middle
                                 "data-[range-middle=true]:rounded-none",
                                 "data-[range-middle=true]:bg-[#ff880055]",
                                 "data-[range-middle=true]:text-white!",
 
-                                // hover 時（全体の丸み補正）
+                                // hover
                                 "hover:rounded-full",
                             ].join(" "),
                             today:

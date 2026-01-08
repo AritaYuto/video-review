@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useTranslations } from "next-intl";
 import { isViewer } from "@/lib/role";
 
+// Dropdown menu item for copying a shareable link to the selected comment.
 function DropdownMenu_SharedLink() {
     const t = useTranslations("video-comment-panel");
     const [open, setOpen] = useState(false);
@@ -51,8 +52,8 @@ function DropdownMenu_SharedLink() {
     return (
         <>
             <DropdownMenuItem className="gap-2"
-                onClick={() => {setOpen(true)}}
-                onSelect={(e) => {e.preventDefault()}}>
+                onClick={() => { setOpen(true) }}
+                onSelect={(e) => { e.preventDefault() }}>
                 <FontAwesomeIcon icon={faLink} />
                 {t("commentItemCopyLink")}
             </DropdownMenuItem>
@@ -61,12 +62,17 @@ function DropdownMenu_SharedLink() {
     );
 }
 
+// Dropdown menu item for creating a Jira issue from a comment.
 function DropdownMenu_CreateIssue(props: { disabled: boolean, comment: VideoComment, translateID: string }) {
     const t = useTranslations("video-comment-panel");
     const { issueLinkedComment } = useCommentStore();
     const { email } = useAuthStore();
     const { videoRefElement } = useVideoReviewStore();
 
+    // NOTE:
+    // Issue type and icon are currently derived from translation IDs.
+    // This couples UI text with logic, but keeps the menu definition simple for now.
+    // Intended to be refactored to an explicit enum or prop-based issue type in the future.
     const issueType = props.translateID === "commentItemTask" ? process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK : process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG
     const icon = props.translateID === "commentItemTask" ? faListCheck : faBug;
 
@@ -82,6 +88,7 @@ function DropdownMenu_CreateIssue(props: { disabled: boolean, comment: VideoComm
     );
 }
 
+// Dropdown menu item for entering comment edit mode.
 function DropdownMenu_Edit(props: { comment: VideoComment }) {
     const t = useTranslations("video-comment-panel");
     const { setEditing } = useCommentEditStore();
@@ -94,6 +101,7 @@ function DropdownMenu_Edit(props: { comment: VideoComment }) {
     );
 }
 
+// Dropdown menu item for deleting a comment.
 function DropdownMenu_Delete(props: { comment: VideoComment }) {
     const t = useTranslations("video-comment-panel");
     const { deleteComment } = useCommentStore();

@@ -51,6 +51,14 @@ export default function VideoCommentPanel() {
     }, [comments]);
 
     const handleCommentConfirmed = async (comment: string, issueId: string | null) => {
+        // This handler is responsible for both creating new comments
+        // and updating existing ones.
+        // Currently, these two flows are intentionally separated:
+        // - New comments are posted to Slack
+        // - Edited comments stay local and are not re-sent
+        //
+        // This is a temporary design and may be refactored in the future
+        // to unify comment creation / update logic.
         if (!editingComment) {
             if (selectedRevision) {
                 const id = await addComment({
@@ -67,6 +75,8 @@ export default function VideoCommentPanel() {
                 await handlePostCommentToSlack(id);
             }
         } else {
+            // Update flow for an existing comment.
+            // Edited comments are not sent to Slack to avoid duplicate or noisy notifications.
             const drawingPath = await canvasSave(editingComment.drawingPath ?? null);
             setEditDrawingPath(drawingPath);
             setEditComment(comment);
@@ -81,6 +91,8 @@ export default function VideoCommentPanel() {
     }
 
     useEffect(() => {
+        // Find the latest comment whose timestamp is <= current playback time.
+        // We assume `comments` is sorted by time in ascending order.
         let target = comments[0];
         if (target === undefined || !headerRef.current) {
             return;
@@ -94,12 +106,14 @@ export default function VideoCommentPanel() {
             }
         }
 
+        // Calculate the vertical offset to keep the target comment fully visible.
+        // Add a small margin (+5px) because the comment tends to be partially hidden
+        // under the fixed header without this extra spacing.
         const headerHeight = headerRef.current.getBoundingClientRect().height + 5;
         const el = commentCardRefs.current[target.id];
 
         if (!el || !containerRef.current) return;
 
-        // スクロール
         containerRef.current.scrollTo({
             top: el.offsetTop - headerHeight,
             behavior: "smooth",
@@ -143,7 +157,7 @@ export default function VideoCommentPanel() {
                             ? (
                                 <>
                                     <button
-                                        onClick={() => {handleClear()}}
+                                        onClick={() => { handleClear() }}
                                         className="inline-flex items-center justify-center hover:text-[#ff5500]"
                                     >
                                         <X className="size-5" />

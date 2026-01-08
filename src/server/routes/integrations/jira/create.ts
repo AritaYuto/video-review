@@ -35,7 +35,6 @@ try {
     const project = process.env.JIRA_PROJECT;
     const assigneeEmail = process.env.JIRA_ASSIGNEE_USER;
 
-    // 500: サーバー設定不備
     if (!base || !token || !project) {
         return c.json({ error: "jira configuration is missing" }, 500);
     }
@@ -48,7 +47,6 @@ try {
         const reporterEmail = formData.get("reporterEmail") as string;
         const file = formData.get("file") as File | null;
 
-        // 400: 必須項目不足
         if (!summary || !description || !issueType) {
             return c.json({ error: "invalid request body" }, 400);
         }

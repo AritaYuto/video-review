@@ -33,21 +33,27 @@ export default function CommentCard(props: {
     return (
         <div ref={props.containerRef} className="flex-1 overflow-y-auto p-3 space-y-3">
             {props.comments.map((comment, i) => {
+                // Visual state rules for comment cards.
+                // Priority order (later rules override earlier ones):
+                // 1. Selected comment (explicit user focus)
+                // 2. Active comment (currently relevant to playback time)
+                // 3. Comment with both issue + drawing
+                // 4. Comment with issue only
+                // 5. Comment with drawing only
                 const isActive = activeComments.some(e => e.id === comment.id);
                 const isSelected = selectedComment?.id === comment.id;
                 const hasDrawing = comment.drawingPath !== "" && comment.drawingPath !== null;
                 const hasIssue = comment.issueId !== "" && comment.issueId !== null;
-                const baseClass ="bg-[#222] border border-[#333] text-white hover:bg-[#252525] transition cursor-pointer";
-                
+                const baseClass = "bg-[#222] border border-[#333] text-white hover:bg-[#252525] transition cursor-pointer";
+
                 let stateClass = "";
-                
                 if (hasIssue) {
                     stateClass = "border-[#32cd32] bg-[#343]";
                 } else if (hasDrawing) {
                     stateClass = "border-[#4aa3ff] bg-[#1f2a33]";
-                } 
+                }
 
-                if(hasIssue && hasDrawing) {
+                if (hasIssue && hasDrawing) {
                     stateClass = "border-[#ffff00] bg-[#5418]";
                 }
 
@@ -56,6 +62,7 @@ export default function CommentCard(props: {
                 } else if (isActive) {
                     stateClass = "border-[#ffffff] bg-[#222]";
                 }
+
                 return (
                     <Card
                         ref={el => {
