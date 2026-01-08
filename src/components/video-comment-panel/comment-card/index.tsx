@@ -63,7 +63,7 @@ export default function CommentCard(props: {
                         }}
                         key={comment.id}
                         className={`${baseClass} ${stateClass}`}
-                        onClick={() => handleSelectComment(comment)}
+                        onClick={() => { handleSelectComment(comment) }}
                     >
                         <CommentCardHeader comment={comment} />
                         <CommentCardContent comment={comment} />

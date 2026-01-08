@@ -12,7 +12,7 @@ export default function VideoReviewPage() {
     } = useAuthStore();
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             if (!(await verifyAuth())) {
             router.replace("/video-review/login");
         }

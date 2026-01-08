@@ -52,7 +52,7 @@ export default function VideoListPanel() {
     }, [bounds.height, headerHeight]);
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             await fetchVideos();
         })();
     }, [])

@@ -57,7 +57,7 @@ export default function CalendarDateRadio({
                 </>}
                 <Button
                     className={`text-white bg-[#333] hover:bg-[#fff]`}
-                    variant="outline" size="sm" onClick={() => onSetValue(undefined)}>
+                    variant="outline" size="sm" onClick={() => { onSetValue(undefined) }}>
                     <X />
                 </Button>
             </ButtonGroup>

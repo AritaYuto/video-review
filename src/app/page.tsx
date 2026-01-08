@@ -33,7 +33,7 @@ export default function Home() {
     }
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             const result = await warmupWithRetry();
             setWarmupDB(result);
 

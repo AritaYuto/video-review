@@ -23,7 +23,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
     const [message, setMessage] = useState("");
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             try {
                 const keys = await api.getVideoFolderKeys();
                 setFolderKeys(keys);

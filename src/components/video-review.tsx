@@ -103,7 +103,7 @@ export default function VideoReview() {
 
     useEffect(() => {
         let canceled = false;
-        (async () => {
+        void (async () => {
             for (const c of comments) {
                 const path = c.drawingPath;
                 if (!path) continue;
@@ -185,7 +185,7 @@ export default function VideoReview() {
         fetchComments(selectedRevision);
 
         let canceled = false;
-        (async () => {
+        void (async () => {
             const url = await fetchMediaUrl(
                 selectedRevision.filePath
             );

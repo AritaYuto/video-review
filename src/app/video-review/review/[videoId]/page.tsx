@@ -25,7 +25,7 @@ export default function VideoReviewPage() {
     const { setSelectComment, setTimelineTime } = useVideoReviewStore();
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             if (!(await verifyAuth())) {
                 router.replace("/video-review/login");
             }
@@ -37,7 +37,7 @@ export default function VideoReviewPage() {
         const commentId = searchParams.get("comment");
         if (!videoId) return;
 
-        (async () => {
+        void (async () => {
             try{
                 const video = await api.getVideoFromId(videoId as string);
                 const rev = await api.fetchLatestRevision(videoId as string);

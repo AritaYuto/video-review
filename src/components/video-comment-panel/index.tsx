@@ -45,17 +45,6 @@ export default function VideoCommentPanel() {
         editSave,
     } = useCommentEditStore();
 
-    const filteredComments = useMemo<VideoComment[]>(() => {
-
-        const filteredComments: VideoComment[] = []
-        for (const comment of comments) {
-
-            filteredComments.push(comment);
-        }
-
-        return filteredComments;
-    }, [comments]);
-
     useEffect(() => {
         if (!userId || !selectedVideo) return;
         readVideoComment(userId, selectedVideo.id);
@@ -92,14 +81,14 @@ export default function VideoCommentPanel() {
     }
 
     useEffect(() => {
-        let target = filteredComments[0];
-        if (target === undefined || !headerRef?.current) {
+        let target = comments[0];
+        if (target === undefined || !headerRef.current) {
             return;
         }
 
-        for (let i = 0; i < filteredComments.length; i++) {
-            if (filteredComments[i].time <= currentTime) {
-                target = filteredComments[i];
+        for (let i = 0; i < comments.length; i++) {
+            if (comments[i].time <= currentTime) {
+                target = comments[i];
             }
             else break;
         }
@@ -114,11 +103,11 @@ export default function VideoCommentPanel() {
             top: el.offsetTop - headerHeight,
             behavior: "smooth",
         });
-    }, [currentTime, filteredComments]);
+    }, [currentTime, comments]);
 
     useEffect(() => {
-        setDisplayComments(filteredComments);
-    }, [filteredComments]);
+        setDisplayComments(comments);
+    }, [comments]);
 
     useEffect(() => {
         if (selectedRevision) {
@@ -182,7 +171,7 @@ export default function VideoCommentPanel() {
 
             <Separator className="bg-[#333]" />
 
-            <CommentCard comments={filteredComments} containerRef={containerRef} commentCardRef={commentCardRefs} />
+            <CommentCard comments={comments} containerRef={containerRef} commentCardRef={commentCardRefs} />
 
             <Separator className="bg-[#333]" />
             <CommentConfirmed
