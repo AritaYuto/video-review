@@ -1,8 +1,29 @@
 import { useAuthStore } from "@/stores/auth-store";
 import { VideoComment } from '@/lib/db-types';
+import { DateRange } from "react-day-picker";
 
-export async function fetchComments(videoId: string): Promise<VideoComment[]> {
-    const res = await fetch(`/api/v1/comments?videoId=${videoId}`);
+export async function fetchComments(data: {
+    videoId: string,
+    selectRevision: number,
+    dateRange?: DateRange,
+    hasDrawing?: boolean,
+    hasIssue?: boolean,
+    fetchAllComments?: boolean,
+    user?: string,
+    filterText?: string
+}): Promise<VideoComment[]> {
+    const params = new URLSearchParams();
+    params.set("videoId", data.videoId);
+    params.set("selectRevision", data.selectRevision.toString());
+    if (data.dateRange?.from) params.set("from", data.dateRange?.from.getTime().toString());
+    if (data.dateRange?.to) params.set("to", data.dateRange?.to.getTime().toString());
+    if (data.hasDrawing) params.set("hasDrawing", data.hasDrawing ? "true" : "false");
+    if (data.hasIssue) params.set("hasIssue", data.hasIssue ? "true" : "false");
+    if (data.fetchAllComments) params.set("fetchAllComments", data.fetchAllComments ? "true" : "false");
+    if (data.user) params.set("user", data.user);
+    if (data.filterText) params.set("filterText", data.filterText);
+
+    const res = await fetch(`/api/v1/comments?${params.toString()}`);
     if (!res.ok) throw new Error("Failed to fetch comments");
     return res.json();
 }

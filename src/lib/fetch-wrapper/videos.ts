@@ -3,7 +3,8 @@ import { DateRange } from 'react-day-picker';
 
 export async function fetchVideos(data: {
     user?: string,
-    dateRange?: DateRange,
+    videoDateRange?: DateRange,
+    commentsDateRange?: DateRange,
     filterIssue?: string,
     filterTree?: string,
     hasIssue?: boolean,
@@ -11,8 +12,10 @@ export async function fetchVideos(data: {
     hasComment?: boolean,
 }) {
     const params = new URLSearchParams();
-    if (data.dateRange?.from) params.set("from", data.dateRange?.from.getTime().toString());
-    if (data.dateRange?.to) params.set("to", data.dateRange?.to.getTime().toString());
+    if (data.videoDateRange?.from) params.set("videoFrom", data.videoDateRange?.from.getTime().toString());
+    if (data.videoDateRange?.to) params.set("videoTo", data.videoDateRange?.to.getTime().toString());
+    if (data.commentsDateRange?.from) params.set("commentsFrom", data.commentsDateRange?.from.getTime().toString());
+    if (data.commentsDateRange?.to) params.set("commentsTo", data.commentsDateRange?.to.getTime().toString());
     if (data.user) params.set("user", data.user);
     if (data.filterIssue) params.set("filterIssue", data.filterIssue);
     if (data.filterTree) params.set("filterTree", data.filterTree);

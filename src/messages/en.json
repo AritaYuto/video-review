@@ -17,16 +17,16 @@
     },
     "video-search": {
         "title": "Video Search",
-        "shortcutKey": "Ctrl + K",
-        "hasComment": "with comment",
-        "dateRange": "Select date range",
-        "hasIssue": "with issue ticket",
-        "filterIssue": "Filter issue",
-        "hasDrawing": "with drawing",
-        "userFilter": "Filter User comment",
-        "searchFilter": "Filter text",
+        "hasComment": "Has comment",
+        "hasIssue": "Has issue ticket",
+        "filterIssue": "Search issue",
+        "hasDrawing": "Has drawing",
+        "userFilter": "Comment author",
+        "searchFilter": "Search text",
         "ok": "Search",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "commentsDateRange": "Comment date",
+        "videoDateRange": "Video update date"
     },
     "video-review": {
         "noVideoSelected": "Please select a video"
@@ -62,10 +62,15 @@
         "close": "Close"
     },
     "comment-search": {
-        "shortcutKey": "Ctrl + I",
-        "fetchRange": "fetch range",
-        "fetchAll": "fetch all",
-        "searchFilter": "Filter text"
+        "title": "Comment Search",
+        "searchFilter": "Filter text",
+        "dateRange": "Comment date",
+        "hasDrawing": "Has drawing",
+        "hasIssue": "Has issue ticket",
+        "fetchAllComments": "Show all comments",
+        "userFilter": "Comment author",
+        "ok": "Search",
+        "cancel": "Cancel"
     },
     "canvas-setting": {
         "lineWidth": "Line width",
@@ -84,5 +89,10 @@
         "languageOptionEn": "English",
         "languageOptionJa": "Japanese",
         "logout": "Logout"
+    },
+    "calendar-date-radio": {
+        "today": "Today",
+        "recent": "Last {days} days",
+        "clear": "Clear"
     }
 }

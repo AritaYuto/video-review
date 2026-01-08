@@ -182,7 +182,7 @@ export default function VideoReview() {
         const c = canvasRef.current;
         if (!c || !v) return;
 
-        fetchComments(selectedRevision?.videoId);
+        fetchComments(selectedRevision);
 
         let canceled = false;
         (async () => {

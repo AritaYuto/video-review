@@ -33,6 +33,10 @@ export default function CommentConfirmed(props: {
         props.onCancel();
     };
 
+    const canAddComment = () => {
+        return comment !== ""
+    }
+
     useEffect(() => {
         setComment(props.comment);
         setIssueId(props.issueId);
@@ -75,6 +79,7 @@ export default function CommentConfirmed(props: {
                 </div>
             ) : (
                 <Button
+                    disabled={!canAddComment()}
                     onClick={() => handleConfirmed()}
                     className="w-full bg-[#ff8800] hover:bg-[#ff9a1a] text-black font-semibold"
                 >

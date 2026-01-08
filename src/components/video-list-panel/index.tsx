@@ -44,7 +44,7 @@ export default function VideoListPanel() {
     const treeRef = useRef<TreeApi<VideoNode>>(null);
 
     const headerHeight = useMemo(() => {
-        return headerRef.current ? headerRef.current.getBoundingClientRect().height : 0;
+        return headerRef.current ? headerRef.current.getBoundingClientRect().height * 0.75 : 0;
     }, [headerRef.current]);
 
     const treeHeight = useMemo(() => {

@@ -47,7 +47,6 @@ export function buildTree(
         }));
 
     const final = [
-        ...[buildTodayUpdateFolder(videos)],
         ...toArray(root)
             .map(pruneVideoNode)
             .filter((n): n is VideoNode => n !== null),
@@ -91,26 +90,6 @@ export function pruneVideoNode(node: VideoNode): VideoNode | null {
     }
 
     return { ...node, children: prunedChildren };
-}
-
-export function buildTodayUpdateFolder(videos: Video[]): VideoNode {
-    const todayVideos = videos.filter((v) =>
-        dayjs(v.latestUpdatedAt).isSame(dayjs(), "day"),
-    );
-
-    return {
-        id: "_today",
-        name: "Today Update",
-        type: "folder",
-        unread: false,
-        children: todayVideos.map((v) => ({
-            id: v.id + "_today",
-            name: v.title,
-            type: "video",
-            video: v,
-            unread: false,
-        })),
-    };
 }
 
 export function findPath(

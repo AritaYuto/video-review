@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { DateRange } from "react-day-picker";
 
 interface VideoSearchState {
-    dateRange: DateRange | undefined;
+    videoDateRange: DateRange | undefined;
+    commentsDateRange: DateRange | undefined;
     hasComment: boolean;
     hasDrawing: boolean;
     hasIssue: boolean;
@@ -15,14 +16,16 @@ interface VideoSearchState {
     setHasIssue: (x: boolean) => void;
     setFilterIssue: (x: string) => void;
     setCommentUser: (x: string | undefined) => void;
-    setDateRange: (x: DateRange | undefined) => void;
+    setVideoDateRange: (x: DateRange | undefined) => void;
+    setCommentsDateRange: (x: DateRange | undefined) => void;
     setFilterTree: (x: string) => void;
     clear: () => void;
     isFiltering: () => boolean;
 }
 
 const InitVideoSearchState = {
-    dateRange: undefined,
+    videoDateRange: undefined,
+    commentsDateRange: undefined,
     hasComment: false,
     hasDrawing: false,
     hasIssue: false,
@@ -39,7 +42,8 @@ export const useVideoSearchStore = create<VideoSearchState>((set, get) => ({
     setHasIssue: (x: boolean) => set({ hasIssue: x }),
     setFilterIssue: (x: string) => set({ filterIssue: x }),
     setCommentUser: (x: string | undefined) => set({ user: x }),
-    setDateRange: (x: DateRange | undefined) => set({ dateRange: x }),
+    setVideoDateRange: (x: DateRange | undefined) => set({ videoDateRange: x }),
+    setCommentsDateRange: (x: DateRange | undefined) => set({ commentsDateRange: x }),
     setFilterTree: (x: string) => set({ filterTree: x }),
     clear: () => set(InitVideoSearchState),
     isFiltering: () => {

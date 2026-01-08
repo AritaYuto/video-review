@@ -17,16 +17,16 @@
     },
     "video-search": {
         "title": "動画検索",
-        "shortcutKey": "Ctrl + K",
         "hasComment": "コメント付き",
-        "dateRange": "日付範囲指定",
         "hasIssue": "チケット付きコメント",
         "filterIssue": "チケット詳細検索",
         "hasDrawing": "お絵かき付きコメント",
         "userFilter": "コメントユーザー",
         "searchFilter": "フィルター",
         "ok": "検索",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "commentsDateRange": "コメント日時",
+        "videoDateRange": "動画更新日"
     },
     "video-review": {
         "noVideoSelected": "動画を選択してください"
@@ -62,10 +62,15 @@
         "close": "閉じる"
     },
     "comment-search": {
-        "shortcutKey": "Ctrl + I",
-        "fetchRange": "範囲取得",
-        "fetchAll": "全件取得",
-        "searchFilter": "フィルター"
+        "title": "コメント検索",
+        "searchFilter": "テキストフィルター",
+        "dateRange": "コメント日時",
+        "hasDrawing": "お絵かき付きコメント",
+        "hasIssue": "チケット付きコメント",
+        "fetchAllComments": "全てのRevのコメント取得",
+        "userFilter": "コメントユーザー",
+        "ok": "検索",
+        "cancel": "キャンセル"
     },
     "canvas-setting": {
         "lineWidth": "太さ",
@@ -84,5 +89,10 @@
         "languageOptionEn": "英語 (English)",
         "languageOptionJa": "日本語 (Japanese)",
         "logout": "ログアウト"
+    },
+    "calendar-date-radio": {
+        "today": "今日",
+        "recent": "直近{days}日",
+        "clear": "クリア"
     }
 }

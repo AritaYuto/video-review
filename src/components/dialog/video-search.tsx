@@ -1,15 +1,18 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
-import { fetcCommentUsers, fetchVideos } from "@/lib/fetch-wrapper";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { fetcCommentUsers } from "@/lib/fetch-wrapper";
 import { ControlRow } from "@/ui/control-row";
 import ComboBox from "@/ui/combo-box";
 import { Checkbox } from "@/ui/checkbox";
 import CalendarPopover from "@/ui/calendar-popover";
 import { useVideoSearchStore } from "@/stores/video-search-store";
-import { Button } from "../ui/button";
+import { Button } from "@/ui/button";
 import { useVideoStore } from "@/stores/video-store";
-import { BrushCleaning } from "lucide-react";
+import { X } from "lucide-react";
+import CalendarDateRadio from "@/ui/calendar-date-radio";
 
 export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const t = useTranslations("video-search");
@@ -18,7 +21,8 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
 
     const {
         user,
-        dateRange,
+        videoDateRange,
+        commentsDateRange,
         filterIssue,
         filterTree,
         hasComment,
@@ -31,13 +35,14 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
         setHasIssue,
         setFilterIssue,
         setFilterTree,
-        setDateRange,
+        setVideoDateRange,
+        setCommentsDateRange
     } = useVideoSearchStore();
 
     useEffect(() => {
         (async () => {
             const users = await fetcCommentUsers({ hasDrawing });
-            setCommentUsers(users.map((u) => ({ label: u.userName, value: u.userEmail })));
+            setCommentUsers(users.map((u) => ({ label: u.userName, value: u.userName })));
         })();
     }, [open]);
 
@@ -48,11 +53,11 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
 
     const handleClearUserFilter = () => {
         setCommentUser(undefined);
-        setDateRange(undefined);
+        setCommentsDateRange(undefined);
     }
 
     const handleClearTreeFilter = () => {
-        setDateRange(undefined);
+        setVideoDateRange(undefined);
     }
 
     return (
@@ -85,14 +90,18 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                                                 setValue={setCommentUser}
                                                 value={user}
                                                 placeholder="Select user..."
-                                                className="border-[#ccc] rounded bg-[#181818] border px-2 text-sm text-white" />
-                                            <CalendarPopover
-                                                className="border-[#ccc] bg-[#181818] border h-8.2 mx-2"
-                                                value={dateRange}
-                                                onSetValue={setDateRange} />
+                                                className="mx-2" />
                                             <Button onClick={handleClearUserFilter} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
-                                                <BrushCleaning />
+                                                <X />
                                             </Button>
+                                        </div>
+                                    );
+                                })}
+
+                                {ControlRow(t("commentsDateRange"), () => {
+                                    return (
+                                        <div className="flex justify-between">
+                                            <CalendarDateRadio value={commentsDateRange} onSetValue={setCommentsDateRange} />
                                         </div>
                                     );
                                 })}
@@ -143,16 +152,20 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                                     type="text"
                                     value={filterTree}
                                     onChange={(e) => setFilterTree(e.target.value)}
-                                    className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white"
+                                    className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white mx-2"
                                     placeholder="Filter tree..."
                                 />
-                                <CalendarPopover
-                                    className="border-[#ccc] bg-[#181818] border h-8.2 mx-2"
-                                    value={dateRange}
-                                    onSetValue={setDateRange} />
                                 <Button onClick={handleClearTreeFilter} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
-                                    <BrushCleaning />
+                                    <X />
                                 </Button>
+                            </div>
+                        );
+                    })}
+
+                    {ControlRow(t("videoDateRange"), () => {
+                        return (
+                            <div className="flex justify-between">
+                                <CalendarDateRadio value={videoDateRange} onSetValue={setVideoDateRange} />
                             </div>
                         );
                     })}

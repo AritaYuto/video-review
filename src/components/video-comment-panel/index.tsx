@@ -11,11 +11,17 @@ import { useCommentEditStore } from "@/stores/comment-edit-store";
 import CommentConfirmed from "@/components/video-comment-panel/comment-confirmed";
 import { useDrawingStore } from "@/stores/drawing-store";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CommentFilterParam, CommentSearchPopover } from "@/components/dialog/comment-search";
+import { CommentSearchDialog } from "@/components/dialog/comment-search";
 import { readVideoComment } from "@/lib/fetch-wrapper";
 import { useTranslations } from "next-intl";
 import { slackToast } from "@/components/slack";
 import CommentCard from "@/components/video-comment-panel/comment-card";
+import { useCommentSearchStore } from "@/stores/comment-search-store";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { X, Search } from "lucide-react";
+import { SidebarGroup, SidebarGroupContent, SidebarInput } from "@/ui/sidebar";
+import CalendarDateRadio from "@/ui/calendar-date-radio";
 
 export default function VideoCommentPanel() {
     const t = useTranslations("video-comment-panel");
@@ -23,14 +29,13 @@ export default function VideoCommentPanel() {
     const containerRef = useRef<HTMLDivElement>(null);
     const commentCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+    const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const { displayName, email, userId } = useAuthStore();
-
-    const {
-        revisions,
-        selectedVideo,
-        selectedRevision,
-    } = useVideoStore();
-
+    const { selectedVideo, selectedRevision } = useVideoStore();
+    const { setDisplayComments, comments, addComment, fetchComments } = useCommentStore();
+    const { dateRange, filterText, setDateRange, setFilterText, clear, isFiltering } = useCommentSearchStore();
+    const { canvasSave } = useDrawingStore();
+    const { videoRefElement, currentTime } = useVideoReviewStore();
     const {
         editingComment,
         setEditing,
@@ -40,45 +45,19 @@ export default function VideoCommentPanel() {
         editSave,
     } = useCommentEditStore();
 
-    const revisionNums = useMemo<number[]>(() => {
-        return revisions.map(v => v.revision).sort((a, b) => a - b);
-    }, [revisions]);
-
-    const { canvasSave } = useDrawingStore();
-
-    const { setDisplayComments, comments, addComment } = useCommentStore();
-
-    const { videoRefElement, currentTime } = useVideoReviewStore();
-
-    const [commentFilterParam, setCommentFilterParam] = useState<CommentFilterParam>();
-
     const filteredComments = useMemo<VideoComment[]>(() => {
-        const f = commentFilterParam;
-
-        if (f === undefined || f.fetchMode === "fetchAll") {
-            return comments;
-        }
 
         const filteredComments: VideoComment[] = []
         for (const comment of comments) {
-            const revisionContains = f.revRange.revFrom <= comment.videoRevNum && comment.videoRevNum <= f.revRange.revTo;
 
-            if (!revisionContains) {
-                continue;
-            }
-
-            const matchFiltered = comment.comment.includes(f.filterText) || comment.userName.includes(f.filterText);
-            if (!matchFiltered) {
-                continue;
-            }
             filteredComments.push(comment);
         }
 
         return filteredComments;
-    }, [comments, commentFilterParam]);
+    }, [comments]);
 
     useEffect(() => {
-        if(!userId || !selectedVideo) return;
+        if (!userId || !selectedVideo) return;
         readVideoComment(userId, selectedVideo.id);
     }, [comments]);
 
@@ -95,7 +74,7 @@ export default function VideoCommentPanel() {
                     userEmail: email ?? "",
                     thumbsUp: 0,
                 })
-                
+
                 await handlePostCommentToSlack(id);
             }
         } else {
@@ -125,7 +104,7 @@ export default function VideoCommentPanel() {
             else break;
         }
 
-        const headerHeight = headerRef.current.getBoundingClientRect().height;
+        const headerHeight = headerRef.current.getBoundingClientRect().height + 5;
         const el = commentCardRefs.current[target.id];
 
         if (!el || !containerRef.current) return;
@@ -138,49 +117,82 @@ export default function VideoCommentPanel() {
     }, [currentTime, filteredComments]);
 
     useEffect(() => {
-        if (!revisionNums || revisionNums.length === 0) return;
-
-        const lastIndex = revisionNums.length - 1;
-        const revTo = revisionNums[lastIndex];
-
-        const fromIndex = Math.max(0, lastIndex - 3);
-        const revFrom = revisionNums[fromIndex];
-
-        setCommentFilterParam({
-            fetchMode: "fetchRange",
-            filterText: "",
-            revRange: { revFrom: revFrom, revTo: revTo }
-        });
-    }, [revisionNums]);
-
-    useEffect(() => {
         setDisplayComments(filteredComments);
     }, [filteredComments]);
+
+    useEffect(() => {
+        if (selectedRevision) {
+            fetchComments(selectedRevision);
+        }
+    }, [dateRange, filterText]);
+
+    const handleClear = () => {
+        clear();
+        if (selectedRevision) {
+            fetchComments(selectedRevision);
+        }
+    }
 
     return (
         <div className="vr-panel vr-scrollbar">
             <div ref={headerRef} className="vr-header">
                 <div>
-                    <span className="px-2">{t("title")}</span>
-                    <CommentSearchPopover
-                        revisions={revisionNums}
-                        commentFilterParam={commentFilterParam}
-                        updateCommentFilter={setCommentFilterParam}
-                    />
+                    <div className="h-6">
+                        <span className="px-2">{t("title")}</span>
+                        <button
+                            onClick={() => setSearchDialogOpen(true)}
+                            className={`
+                            inline-flex items-center justify-center
+                            text-lg px-1 leading-none hover:text-[#ff5500]
+                            ${isFiltering() ? "text-[#15fa34ff]" : ""}
+                        `}
+                        >
+                            <FontAwesomeIcon icon={faSearch} />
+                        </button>
+                        {isFiltering()
+                            ? (
+                                <>
+                                    <button
+                                        onClick={() => handleClear()}
+                                        className="inline-flex items-center justify-center hover:text-[#ff5500]"
+                                    >
+                                        <X className="size-5" />
+                                    </button>
+                                </>
+                            )
+                            : (<></>)
+                        }
+                    </div>
+                    <Separator className="bg-[#333]" />
+                    <div>
+                        <SidebarGroup>
+                            <CalendarDateRadio value={dateRange} onSetValue={setDateRange} className="size-10" />
+                            <SidebarGroupContent className="relative mt-1">
+                                <SidebarInput
+                                    value={filterText}
+                                    onChange={(e) => setFilterText(e.target.value)}
+                                    placeholder="Filter video..."
+                                    className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
+                                <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </div>
                 </div>
             </div>
-            
-            <CommentCard comments={filteredComments} containerRef={containerRef} commentCardRef={commentCardRefs} />
 
             <Separator className="bg-[#333]" />
 
+            <CommentCard comments={filteredComments} containerRef={containerRef} commentCardRef={commentCardRefs} />
+
+            <Separator className="bg-[#333]" />
             <CommentConfirmed
-                confirmedLabel={editingComment ? "commentUpdate"  : "commentAdd"}
+                confirmedLabel={editingComment ? "commentUpdate" : "commentAdd"}
                 comment={editingComment ? editingComment.comment : ""}
                 issueId={editingComment ? editingComment.issueId ?? null : null}
                 onCancel={() => setEditing(null)}
                 onConfirmed={async (comment, issueId) => await handleCommentConfirmed(comment, issueId)}
             />
+            <CommentSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
         </div>
     );
 }
