@@ -28,7 +28,8 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         const s = useVideoSearchStore.getState();
         const data = await api.fetchVideos({
             user: s.user,
-            dateRange: s.dateRange,
+            videoDateRange: s.videoDateRange,
+            commentsDateRange: s.commentsDateRange,
             filterIssue: s.filterIssue,
             filterTree: s.filterTree,
             hasIssue: s.hasIssue,

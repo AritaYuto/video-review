@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import * as api from "@/lib/fetch-wrapper";
-import { VideoComment } from "@/lib/db-types";
+import { VideoComment, VideoRevision } from "@/lib/db-types";
 import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
 import { useVideoReviewStore } from "@/stores/video-review-store";
+import { useCommentSearchStore } from "@/stores/comment-search-store";
 
 interface CommentState {
     comments: VideoComment[];
@@ -13,7 +14,7 @@ interface CommentState {
     lastFetchedAt: number;
 
     setDisplayComments: (comments: VideoComment[]) => void;
-    fetchComments: (videoId: string) => Promise<void>;
+    fetchComments: (videoRevision: VideoRevision) => Promise<void>;
     fetchNewComments: (videoId: string) => Promise<VideoComment[]>;
     addComment: (c: Omit<VideoComment, "id" | "createdAt" | "updatedAt" | "deleted" | "drawingPath">) => Promise<string>;
     updateComment: (comment: VideoComment) => void;
@@ -33,9 +34,19 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         set({ displayComments: comments })
     },
 
-    fetchComments: async (videoId) => {
+    fetchComments: async (videoRevision: VideoRevision) => {
         set({ loading: true });
-        const data = await api.fetchComments(videoId);
+        const s = useCommentSearchStore.getState();
+        const data = await api.fetchComments({
+            videoId: videoRevision.videoId,
+            selectRevision: videoRevision.revision,
+            user: s.user,
+            dateRange: s.dateRange,
+            hasDrawing: s.hasDrawing,
+            hasIssue: s.hasIssue,
+            fetchAllComments: s.fetchAllComments,
+            filterText: s.filterText,
+        });
         set({ comments: data, loading: false, lastFetchedAt: Date.now() });
     },
 

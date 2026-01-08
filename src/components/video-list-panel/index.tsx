@@ -15,9 +15,9 @@ import { SettingPopover } from "@/components/setting";
 import { VideoNode } from "@/components/video-list-panel/tree/types";
 import { NodeRenderer } from "@/components/video-list-panel/node-renderer";
 import { buildTree, findPath } from "@/components/video-list-panel/tree/utils";
-import VideoUploadDialog from "@/components/video-upload";
+import VideoUploadDialog from "@/components/dialog/video-upload";
 import VideoListPanelHeader from "@/components/video-list-panel/header";
-import { VideoSearchDialog } from "@/components/video-search";
+import { VideoSearchDialog } from "@/components/dialog/video-search";
 import { useVideoStore } from "@/stores/video-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";
@@ -44,7 +44,7 @@ export default function VideoListPanel() {
     const treeRef = useRef<TreeApi<VideoNode>>(null);
 
     const headerHeight = useMemo(() => {
-        return headerRef.current ? headerRef.current.getBoundingClientRect().height : 0;
+        return headerRef.current ? headerRef.current.getBoundingClientRect().height * 0.75 : 0;
     }, [headerRef.current]);
 
     const treeHeight = useMemo(() => {
@@ -52,7 +52,7 @@ export default function VideoListPanel() {
     }, [bounds.height, headerHeight]);
 
     useEffect(() => {
-        (async () => {
+        void (async () => {
             await fetchVideos();
         })();
     }, [])

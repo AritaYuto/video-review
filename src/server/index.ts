@@ -35,7 +35,7 @@ app.route("/v1/videos", videosRouter);
 app.route("/v1/drawing", drawingRouter);
 app.route("/v1/upload-status", uploadStatusRouter);
 
-// 旧API
+// deprecate API
 app.route("/uploads", localRouter);
 app.route("/read-status", readStatusRouter);
 app.route("/media", resolverRouter);

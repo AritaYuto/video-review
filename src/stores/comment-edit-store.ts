@@ -31,8 +31,6 @@ export const useCommentEditStore = create<CommentEditState>((set, get) => ({
             });
 
             useCommentStore.getState().updateComment(get().editingComment!);
-
-            // 保存後は編集モードを抜ける
             set({ editingComment: null });
         } catch (e) {
             console.error("Failed to save comment:", e);

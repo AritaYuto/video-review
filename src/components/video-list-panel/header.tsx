@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { BrushCleaning, Plus, Search } from "lucide-react";
+import { X, Plus, Search } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { isGuest, isViewer } from "@/lib/role";
@@ -15,6 +15,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import { useVideoStore } from "@/stores/video-store";
+import CalendarDateRadio from "@/ui/calendar-date-radio";
+import { Separator } from "../ui/separator";
 
 export default function VideoListPanelHeader(
     { ref, onSearchDialogShow, onUploadDialogShow }
@@ -26,11 +28,11 @@ export default function VideoListPanelHeader(
     const t = useTranslations("video-list-panel");
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
-    const { filterTree, setFilterTree, isFiltering, clear } = useVideoSearchStore();
+    const { filterTree, setFilterTree, isFiltering, clear, videoDateRange, setVideoDateRange } = useVideoSearchStore();
 
     useEffect(() => {
         fetchVideos();
-    }, [filterTree]);
+    }, [filterTree, videoDateRange]);
 
     const handleClear = () => {
         clear();
@@ -63,7 +65,7 @@ export default function VideoListPanelHeader(
                                     onClick={() => handleClear()}
                                     className="inline-flex items-center justify-center hover:text-[#ff5500]"
                                 >
-                                    <BrushCleaning className="size-5" />
+                                    <X className="size-5" />
                                 </button>
                             </>
                         )
@@ -79,14 +81,18 @@ export default function VideoListPanelHeader(
                     <Plus />
                 </button>
             </div>
+            <Separator className="bg-[#333]" />
+
             <SidebarGroup className="py-0">
-                <SidebarGroupContent className="relative">
+                <CalendarDateRadio value={videoDateRange} onSetValue={setVideoDateRange} className="size-10" />
+
+                <SidebarGroupContent className="relative mt-1">
                     <SidebarInput
                         value={filterTree}
                         onChange={(e) => setFilterTree(e.target.value)}
-                        placeholder="Filter..."
-                        className="pl-8 border-[#444] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
-                    <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none" />
+                        placeholder="Filter video..."
+                        className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
+                    <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
                 </SidebarGroupContent>
             </SidebarGroup>
         </SidebarHeader>

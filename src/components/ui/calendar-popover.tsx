@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { Popover } from '@radix-ui/react-popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/ui/command';
 import { PopoverContent, PopoverTrigger } from '@/ui/popover';
@@ -8,6 +8,7 @@ import { Button } from '@/ui/button';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { Calendar } from '@/ui/calendar';
+import CalendarDateRadio from '@/ui/calendar-date-radio';
 
 interface CalendarPopoverProps extends React.ComponentProps<"div"> {
     value: DateRange | undefined;
@@ -25,43 +26,51 @@ export default function CalendarPopover({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button className={`${className}`} variant="outline">
+                <Button className={`text-white bg-[#333] hover:bg-[#fff]`} size="sm" variant="outline">
                     <CalendarIcon />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="flex items-center bg-[#1f1f1f] ">
-                <Calendar
-                    mode="range"
-                    defaultMonth={value?.to}
-                    selected={value}
-                    onSelect={onSetValue}
-                    numberOfMonths={1}
-                    className='rounded-md  bg-[#1f1f1f] text-white'
-                    classNames={{
-                        range_start: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-l-full',
-                        range_end: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-r-full',
-                        day_button: [
-                            // 選択状態
-                            "data-[range-start=true]:rounded-full!",
-                            "data-[range-start=true]:bg-[#ff8800]!",
-                            "data-[range-start=true]:text-white!",
+                <div>
+                    <div className="flex justify-between">
+                        <CalendarDateRadio value={value} onSetValue={onSetValue} collapseCalendarBtn />
+                        <Button onClick={() => setOpen(false)} className="text-white bg-[#333] hover:bg-[#fff] hover:text-[#000]">
+                            <X />
+                        </Button>
+                    </div>
+                    <Calendar
+                        mode="range"
+                        defaultMonth={value?.to}
+                        selected={value}
+                        onSelect={onSetValue}
+                        numberOfMonths={1}
+                        className='rounded-md  bg-[#1f1f1f] text-white'
+                        classNames={{
+                            range_start: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-l-full',
+                            range_end: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-r-full',
+                            day_button: [
+                                // range selected
+                                "data-[range-start=true]:rounded-full!",
+                                "data-[range-start=true]:bg-[#ff8800]!",
+                                "data-[range-start=true]:text-white!",
 
-                            "data-[range-end=true]:rounded-full!",
-                            "data-[range-end=true]:bg-[#ff8800]!",
-                            "data-[range-end=true]:text-white!",
+                                "data-[range-end=true]:rounded-full!",
+                                "data-[range-end=true]:bg-[#ff8800]!",
+                                "data-[range-end=true]:text-white!",
 
-                            // 中間の範囲
-                            "data-[range-middle=true]:rounded-none",
-                            "data-[range-middle=true]:bg-[#ff880055]",
-                            "data-[range-middle=true]:text-white!",
+                                // range middle
+                                "data-[range-middle=true]:rounded-none",
+                                "data-[range-middle=true]:bg-[#ff880055]",
+                                "data-[range-middle=true]:text-white!",
 
-                            // hover 時（全体の丸み補正）
-                            "hover:rounded-full",
-                        ].join(" "),
-                        today:
-                            'data-[selected=true]:rounded-l-none! rounded-full bg-[#ee990077]!'
-                    }}
-                />
+                                // hover
+                                "hover:rounded-full",
+                            ].join(" "),
+                            today:
+                                'data-[selected=true]:rounded-l-none! rounded-full bg-[#ee990077]!'
+                        }}
+                    />
+                </div>
             </PopoverContent>
         </Popover>
     );

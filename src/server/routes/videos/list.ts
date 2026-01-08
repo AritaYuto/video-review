@@ -3,13 +3,15 @@ import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { VideoSchema } from "@/schema/zod"
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
+import { toDateRange } from "@/lib/utils/date-helper";
 
 export const listRouter = new Hono();
 
 const QuerySchema = z.object({
-    from: z.string().optional(),
-    to: z.string().optional(),
-    target: z.string().optional(),
+    videoFrom: z.string().optional(),
+    videoTo: z.string().optional(),
+    commentsFrom: z.string().optional(),
+    commentsTo: z.string().optional(),
     name: z.string().optional(),
     filterTree: z.string().optional(),
     user: z.string().optional(),
@@ -49,9 +51,10 @@ listRouter.openapi({
 }, async (c) => {
     const query = c.req.valid("query");
     const {
-        from,
-        to,
-        target,
+        videoFrom,
+        videoTo,
+        commentsFrom,
+        commentsTo,
         filterTree,
         hasDrawing,
         hasIssue,
@@ -59,28 +62,22 @@ listRouter.openapi({
         user,
     } = query;
 
-    const fromDate = from ? new Date(Number(from)) : undefined;
-    const toDate = to ? new Date(Number(to)) : undefined;
-    const targetDate = target ? new Date(Number(target)) : undefined;
-
-    if (fromDate) fromDate.setHours(0, 0, 0, 0);
-    if (toDate) toDate.setHours(23, 59, 59, 999);
+    const videoDateRange = toDateRange(new Date(Number(videoFrom)), new Date(Number(videoTo)));
+    const commentsDateRange = toDateRange(new Date(Number(commentsFrom)), new Date(Number(commentsTo)));
 
     const whereVideoComment: PrismaTypes.VideoCommentWhereInput = { deleted: false };
     const whereVideo: PrismaTypes.VideoWhereInput = {};
-    let whereTimeFilter: PrismaTypes.DateTimeFilter = {};
-
-    if (from && to) {
-        whereTimeFilter = { gte: fromDate, lte: toDate }
-    } else if (target) {
-        whereTimeFilter = { lt: targetDate }
-    }
 
     if (user) {
-        whereVideoComment.userEmail = user;
-        whereVideoComment.createdAt = whereTimeFilter;
-    } else {
-        whereVideo.latestUpdatedAt = whereTimeFilter;
+        whereVideoComment.userName = user;
+    }
+
+    if(commentsDateRange.from !== undefined && commentsDateRange.to !== undefined) {
+        whereVideoComment.createdAt =  { gte: commentsDateRange.from, lte: commentsDateRange.to };
+    }
+
+    if(videoDateRange.from !== undefined && videoDateRange.to !== undefined) {
+        whereVideo.latestUpdatedAt =  { gte: videoDateRange.from, lte: videoDateRange.to };
     }
 
     if (hasDrawing) {
