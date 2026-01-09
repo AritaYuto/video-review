@@ -74,6 +74,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	BASE_URL = strings.TrimRight(BASE_URL, "/")
+
 	cmd := os.Args[1]
 	c, ok := commands[cmd]
 	if !ok {
