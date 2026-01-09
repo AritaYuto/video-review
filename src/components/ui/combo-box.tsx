@@ -28,7 +28,7 @@ export default function ComboBox<T>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button className={`${className} bg-[#181818] text-[#ddd] `} variant="outline" role="combobox" aria-expanded={open} >
+                <Button className={`${className} bg-[#181818] text-[#888]`} variant="outline" role="combobox" aria-expanded={open} >
                     {value
                         ? options.find((option) => option.value === value)?.label
                         : placeholder ?? ""}

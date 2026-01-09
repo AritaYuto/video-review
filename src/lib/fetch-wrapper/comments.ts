@@ -161,11 +161,11 @@ export async function fetcCommentUsers(
     }
 ): Promise<{userName: string, userEmail: string}[]> {
     const params = new URLSearchParams();
-    if (data.videoId) params.set("from", data.videoId);
+    if (data.videoId) params.set("videoId", data.videoId);
     if (data.hasDrawing) params.set("hasDrawing", data.hasDrawing ? "true" : "false");
     if (data.hasIssue) params.set("hasIssue", data.hasIssue ? "true" : "false");
     if (data.rev) {
-        if (data.rev.from) params.set("to", data.rev.from.toString());
+        if (data.rev.from) params.set("from", data.rev.from.toString());
         if (data.rev.to) params.set("to", data.rev.to.toString());
     }
 

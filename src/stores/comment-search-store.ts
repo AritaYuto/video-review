@@ -23,7 +23,7 @@ const InitCommentSearchState = {
     dateRange: undefined,
     hasDrawing: false,
     hasIssue: false,
-    fetchAllComments: false,
+    fetchAllComments: true,
     user: "",
     filterText: "",
 };
