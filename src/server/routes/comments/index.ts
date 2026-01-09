@@ -88,8 +88,6 @@ commentsRouter.openapi({
             orderBy: { time: "asc" },
         });
 
-        console.log(where)
-        console.log(comments)
 
         return c.json(comments, { status: 200 });
     } catch {

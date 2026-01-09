@@ -68,7 +68,6 @@ export class S3Storage implements FileStorage {
             if (ret.includes("http://localstack")) {
                 ret = ret.replace("http://localstack", "http://localhost");
             }
-            console.log("Signed URL obtained:", ret);
 
             return ret;
         } catch (err) {

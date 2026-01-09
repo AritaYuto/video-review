@@ -5,6 +5,8 @@ import fs from "fs";
 
 const content = fs.readFileSync("package.json") as any;
 const productName = JSON.parse(content).name
+const isCIBuild = process.env.CI_BUILD === "true";
+const shouldDeployPrisma = !isCIBuild;
 let outBase: string | undefined = process.env.VIDEO_REVIEW_BUILD_OUTPUT_DIR;
 if (!outBase) {
     outBase = undefined;
@@ -14,6 +16,9 @@ async function build() {
     mkdirSync("public", { recursive: true });
     execSync("npm install", { stdio: "inherit" });
     execSync("npm run prisma:generate", { stdio: "inherit" });
+    if (shouldDeployPrisma) {
+        execSync("npm run prisma:deploy", { stdio: "inherit" });
+    }
     execSync("next build", { stdio: "inherit" });
 }
 
@@ -37,7 +42,7 @@ async function buildAndCopy(outDir: string) {
 }
 
 const main = async () => {
-    if(!outBase) {
+    if (!outBase) {
         console.log("Since VIDEO_REVIEW_BUILD_OUTPUT_DIR is not set, output will be directed to ProjectRoot.");
         defaultBuild();
     } else {
