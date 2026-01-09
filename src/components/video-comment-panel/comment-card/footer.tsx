@@ -28,8 +28,8 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
                 <span className="text-xs">{props.comment.thumbsUp ?? 0}</span>
             </button>
 
-            <span className="text-xs text-[#888]">
-                {formatDate(props.comment.createdAt)}
+            <span className="text-xs text-[#ccc]">
+                {formatDate(props.comment.createdAt)} : Rev.{props.comment.videoRevNum}
             </span>
         </CardFooter>
     );

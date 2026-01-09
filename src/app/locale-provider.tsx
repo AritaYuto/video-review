@@ -9,7 +9,7 @@ type LocaleContextType = {
 };
 
 const LocaleContext = createContext<LocaleContextType>({
-    locale: "ja",
+    locale: "en",
     setLocale: () => {},
 });
 
@@ -19,11 +19,11 @@ const MessagesMap: Record<string, () => Promise<{ default: any }>> = {
 };
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-    const [locale, setLocaleState] = useState("ja");
+    const [locale, setLocaleState] = useState("en");
     const [messages, setMessagess] = useState<any>(null);
 
     useEffect(() => {
-        const stored = localStorage.getItem("locale") as string ?? "ja";
+        const stored = localStorage.getItem("locale") as string ?? "en";
         setLocaleState(stored);
         MessagesMap[stored]().then((m: any) => setMessagess(m.default));
     }, []);

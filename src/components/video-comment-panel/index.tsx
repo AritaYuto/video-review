@@ -175,7 +175,7 @@ export default function VideoCommentPanel() {
                                 <SidebarInput
                                     value={filterText}
                                     onChange={(e) => setFilterText(e.target.value)}
-                                    placeholder="Filter video..."
+                                    placeholder="Filter comment text..."
                                     className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
                                 <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
                             </SidebarGroupContent>
