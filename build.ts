@@ -14,6 +14,7 @@ async function build() {
     mkdirSync("public", { recursive: true });
     execSync("npm install", { stdio: "inherit" });
     execSync("npm run prisma:generate", { stdio: "inherit" });
+    execSync("npm run prisma:deploy", { stdio: "inherit" });
     execSync("next build", { stdio: "inherit" });
 }
 

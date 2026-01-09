@@ -176,9 +176,6 @@ transferRouter.openapi({
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.promises.writeFile(tmpFilePath, buffer);
 
-
-    console.log("Uploading to Nextcloud:", session.storageKey);
-
     await nextCloudClient!.put(
         session.storageKey,
         fs.createReadStream(tmpFilePath)

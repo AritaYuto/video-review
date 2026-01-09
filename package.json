@@ -12,9 +12,6 @@
         "prisma:deploy": "npx prisma migrate deploy",
         "prisma:generate": "npx prisma generate",
         "prisma:migration": "npx prisma migrate dev --name",
-        "maintenance:create:admin": "npx tsx maintenance/create_admin.ts",
-        "maintenance:drycleanup": "npx tsx maintenance/cleanup_local.ts --dry-run",
-        "maintenance:cleanup": "npx tsx maintenance/cleanup_local.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.953.0",
