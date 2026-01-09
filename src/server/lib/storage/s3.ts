@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "@/server/lib/storage/integrations/s3";
-import { UploadStorageType } from'@/lib/db-types';
+import { UploadStorageType } from '@/lib/db-types';
 import { FileStorage } from "@/server/lib/storage";
 
 import "server-only"
@@ -92,8 +92,22 @@ export class S3Storage implements FileStorage {
         if (url.includes("http://localstack")) {
             url = url.replace("http://localstack", "http://localhost");
         }
-        console.log("download", url);
-
         return NextResponse.redirect(url, 302);
+    }
+
+    async deleteObject(storageKey: string): Promise<boolean> {
+        if (!s3Client) return Promise.reject(undefined);
+
+        try {
+            const command = new DeleteObjectCommand({
+                Bucket: process.env.S3_BUCKET!,
+                Key: storageKey,
+            });
+
+            await s3Client.send(command);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 }

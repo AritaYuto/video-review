@@ -1,6 +1,7 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import bcrypt from "bcrypt";
+import { maintenanceRouter } from "@/routes/admin/maintenance";
 
 export const adminRouter = new Hono();
 
@@ -76,3 +77,5 @@ adminRouter.openapi({
     });
     return c.json({ success: true }, { status: 200 });
 });
+
+adminRouter.route("/maintenance", maintenanceRouter);

@@ -66,7 +66,7 @@ listRouter.openapi({
     const commentsDateRange = toDateRange(new Date(Number(commentsFrom)), new Date(Number(commentsTo)));
 
     const whereVideoComment: PrismaTypes.VideoCommentWhereInput = { deleted: false };
-    const whereVideo: PrismaTypes.VideoWhereInput = {};
+    const whereVideo: PrismaTypes.VideoWhereInput = { deleted: false };
 
     if (user) {
         whereVideoComment.userName = user;
