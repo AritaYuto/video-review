@@ -29,4 +29,8 @@ export class NextCloudStorage implements FileStorage {
     async download(storageKey: string): Promise<NextResponse> {
         return nextCloudClient!.download(storageKey);
     }
+
+    async deleteObject(storageKey: string): Promise<boolean> {
+        return nextCloudClient!.deleteObject(storageKey);
+    }
 }

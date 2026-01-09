@@ -11,6 +11,7 @@ export interface FileStorage {
     fallbackURL(storageKey: string): Promise<string>;
     download(storageKey: string): Promise<NextResponse>;
     hasObject(storageKey: string): Promise<boolean>;
+    deleteObject(storageKey: string): Promise<boolean>;
 }
 
 export const VideoReviewStorage: FileStorage = (() => {
@@ -20,6 +21,6 @@ export const VideoReviewStorage: FileStorage = (() => {
         case "nextCloud":
             return new NextCloudStorage();
         default:
-            return new LocalStorage();
+            return new LocalStorage(process.cwd());
     }
 })();

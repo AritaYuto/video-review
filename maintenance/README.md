@@ -1,0 +1,43 @@
+# VideoReview Maintenance CLI
+
+This is a CLI tool for maintaining VideoReview.  
+It is an **internal administrator tool** separate from the main application.
+
+## Build Instructions
+
+### Windows
+> GOOS=windows GOARCH=amd64 go build -o video-review-cli
+
+### Mac
+> GOOS=darwin GOARCH=arm64 go build -o video-review-cli
+
+### Linux
+> GOOS=linux GOARCH=amd64 go build -o video-review-cli
+
+## Required Environment Variables
+
+URL of the server running VideoReview
+> VIDEO_REVIEW_SERVER_URL
+
+Maintenance Token  
+Set the same value as in .env
+> ADMIN_MAINTENANCE_TOKEN
+
+### Command List
+
+##### Create an administrator
+> go run . create-admin --email hoge@gmail.com --pass 123abc
+
+##### Get the video list (JSON)
+> go run . get-videos
+
+##### Get a video's revision information (JSON)
+> go run . get-videos-rev --video_id {uuid}
+
+##### Logically delete a video
+> go run . delete-video --video_id {uuid}
+
+##### Delete the specified revision of a video
+* Performs file deletion + logical deletion
+* Cannot be undone after execution
+> go run . purge-revision --video_id {uuid} --revision 1

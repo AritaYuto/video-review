@@ -43,13 +43,15 @@ model Identity {
 }
 
 model Video {
-  id              String   @id @default(uuid())
+  id              String            @id @default(uuid())
   title           String
-  folderKey       String   // ツリー用に表示する場所 (例: projectA/scene01/hogehoge_video)
+  folderKey       String
   scenePath       String?
   revisions       VideoRevision[]
   comments        VideoComment[]
-  latestUpdatedAt DateTime @default(now())
+  latestUpdatedAt DateTime          @default(now())
+  deleted         Boolean           @default(false)
+
 }
 
 model VideoRevision {
@@ -57,8 +59,11 @@ model VideoRevision {
   videoId     String
   video       Video    @relation(fields: [videoId], references: [id])
   revision    Int
-  filePath    String   // 実ファイルへの相対パス (/videos/.../rev_3.mp4)
+  filePath    String
   uploadedAt  DateTime @default(now())
+  deleted     Boolean  @default(false)
+
+  @@unique([videoId, revision])
 }
 
 model VideoComment {

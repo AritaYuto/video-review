@@ -59,11 +59,11 @@ export class NextCloudClient {
     public async put(path: string, stream: Readable) {
         const pathWithRoot = `${this.rootPath}/${path}`;
         let pathSegments = pathWithRoot.split("/");
-        for(let i = 0; i < pathSegments.length - 1; i++) {
+        for (let i = 0; i < pathSegments.length - 1; i++) {
             const dirPath = pathSegments.slice(0, i + 1).join("/");
             await this.createDirectory(dirPath);
         }
-        
+
         const url = this.pathUnderRoot(path);
         const chunks: Buffer[] = [];
         for await (const chunk of stream) {
@@ -92,6 +92,26 @@ export class NextCloudClient {
                 "Content-Type": res.headers.get("Content-Type") ?? "application/octet-stream",
             },
         });
+    }
+
+    async deleteObject(path: string): Promise<boolean> {
+        const url = this.pathUnderRoot(path);
+
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: this.getHeaders(),
+        });
+
+        if (res.status === 204) {
+            return true;
+        }
+
+        if (res.status === 404) {
+            return true;
+        }
+
+        console.error("NextCloud delete failed", res.status, await res.text());
+        return false;
     }
 
     public pathUnderRoot(path: string): string {
