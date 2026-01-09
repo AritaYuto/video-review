@@ -40,8 +40,6 @@ usersRouter.openapi({
         whereVideoComment.videoId = videoId;
     }
 
-    console.log(videoId)
-
     if (revFrom || revTo) {
         whereVideoComment.videoRevNum = {};
         if (revFrom) whereVideoComment.videoRevNum.gte = parseInt(revFrom);
