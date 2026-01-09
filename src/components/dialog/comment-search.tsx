@@ -40,7 +40,6 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
     useEffect(() => {
         void (async () => {
             const users = await fetcCommentUsers({ videoId: selectedRevision?.videoId, hasDrawing });
-            console.log(users);
             setCommentUsers(users.map((u) => ({ label: u.userName, value: u.userName })));
         })();
     }, [open]);
