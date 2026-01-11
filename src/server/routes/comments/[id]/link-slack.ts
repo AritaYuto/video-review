@@ -35,8 +35,6 @@ linkSlackRouter.openapi({
     const { id: commentId } = c.req.valid("param");
     const { ts, channelId } = c.req.valid("json");
 
-    console.log("c, --------------- ", commentId, ts, channelId)
-
     await prisma.slackMessage.create({
         data: {
             videoCommentId: commentId,
@@ -45,5 +43,9 @@ linkSlackRouter.openapi({
         },
     });
 
-    return c.json({ success: true });
+    const comment = await prisma.videoComment.findUnique({
+        where: { id: commentId },
+        include: { slackMessage: true },
+    });
+    return c.json(comment, 200);
 });

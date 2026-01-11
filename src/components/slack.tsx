@@ -25,9 +25,6 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
         return false;
     }
 
-    console.log(ret);
-    await api.linkCommentToSlack(commentId, ret);
-
     toast.custom(() => (
         <div className="flex gap-3 rounded-md bg-zinc-900 p-3 text-white shadow">
             <img
@@ -44,6 +41,7 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
             </div>
         </div>
     ));
+    await useCommentStore.getState().slackLinkedComment(commentId, ret.ts, ret.channelId);
     return true;
 }
 

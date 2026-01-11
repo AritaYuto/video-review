@@ -21,6 +21,7 @@ interface CommentState {
     deleteComment: (id: string) => Promise<void>;
     incrementThumbsUpCount: (id: string) => Promise<void>;
     issueLinkedComment: (id: string, user: string, issueType: string, screenshot: Blob | null) => Promise<void>;
+    slackLinkedComment: (id: string, ts: string, channelId: string) => Promise<void>;
 }
 
 export const useCommentStore = create<CommentState>((set, get) => ({
@@ -82,6 +83,13 @@ export const useCommentStore = create<CommentState>((set, get) => ({
             screenshot
         )
         const updated = await api.updateComment({ id, issueId: issueId });
+        set({
+            comments: get().comments.map((c) => (c.id === id ? updated : c)),
+        });
+    },
+
+    slackLinkedComment: async(id, ts, channelId) => {
+        const updated = await api.linkCommentToSlack(id, { ts, channelId });
         set({
             comments: get().comments.map((c) => (c.id === id ? updated : c)),
         });
