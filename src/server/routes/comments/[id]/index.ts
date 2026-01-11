@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { linkSlackRouter } from "./link-slack";
 
 export const byIdRouter = new Hono();
 
@@ -34,3 +35,5 @@ byIdRouter.openapi({
         return c.json({ error: "failed to fetch comment" }, 500);
     }
 });
+
+byIdRouter.route("/link-slack", linkSlackRouter)

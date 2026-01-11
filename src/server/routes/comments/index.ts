@@ -86,8 +86,10 @@ commentsRouter.openapi({
         const comments = await prisma.videoComment.findMany({
             where,
             orderBy: { time: "asc" },
+            include: { 
+                slackMessage: true
+            }
         });
-
 
         return c.json(comments, { status: 200 });
     } catch {

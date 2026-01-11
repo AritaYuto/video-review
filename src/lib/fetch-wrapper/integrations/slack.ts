@@ -3,9 +3,9 @@ import { useAuthStore } from "@/stores/auth-store";
 export async function postToSlack(
     text: string,
     screenshot: Blob | null,
-): Promise<boolean> {
+): Promise<{ts: string, channelId: string} | undefined> {
     if(screenshot === null) {
-        return false;
+        return undefined;
     }
 
     const token = useAuthStore.getState().token;
@@ -23,5 +23,6 @@ export async function postToSlack(
             Authorization: `Bearer ${token}`,
         },
     });
-    return res.ok;
+    const data = await res.json();
+    return {ts: data.ts, channelId: data.channelId};
 }

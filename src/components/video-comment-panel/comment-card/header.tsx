@@ -17,7 +17,7 @@ import {
     faLink,
 } from "@fortawesome/free-solid-svg-icons";
 import { useVideoReviewStore } from "@/stores/video-review-store";
-import { captureFrame, formatTime } from "@/lib/utils";
+import { captureFrame, formatDate, formatTime } from "@/lib/utils";
 import { createVideoCommentLink } from "@/lib/url";
 import { useCommentStore } from "@/stores/comment-store";
 import { useAuthStore } from "@/stores/auth-store";
@@ -120,7 +120,6 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
     return (
         <CardHeader className="flex flex-row items-center justify-between px-3 pb-1">
             <div className="flex items-center gap-3">
-                {/* アバター */}
                 <Avatar className="h-8 w-8">
                     {isViewer(role) && props.comment.userEmail ? (
                         <AvatarImage src={`/api/v1/integrations/jira/avatar?email=${props.comment.userEmail}`} />
@@ -130,8 +129,8 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
                 </Avatar>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>
-                    <span className="text-xs text-[#ddd]">
-                        {formatTime(props.comment.time)}
+                    <span className="text-xs text-[#888]">
+                        {formatDate(props.comment.createdAt)} : #{props.comment.videoRevNum}
                     </span>
                 </div>
             </div>

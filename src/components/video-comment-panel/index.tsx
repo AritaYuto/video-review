@@ -71,7 +71,6 @@ export default function VideoCommentPanel() {
                     userEmail: email ?? "",
                     thumbsUp: 0,
                 })
-
                 await handlePostCommentToSlack(id);
             }
         } else {
@@ -87,7 +86,7 @@ export default function VideoCommentPanel() {
 
     const handlePostCommentToSlack = async (id: string) => {
         const screenshot = await captureFrame(videoRefElement);
-        await slackToast(id, screenshot);
+        return await slackToast(id, screenshot);
     }
 
     useEffect(() => {

@@ -16,7 +16,7 @@ interface CommentState {
     setDisplayComments: (comments: VideoComment[]) => void;
     fetchComments: (videoRevision: VideoRevision) => Promise<void>;
     fetchNewComments: (videoId: string) => Promise<VideoComment[]>;
-    addComment: (c: Omit<VideoComment, "id" | "createdAt" | "updatedAt" | "deleted" | "drawingPath">) => Promise<string>;
+    addComment: (c: Omit<VideoComment, "slackMessage" | "id" | "createdAt" | "updatedAt" | "deleted" | "drawingPath">) => Promise<string>;
     updateComment: (comment: VideoComment) => void;
     deleteComment: (id: string) => Promise<void>;
     incrementThumbsUpCount: (id: string) => Promise<void>;

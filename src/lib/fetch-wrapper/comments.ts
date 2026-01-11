@@ -61,6 +61,7 @@ export async function updateComment(data: {
     issueId?: string | null;
     drawingPath?: string | null;
     thumbsUp?: boolean;
+    slackTs?: string;
 }) {
     const res = await fetch("/api/v1/comments", {
         method: "PATCH",
@@ -100,6 +101,24 @@ export async function deleteComment(id: string) {
 export async function getComment(commentId: string): Promise<VideoComment> {
     const res = await fetch(`/api/v1/comments/${commentId}`);
     if (!res.ok) throw new Error("Failed to comment");
+    return res.json();
+}
+
+export async function linkCommentToSlack(
+    commentId: string, 
+    slack: { ts: string, channelId: string}
+): Promise<VideoComment> {
+    const res = await fetch(`/api/v1/comments/${commentId}/link-slack`,{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({     
+            ts: slack.ts,
+            channelId: slack.channelId 
+        }),
+    });
+    if (!res.ok) throw new Error("Failed linked");
     return res.json();
 }
 

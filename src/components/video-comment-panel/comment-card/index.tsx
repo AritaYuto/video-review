@@ -48,19 +48,19 @@ export default function CommentCard(props: {
 
                 let stateClass = "";
                 if (hasIssue) {
-                    stateClass = "border-[#32cd32] bg-[#343]";
+                    stateClass = "border-[#32cd32]";
                 } else if (hasDrawing) {
-                    stateClass = "border-[#4aa3ff] bg-[#1f2a33]";
+                    stateClass = "border-[#4aa3ff]";
                 }
 
                 if (hasIssue && hasDrawing) {
-                    stateClass = "border-[#ffff00] bg-[#5418]";
+                    stateClass = "border-[#ffff00]";
                 }
 
                 if (isSelected) {
                     stateClass = "border-[#ff8800] bg-[#3a2b00]";
                 } else if (isActive) {
-                    stateClass = "border-[#ffffff] bg-[#222]";
+                    stateClass = "border-[#ffffff]";
                 }
 
                 return (

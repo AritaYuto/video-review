@@ -8,8 +8,6 @@ import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 import * as api from "@/lib/fetch-wrapper";
 
 export async function slackToast(commentId: string, screenshot: Blob | null): Promise<boolean> {
-    const token = useAuthStore.getState().token;
-
     if (screenshot === null) {
         return false;
     }
@@ -26,6 +24,9 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
     if(!ret) {
         return false;
     }
+
+    console.log(ret);
+    await api.linkCommentToSlack(commentId, ret);
 
     toast.custom(() => (
         <div className="flex gap-3 rounded-md bg-zinc-900 p-3 text-white shadow">
