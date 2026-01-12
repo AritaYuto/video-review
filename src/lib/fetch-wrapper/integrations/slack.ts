@@ -23,6 +23,8 @@ export async function postToSlack(
             Authorization: `Bearer ${token}`,
         },
     });
+    
+    if(!res.ok) return undefined;
     const data = await res.json();
     return {ts: data.ts, channelId: data.channelId};
 }

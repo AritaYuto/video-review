@@ -2,16 +2,16 @@ import { WebClient } from "@slack/web-api";
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
-export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | null> {
+export async function avatar(email: string): Promise<string | undefined> {
     if (!email) {
-        return null;
+        return undefined;
     }
 
     try {
         const res = await slack.users.lookupByEmail({ email });
 
         if (!res.ok || !res.user) {
-            return null;
+            return undefined;
         }
 
         const avatarUrl =
@@ -19,16 +19,10 @@ export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | null>
             res.user.profile?.image_72;
 
         if (!avatarUrl) {
-            return null;
+            return undefined;
         }
-
-        const imgRes = await fetch(avatarUrl);
-        if (!imgRes.ok) {
-            return null;
-        }
-
-        return Buffer.from(await imgRes.arrayBuffer());
+        return avatarUrl;
     } catch (e){
-        return null;
+        return undefined;
     }
 }

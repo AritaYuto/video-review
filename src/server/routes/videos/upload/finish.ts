@@ -67,7 +67,7 @@ finishRouter.openapi({
         } else {
             await prisma.video.update({
                 where: { id: video.id },
-                data: { latestUpdatedAt: new Date() },
+                data: { latestUpdatedAt: new Date(), deleted: false },
             });
         }
 

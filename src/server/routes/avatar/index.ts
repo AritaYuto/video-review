@@ -9,15 +9,6 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 import { v4 as uuidv4 } from 'uuid';
 import { getBaseUrl } from "@/lib/url";
 
-const defaultAvatarSvg = () => {
-    return `
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="24" fill="#3f3f46"/>
-            <circle cx="24" cy="18" r="8" fill="#e5e7eb"/>
-            <path d="M8 44c2-8 12-12 16-12s14 4 16 12" fill="#e5e7eb"/>
-        </svg>`.trim();
-}
-
 export const avatarRouter = new Hono();
 
 const GetQuerySchema = z.object({
@@ -44,34 +35,14 @@ avatarRouter.openapi({
         const { email } = query;
 
         if (!email) {
-            return new NextResponse(defaultAvatarSvg(), {
-                headers: {
-                    "Content-Type": "image/svg+xml",
-                },
-            });
+            return c.json({ avatarUrl: undefined });
         }
 
-        const baseURL = getBaseUrl(c.req.raw);
-        const buffer = await avatar(baseURL, email);
-        if (!buffer) {
-            return new NextResponse(defaultAvatarSvg(), {
-                headers: {
-                    "Content-Type": "image/svg+xml",
-                },
-            });
-        }
+        const avatarUrl = await avatar(email);
+        return c.json({ avatarUrl });
 
-        return new NextResponse(buffer, {
-            headers: {
-                "Content-Type": "image/png",
-            },
-        });
     } catch {
-        return new NextResponse(defaultAvatarSvg(), {
-            headers: {
-                "Content-Type": "image/svg+xml",
-            },
-        });
+        return c.json({ avatarUrl: undefined });
     }
 });
 

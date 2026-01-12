@@ -25,11 +25,12 @@ import { useVideoStore } from "@/stores/video-store";
 import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import { ShareLinkDialog } from "@/components/share-link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CardHeader } from "@/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useTranslations } from "next-intl";
 import { isViewer } from "@/lib/role";
+import { avatarUrl } from "@/lib/fetch-wrapper";
 
 // Dropdown menu item for copying a shareable link to the selected comment.
 function DropdownMenu_SharedLink() {
@@ -116,12 +117,38 @@ function DropdownMenu_Delete(props: { comment: VideoComment }) {
 
 export default function CommentCardHeader(props: { comment: VideoComment }) {
     const { role } = useAuthStore();
+    const [ avatarFallback, setAvatarFallback] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (!props.comment.userEmail) {
+            setAvatarFallback(undefined);
+            return;
+        }
+
+        let cancelled = false;
+        void (async () => {
+            try {
+                const result = await avatarUrl(props.comment.userEmail);
+                if (!cancelled) {
+                    setAvatarFallback(result);
+                }
+            } catch {
+                if (!cancelled) {
+                    setAvatarFallback(undefined);
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [props.comment.userEmail]);
 
     return (
         <CardHeader className="flex flex-row items-center justify-between px-3 pb-1">
             <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
-                    <AvatarImage src={`/api/v1/avatar?email=${props.comment.userEmail}`} />
+                    <AvatarImage src={avatarFallback} />
                 </Avatar>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>

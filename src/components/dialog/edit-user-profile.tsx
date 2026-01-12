@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Button } from "@/ui/button";
 import { useTranslations } from "next-intl";
-import { uploadAvatar } from "@/lib/fetch-wrapper";
+import { avatarUrl, uploadAvatar } from "@/lib/fetch-wrapper";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 
@@ -19,11 +19,34 @@ export default function EditUserProfileDialog({
     const t = useTranslations("edit-user-profile");
     const email = useAuthStore((s) => s.email);
     const name = useAuthStore((s) => s.displayName);
-    const currentAvatarUrl = `/api/v1/avatar?email=${email}`;
+    const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | undefined>(undefined);
+
 
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if(!email) return;
+
+        let cancelled = false;
+        void (async () => {
+            try {
+                const result = await avatarUrl(email);
+                if (!cancelled) {
+                    setCurrentAvatarUrl(result);
+                }
+            } catch {
+                if (!cancelled) {
+                    setCurrentAvatarUrl(undefined);
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [email])
 
     const previewUrl = useMemo(() => {
         if (file) {
