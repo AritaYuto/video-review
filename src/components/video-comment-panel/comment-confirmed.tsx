@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useVideoPlayerStore } from "@/stores/video-player-store";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
-import { isGuest, isViewer } from "@/lib/role";
+import { isGuest } from "@/lib/role";
 
 export type ECommentConfirmedType = "commentUpdate" | "commentAdd";
 

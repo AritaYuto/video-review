@@ -1,10 +1,7 @@
 "use client";
 
-import { Button } from "@/ui/button";
-import { TooltipTrigger, Tooltip, TooltipContent } from "@/ui/tooltip";
 import { CardContent } from "@/ui/card";
 import { VideoComment } from "@/lib/db-types";
-import { Bug } from 'lucide-react';
 import { formatTime } from "@/lib/utils";
 
 

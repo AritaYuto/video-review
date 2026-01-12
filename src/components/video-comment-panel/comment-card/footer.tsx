@@ -6,9 +6,6 @@ import { formatDate } from "@/lib/utils";
 import { useCommentStore } from "@/stores/comment-store";
 import { VideoComment } from "@/lib/db-types";
 import { CardFooter } from "@/ui/card";
-import { Button } from "@/ui/button";
-import { TooltipTrigger, Tooltip, TooltipContent } from "@/ui/tooltip";
-import { Bug } from "lucide-react";
 import { Badge } from "@/ui/badge";
 
 export default function CommentCardFooter(props: { comment: VideoComment }) {
