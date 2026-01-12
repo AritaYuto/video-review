@@ -1,12 +1,13 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faComment } from "@fortawesome/free-solid-svg-icons";
+import { faThumbsUp, faComment, faPalette } from "@fortawesome/free-solid-svg-icons";
 import { formatDate } from "@/lib/utils";
 import { useCommentStore } from "@/stores/comment-store";
 import { VideoComment } from "@/lib/db-types";
 import { CardFooter } from "@/ui/card";
 import { Badge } from "@/ui/badge";
+import { Palette } from "lucide-react";
 
 export default function CommentCardFooter(props: { comment: VideoComment }) {
     const { incrementThumbsUpCount } = useCommentStore();
@@ -15,11 +16,15 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
         incrementThumbsUpCount(id);
     }
 
+    const hasIssueId = props.comment.issueId && process.env.NEXT_PUBLIC_JIRA_BASE_URL !== undefined;
+    const hasSlackMessage = props.comment.slackMessage;
+    const hasDrawing = props.comment.drawingPath !== "" && props.comment.drawingPath !== null;
+
     return (
         <CardFooter className="flex justify-end px-2">
             <div>
                 <div className="flex w-full gap-1">
-                    {(props.comment.issueId && process.env.NEXT_PUBLIC_JIRA_BASE_URL !== undefined) && (
+                    {hasIssueId && (
                         <Badge className="bg-white" >
                             <a
                                 className="text-[#4ea7ff] text-xs hover:underline"
@@ -29,10 +34,10 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
                             </a>
                         </Badge>
                     )}
-                    {(props.comment.slackMessage) && (
+                    {hasSlackMessage && (
                         <Badge className="bg-white">
                             <a
-                                href={`https://${process.env.NEXT_PUBLIC_SLACK_TEAM}.slack.com/archives/${props.comment.slackMessage.channelId}/p${props.comment.slackMessage.ts}`}
+                                href={`https://${process.env.NEXT_PUBLIC_SLACK_TEAM}.slack.com/archives/${props.comment.slackMessage?.channelId}/p${props.comment.slackMessage?.ts}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex items-center justify-centertext-[#4A154B]hover:text-[#611f69]"
@@ -42,6 +47,14 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
                             </a>
                         </Badge>
                     )}
+
+                    {hasDrawing && (
+                        <Badge className="bg-white">
+                                <FontAwesomeIcon icon={faPalette} size="xl" className="text-black"/> 
+                        </Badge>
+                    )}
+
+                    
                     <Badge className="bg-white">
                         {/* 👍 like button */}
                         <button

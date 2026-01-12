@@ -21,3 +21,11 @@ export async function uploadAvatar(data: {
     const json = await res.json();
     return json.ok;
 }
+
+export async function avatarUrl(email: string): Promise<string | undefined> {
+    const res = await fetch(`/api/v1/avatar?email=${email}`, { method: "get" });
+    if (!res.ok) return undefined;
+
+    const json = await res.json();
+    return json.avatarUrl;
+}

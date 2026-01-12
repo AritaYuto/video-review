@@ -1,9 +1,9 @@
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "../storage";
 
-export async function avatar(baseURL: string, email: string): Promise<Buffer<ArrayBuffer> | null> {
+export async function avatar(email: string): Promise<string | undefined> {
     if (!email) {
-        return null;
+        return undefined;
     }
 
     try {
@@ -13,20 +13,15 @@ export async function avatar(baseURL: string, email: string): Promise<Buffer<Arr
 
 
         if (!user || !user.avatarPath) {
-            return null;
+            return undefined;
         }
 
-        const avatarUrl = await VideoReviewStorage.fallbackURL(user.avatarPath)
-        if (!avatarUrl) {
-            return null;
+        const fallbackURL = await VideoReviewStorage.fallbackURL(user.avatarPath)
+        if (!fallbackURL) {
+            return undefined;
         }
-
-        const imgRes = await fetch(baseURL + "/" + avatarUrl);
-        if (!imgRes.ok) {
-            return null;
-        }
-        return Buffer.from(await imgRes.arrayBuffer());
-    } catch {
-        return null;
+        return fallbackURL;
+    } catch (e) {
+        return undefined;
     }
 }
