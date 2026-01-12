@@ -6,7 +6,7 @@ import { UploadStorageType } from '@/lib/db-types';
 import { FileStorage } from "@/server/lib/storage";
 import { lookup } from "mime-types";
 import { createReadStream } from "fs";
-import Stream from "stream";
+import { Readable } from "stream";
 
 import "server-only"
 
@@ -35,7 +35,7 @@ export class S3Storage implements FileStorage {
         }
     }
 
-    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
+    async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string): Promise<void> {
         if (!s3Client) return Promise.reject(undefined);
 
         try {

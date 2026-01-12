@@ -5,7 +5,6 @@ export type {
     User,
     UserVideoReadStatus,
     Identity,
-    JiraAvatarCache,
     ApiToken
 } from "@prisma/client";
 

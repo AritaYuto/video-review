@@ -35,10 +35,6 @@ export class LocalStorage implements FileStorage {
         const fullPath = path.join(process.cwd(), "uploads", storageKey);
         await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.promises.rename(src, fullPath);
-
-        if (fs.existsSync(src)) {
-            fs.rmSync(src);
-        }
     }
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {

@@ -105,10 +105,10 @@ avatarRouter.openapi({
         }
 
         const body = await c.req.parseBody();
-        const email = body.email as string;
-        const file = body.file as File;
+        const email = body.email;
+        const file = body.file;
 
-        if (!email || !file) {
+        if (typeof email !== "string" || !(file instanceof File)) {
             return c.json({ error: "email and file are required" }, 400);
         }
 

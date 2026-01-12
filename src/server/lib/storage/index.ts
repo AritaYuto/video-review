@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { LocalStorage } from "@/server/lib/storage/local";
 import { NextCloudStorage } from "@/server/lib/storage/nextcloud";
 import { S3Storage } from "@/server/lib/storage/s3";
-import Stream from "stream";
+import { Readable } from "stream";
 
 import "server-only"
 
 export interface FileStorage {
     type(): string;
-    directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void>;
+    directUploadFromBuffer(storageKey: string, src: Readable, contentType: string): Promise<void>;
     directUploadFromFile(storageKey: string, src: string): Promise<void>;
     uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string>;
     fallbackURL(storageKey: string): Promise<string>;
