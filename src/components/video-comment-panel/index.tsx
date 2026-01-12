@@ -6,11 +6,10 @@ import { captureFrame } from "@/lib/utils";
 import { useCommentStore } from "@/stores/comment-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
-import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import CommentConfirmed from "@/components/video-comment-panel/comment-confirmed";
 import { useDrawingStore } from "@/stores/drawing-store";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CommentSearchDialog } from "@/components/dialog/comment-search";
 import { readVideoComment } from "@/lib/fetch-wrapper";
 import { useTranslations } from "next-intl";
@@ -71,7 +70,6 @@ export default function VideoCommentPanel() {
                     userEmail: email ?? "",
                     thumbsUp: 0,
                 })
-
                 await handlePostCommentToSlack(id);
             }
         } else {
@@ -87,7 +85,7 @@ export default function VideoCommentPanel() {
 
     const handlePostCommentToSlack = async (id: string) => {
         const screenshot = await captureFrame(videoRefElement);
-        await slackToast(id, screenshot);
+        return await slackToast(id, screenshot);
     }
 
     useEffect(() => {

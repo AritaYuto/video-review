@@ -8,8 +8,6 @@ import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 import * as api from "@/lib/fetch-wrapper";
 
 export async function slackToast(commentId: string, screenshot: Blob | null): Promise<boolean> {
-    const token = useAuthStore.getState().token;
-
     if (screenshot === null) {
         return false;
     }
@@ -43,6 +41,7 @@ export async function slackToast(commentId: string, screenshot: Blob | null): Pr
             </div>
         </div>
     ));
+    await useCommentStore.getState().slackLinkedComment(commentId, ret.ts, ret.channelId);
     return true;
 }
 

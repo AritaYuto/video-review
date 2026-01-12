@@ -71,15 +71,28 @@ postRouter.openapi({
         return c.json({ error: "failed to upload file to slack" }, 502);
     }
 
-    const res = await client.files.completeUploadExternal({
-        initial_comment: comment,
+    const chatRes = await client.chat.postMessage({
+        channel,
+        text: comment
+    });
+
+    if (!chatRes.ok || !chatRes.ts || !chatRes.channel) {
+        return c.json({ error: "failed to post slack message" }, 502);
+    }
+
+    const filesRes = await client.files.completeUploadExternal({
         channel_id: channel,
         files: [{ id: fileId, title: name }]
     });
 
-    if (!res.ok) {
-        return c.json({ error: "failed to complete slack upload" }, 502);
+    if (!filesRes.ok) {
+        await client.chat.postMessage({
+            channel,
+            thread_ts: chatRes.ts,
+            text: "⚠️ file upload failed",
+        });
+        return c.json({ error: "failed to upload file" }, 502);
     }
 
-    return c.json({ ok: true });
+    return c.json({ ok: true, ts: chatRes.ts.replace('.', ''), channelId: chatRes.channel });
 });
