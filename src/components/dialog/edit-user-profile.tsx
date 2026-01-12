@@ -29,23 +29,14 @@ export default function EditUserProfileDialog({
     useEffect(() => {
         if(!email) return;
 
-        let cancelled = false;
         void (async () => {
             try {
                 const result = await avatarUrl(email);
-                if (!cancelled) {
-                    setCurrentAvatarUrl(result);
-                }
+                setCurrentAvatarUrl(result);
             } catch {
-                if (!cancelled) {
-                    setCurrentAvatarUrl(undefined);
-                }
+                setCurrentAvatarUrl(undefined);
             }
         })();
-
-        return () => {
-            cancelled = true;
-        };
     }, [email])
 
     const previewUrl = useMemo(() => {

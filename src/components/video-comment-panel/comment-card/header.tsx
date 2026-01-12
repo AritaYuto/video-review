@@ -125,23 +125,14 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
             return;
         }
 
-        let cancelled = false;
         void (async () => {
             try {
                 const result = await avatarUrl(props.comment.userEmail);
-                if (!cancelled) {
-                    setAvatarFallback(result);
-                }
+                setAvatarFallback(result);
             } catch {
-                if (!cancelled) {
-                    setAvatarFallback(undefined);
-                }
+                setAvatarFallback(undefined);
             }
         })();
-
-        return () => {
-            cancelled = true;
-        };
     }, [props.comment.userEmail]);
 
     return (
