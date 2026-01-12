@@ -28,7 +28,7 @@ export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | null>
         }
 
         return Buffer.from(await imgRes.arrayBuffer());
-    } catch {
+    } catch (e){
         return null;
     }
 }

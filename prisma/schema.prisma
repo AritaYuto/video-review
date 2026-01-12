@@ -24,6 +24,7 @@ model User {
   email         String?                 @unique
   role          String                  @default("viewer")
   displayName   String
+  avatarPath    String?
   createdAt     DateTime                @default(now())
   readStatuses  UserVideoReadStatus[]
   identities    Identity[]

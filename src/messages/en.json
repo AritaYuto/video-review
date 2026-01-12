@@ -88,11 +88,22 @@
         "language": "Language Switch",
         "languageOptionEn": "English",
         "languageOptionJa": "Japanese",
-        "logout": "Logout"
+        "logout": "Logout",
+        "editProfile": "Edit Profile"
     },
     "calendar-date-radio": {
         "today": "Today",
         "recent": "Last {days} days",
         "clear": "Clear"
+    },
+    "edit-user-profile": {
+        "title": "Edit Profile",
+        "save": "Save",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "saveFailed": "Failed to save profile",
+        "avatarHint": "PNG or JPEG. Max size {max}, size {size}.",
+        "change": "Change",
+        "fileTooLarge": "The selected file({size}) is too large."
     }
 }

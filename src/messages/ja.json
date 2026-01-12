@@ -88,11 +88,22 @@
         "language": "言語切替",
         "languageOptionEn": "英語 (English)",
         "languageOptionJa": "日本語 (Japanese)",
-        "logout": "ログアウト"
+        "logout": "ログアウト",
+        "editProfile": "プロフィール編集"
     },
     "calendar-date-radio": {
         "today": "今日",
         "recent": "直近{days}日",
         "clear": "クリア"
+    },
+    "edit-user-profile": {
+        "title": "プロフィール 編集",
+        "save": "保存",
+        "saving": "保存中…",
+        "cancel": "キャンセル",
+        "saveFailed": "プロフィールの保存に失敗しました",
+        "avatarHint": "PNG / JPEG形式、最大{max}, {size}まで",
+        "change": "変更",
+        "fileTooLarge": "ファイルサイズ({size})が大きすぎます"
     }
 }
