@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import { FileStorage } from "@/server/lib/storage";
+import Stream from 'stream';
 
 import "server-only"
 
@@ -24,12 +25,24 @@ export class LocalStorage implements FileStorage {
         return fs.existsSync(abs);
     }
 
+    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
+        const fullPath = path.join(process.cwd(), "uploads", storageKey);
+        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.promises.writeFile(fullPath, src);
+    }
+
+    async directUploadFromFile(storageKey: string, src: string): Promise<void> {
+        const fullPath = path.join(process.cwd(), "uploads", storageKey);
+        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.promises.rename(src, fullPath);
+    }
+
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
         if (contentType === "image/png") {
-            return `/api/v1/drawing/upload/transfer/local?session_id=${session_id}`
+            return `/api/v1/drawing/upload/transfer?session_id=${session_id}`
         }
         // "video/mp4"
-        return `/api/v1/videos/upload/transfer/local?session_id=${session_id}`
+        return `/api/v1/videos/upload/transfer?session_id=${session_id}`
     }
 
     async fallbackURL(storageKey: string): Promise<string> {

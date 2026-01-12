@@ -24,6 +24,7 @@ model User {
   email         String?                 @unique
   role          String                  @default("viewer")
   displayName   String
+  avatarPath    String?
   createdAt     DateTime                @default(now())
   readStatuses  UserVideoReadStatus[]
   identities    Identity[]
@@ -103,15 +104,6 @@ model SlackThreadMessage {
 
   ts              String
   createdAt       DateTime @default(now())
-}
-
-model JiraAvatarCache {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  ownerId     String
-  avatarId    String
-  avatarUrl   String
-  cachedAt    DateTime @default(now())
 }
 
 model UserVideoReadStatus {

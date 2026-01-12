@@ -4,6 +4,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "@/server/lib/storage/integrations/s3";
 import { UploadStorageType } from '@/lib/db-types';
 import { FileStorage } from "@/server/lib/storage";
+import { lookup } from "mime-types";
+import { createReadStream } from "fs";
+import { Readable } from "stream";
 
 import "server-only"
 
@@ -30,6 +33,35 @@ export class S3Storage implements FileStorage {
             console.warn("S3 hasObject error:", err);
             return false;
         }
+    }
+
+    async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string): Promise<void> {
+        if (!s3Client) return Promise.reject(undefined);
+
+        try {
+            const command = new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET!,
+                Key: storageKey,
+                Body: src,
+                ContentType: contentType,
+                ...(process.env.S3_LOCALSTACK_ENDPOINT
+                    ? { ChecksumCRC32: "" }
+                    : {}
+                ),
+            });
+            await s3Client.send(command);
+        } catch (e) { return; }
+    }
+
+    async directUploadFromFile(storageKey: string, src: string): Promise<void> {
+        if (!s3Client) return Promise.reject(undefined);
+
+        try {
+            await this.directUploadFromBuffer(
+                storageKey, 
+                createReadStream(src), 
+                lookup(src) || "application/octet-stream");
+        } catch (e) { return; }
     }
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {

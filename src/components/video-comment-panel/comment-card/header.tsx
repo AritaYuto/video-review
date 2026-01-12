@@ -121,11 +121,7 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
         <CardHeader className="flex flex-row items-center justify-between px-3 pb-1">
             <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
-                    {isViewer(role) && props.comment.userEmail ? (
-                        <AvatarImage src={`/api/v1/integrations/jira/avatar?email=${props.comment.userEmail}`} />
-                    ) : (
-                        <AvatarFallback>{props.comment.userName?.[0]?.toUpperCase()}</AvatarFallback>
-                    )}
+                    <AvatarImage src={`/api/v1/avatar?email=${props.comment.userEmail}`} />
                 </Avatar>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>

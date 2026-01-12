@@ -21,6 +21,7 @@ import { downloadRouter } from "@/routes/media/download";
 import { uploadStatusRouter } from "./routes/upload-status";
 import { swaggerUI } from "@hono/swagger-ui";
 import { ensurePrismaWarmup } from "@/server/lib/db";
+import { avatarRouter } from "./routes/avatar";
 
 export const app = new Hono().basePath("/api");
 
@@ -34,6 +35,7 @@ app.route("/v1/integrations", integrationsRouter);
 app.route("/v1/videos", videosRouter);
 app.route("/v1/drawing", drawingRouter);
 app.route("/v1/upload-status", uploadStatusRouter);
+app.route("/v1/avatar", avatarRouter);
 
 // deprecate API
 app.route("/uploads", localRouter);

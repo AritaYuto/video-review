@@ -1,9 +1,20 @@
 import { VideoComment } from '@/lib/db-types';
 
 export function getBaseUrl(req?: Request) {
-    if (typeof window !== "undefined") return window.location.origin;
-    if (req?.headers.get("host")) return `https://${req.headers.get("host")}`;
-    return process.env.NEXT_PUBLIC_APP_BASE_URL ?? "";
+    if (typeof window !== "undefined") {
+        return window.location.origin;
+    }
+
+    if (!req) return "";
+
+    const proto =
+        req.headers.get("x-forwarded-proto") ??
+        (req.headers.get("host")?.startsWith("localhost") ? "http" : "https");
+
+    const host = req.headers.get("host");
+    if (!host) return "";
+
+    return `${proto}://${host}`;
 }
 
 export function createVideoCommentLink(videoId: string | null, comment: VideoComment): string | null {
