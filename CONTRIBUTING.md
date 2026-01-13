@@ -52,7 +52,3 @@ Please consider a short discussion beforehand if your change includes:
 
 Please follow the existing style and structure as much as possible.  
 Comments are helpful as light notes on complex logic or parts where intent is easy to miss.
-
-## License
-
-By contributing to this repository, you agree that your contributions are released under the MIT License.
