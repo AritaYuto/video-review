@@ -136,8 +136,10 @@ export default function VideoCommentPanel() {
     }
 
     return (
-        <div className="vr-panel vr-scrollbar">
-            <div ref={headerRef} className="vr-header">
+        <div 
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
+            className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r">
+            <div ref={headerRef} style={{color:"#ff8800"}} className="border-b p-2 font-semibold ">
                 <div>
                     <div className="h-6">
                         <span className="px-2">{t("title")}</span>
