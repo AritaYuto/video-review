@@ -16,6 +16,10 @@ Slack や JIRA など、既存のワークフローとも連携できるため�
 
 videoreview.contact.info@gmail.com
 
+## 🤝 Contributing
+
+参加方法は `CONTRIBUTING.jp.md` を参照してください。
+
 # ✨ Key Features
 
 ## 🔔 Never Miss Feedback with Slack & JIRA
