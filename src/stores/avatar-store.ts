@@ -9,33 +9,32 @@ interface AvatarCacheEntry {
 }
 
 interface AvatarState {
-    cache: Record<string, AvatarCacheEntry>;
-    inflight: Record<string, Promise<void> | undefined>;
+    cache: Map<string, AvatarCacheEntry>;
+    inflight: Map<string, Promise<void> | undefined>;
 
     fetchAvatar: (email: string) => Promise<void>;
     icon: (email: string) => string | undefined;
 }
 
 export const useAvatarStore = create<AvatarState>()((set, get) => ({
-    cache: {},
-    inflight: {},
+    cache: new Map<string, AvatarCacheEntry>(),
+    inflight: new Map<string, Promise<void>>(),
 
     async fetchAvatar(email: string) {
-        const { cache, inflight } = get();
-
         if (!email) return;
 
-        if (cache[email]?.fetched) {
+        const { cache, inflight } = get();
+
+        if (cache.get(email)?.fetched) {
             return;
         }
 
-        if (inflight[email]) {
-            return inflight[email];
+        if (inflight.has(email)) {
+            return inflight.get(email);
         }
 
         const task = (async () => {
             try {
-
                 const fetchers = [
                     () => fetchLocal(email),
                     () => fetchIntegration(email),
@@ -44,37 +43,40 @@ export const useAvatarStore = create<AvatarState>()((set, get) => ({
                 for (const fetcher of fetchers) {
                     const icon = await fetcher();
                     if (icon) {
-                        set((state) => ({
-                            cache: {
-                                ...state.cache,
-                                [email]: { icon, fetched: true },
-                            },
-                        }));
+                        set((state) => {
+                            const next = new Map(state.cache);
+                            next.set(email, { icon, fetched: true });
+                            return { cache: next };
+                        });
                         return;
                     }
                 }
 
-                set((state) => ({
-                    cache: {
-                        ...state.cache,
-                        [email]: { icon: undefined, fetched: true },
-                    },
-                }));
+                set((state) => {
+                    const next = new Map(state.cache);
+                    next.set(email, { icon: undefined, fetched: true });
+                    return { cache: next };
+                });
             } finally {
                 set((state) => {
-                    const next = { ...state.inflight };
-                    delete next[email];
+                    const next = new Map(state.inflight);
+                    next.delete(email);
                     return { inflight: next };
                 });
             }
         })();
 
-        set((state) => ({
-            inflight: { ...state.inflight, [email]: task },
-        }));
+        set((state) => {
+            const next = new Map(state.inflight);
+            next.set(email, task);
+            return { inflight: next };
+        });
+
         return task;
     },
 
-    icon(email: string) { return get().cache[email]?.icon ?? undefined },
+    icon(email: string) {
+        return get().cache.get(email)?.icon;
+    },
 }));
 
