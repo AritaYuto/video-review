@@ -107,7 +107,7 @@ export default function VideoControlPanel() {
             </div>
 
             {/* 時間表示 */}
-            <span className="ml-2 flex items-center gap-2 text-sm text-[#aaa] w-24">
+            <span className="ml-2 flex items-center gap-2 text-sm text-[#aaa] w-30">
                 {formatTime(currentTime)} / {formatTime(duration)}
             </span>
 
@@ -132,7 +132,7 @@ export default function VideoControlPanel() {
             </Select>
 
             {/* 再生モード */}
-            <div className="ml-2 flex items-center gap-2" onMouseOver={() => setShowPlayMode(true)}>
+            <div className="flex items-center" onMouseOver={() => setShowPlayMode(true)}>
 
                 <span className="text-xs text-white">
                     {t("playMode")} : {t(playMode)}
@@ -148,7 +148,7 @@ export default function VideoControlPanel() {
                             setMode(val as EPlayMode);
                         }}
                     >
-                        <SelectTrigger className="relative w-50 h-8 bg-[#181818] text-white border-[#333]">
+                        <SelectTrigger className="relative w-30 h-8 bg-[#181818] text-white border-[#333]">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-[#181818] text-white border-[#333]">
