@@ -15,7 +15,7 @@ export default function VideoReviewLayout({
             <div>
                 <SidebarProvider>
                     <VideoListPanel />
-                    <div className="w-screen h-screen grid" style={{ gridTemplateColumns: "75% 25%" }}>
+                    <div className="w-screen h-screen grid" style={{ gridTemplateColumns: "73% 27%" }}>
                         <div className="flex flex-col  min-h-0 w-full h-full border-r border-[#333]">
                             {children}
                         </div>

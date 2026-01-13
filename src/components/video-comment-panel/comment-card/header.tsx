@@ -138,7 +138,7 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>
                     <span className="text-xs text-[#888]">
-                        {formatDate(props.comment.createdAt)} : #Rev.{props.comment.videoRevNum}
+                        {formatDate(props.comment.createdAt)} : Rev.{props.comment.videoRevNum}
                     </span>
                 </div>
             </div>
