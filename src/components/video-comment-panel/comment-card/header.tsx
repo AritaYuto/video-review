@@ -155,8 +155,8 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-[#181818] text-white border-[#333]">
                     <DropdownMenu_SharedLink />
-                    <DropdownMenu_CreateIssue disabled={props.comment.issueId !== "" || !isViewer(role)} comment={props.comment} translateID="commentItemTask" />
-                    <DropdownMenu_CreateIssue disabled={props.comment.issueId !== "" || !isViewer(role)} comment={props.comment} translateID="commentItemBug" />
+                    <DropdownMenu_CreateIssue disabled={(props.comment.issueId !== "" && props.comment.issueId !== null) || !isViewer(role)} comment={props.comment} translateID="commentItemTask" />
+                    <DropdownMenu_CreateIssue disabled={(props.comment.issueId !== "" && props.comment.issueId !== null) || !isViewer(role)} comment={props.comment} translateID="commentItemBug" />
                     <DropdownMenu_Edit comment={props.comment} />
                     <DropdownMenu_Delete comment={props.comment} />
                 </DropdownMenuContent>
