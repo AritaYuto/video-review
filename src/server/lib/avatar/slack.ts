@@ -1,15 +1,14 @@
 import { WebClient } from "@slack/web-api";
 
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const slack = new WebClient(process.env.SLACK_API_TOKEN);
 
-export async function avatar(email: string): Promise<string | undefined> {
+export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | undefined> {
     if (!email) {
         return undefined;
     }
 
     try {
         const res = await slack.users.lookupByEmail({ email });
-
         if (!res.ok || !res.user) {
             return undefined;
         }
@@ -21,7 +20,13 @@ export async function avatar(email: string): Promise<string | undefined> {
         if (!avatarUrl) {
             return undefined;
         }
-        return avatarUrl;
+
+        const imgRes = await fetch(avatarUrl);
+        if (!imgRes.ok) {
+            return undefined;
+        }
+
+        return Buffer.from(await imgRes.arrayBuffer());
     } catch (e){
         return undefined;
     }

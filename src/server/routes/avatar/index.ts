@@ -1,5 +1,5 @@
 import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
-import { avatar } from "@/server/lib/avatar";
+import { avatarIntegration, avatarLocal } from "@/server/lib/avatar";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
@@ -22,7 +22,7 @@ const UploadBodySchema = z.object({
 avatarRouter.openapi({
     method: "get",
     summary: "Get avatar",
-    path: "/",
+    path: "/local",
     request: { query: GetQuerySchema },
     responses: {
         200: {
@@ -31,18 +31,46 @@ avatarRouter.openapi({
     },
 }, async (c) => {
     try {
-        const query = c.req.valid("query");
-        const { email } = query;
+        const { email } = c.req.valid("query");
 
         if (!email) {
             return c.json({ avatarUrl: undefined });
         }
 
-        const avatarUrl = await avatar(email);
+        const avatarUrl = await avatarLocal(email);
         return c.json({ avatarUrl });
 
     } catch {
         return c.json({ avatarUrl: undefined });
+    }
+});
+
+avatarRouter.openapi({
+    method: "get",
+    summary: "Get avatar",
+    path: "/integration",
+    request: { query: GetQuerySchema },
+    responses: {
+        200: {
+            description: "Avatar retrieved successfully",
+        }
+    },
+}, async (c) => {
+    try {
+        const { email } = c.req.valid("query");
+
+        if (!email) {
+            return new NextResponse(null, { status: 204 });
+        }
+
+        const result = await avatarIntegration(email);
+        if (!result) {
+            return new NextResponse(null, { status: 204 });
+        }
+
+        return new NextResponse(result.buffer, { status: 200 });
+    } catch {
+        return new NextResponse(null, { status: 204 });
     }
 });
 
