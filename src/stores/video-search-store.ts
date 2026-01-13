@@ -1,5 +1,7 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { DateRange } from "react-day-picker";
+import { normalizePersistedDateRange } from "@/lib/utils/date-helper";
 
 interface VideoSearchState {
     videoDateRange: DateRange | undefined;
@@ -34,24 +36,36 @@ const InitVideoSearchState = {
     user: ""
 };
 
-export const useVideoSearchStore = create<VideoSearchState>((set, get) => ({
-    ...InitVideoSearchState,
+export const useVideoSearchStore = create<VideoSearchState>()(
+    persist(
+        (set, get) => ({
+            ...InitVideoSearchState,
 
-    setHasComment: (x: boolean) => set({ hasComment: x }),
-    setHasDrawing: (x: boolean) => set({ hasDrawing: x }),
-    setHasIssue: (x: boolean) => set({ hasIssue: x }),
-    setFilterIssue: (x: string) => set({ filterIssue: x }),
-    setCommentUser: (x: string | undefined) => set({ user: x }),
-    setVideoDateRange: (x: DateRange | undefined) => set({ videoDateRange: x }),
-    setCommentsDateRange: (x: DateRange | undefined) => set({ commentsDateRange: x }),
-    setFilterTree: (x: string) => set({ filterTree: x }),
-    clear: () => set(InitVideoSearchState),
-    isFiltering: () => {
-        const state = get();
+            setHasComment: (x: boolean) => set({ hasComment: x }),
+            setHasDrawing: (x: boolean) => set({ hasDrawing: x }),
+            setHasIssue: (x: boolean) => set({ hasIssue: x }),
+            setFilterIssue: (x: string) => set({ filterIssue: x }),
+            setCommentUser: (x: string | undefined) => set({ user: x }),
+            setVideoDateRange: (x: DateRange | undefined) => set({ videoDateRange: x }),
+            setCommentsDateRange: (x: DateRange | undefined) => set({ commentsDateRange: x }),
+            setFilterTree: (x: string) => set({ filterTree: x }),
+            clear: () => set(InitVideoSearchState),
+            isFiltering: () => {
+                const state = get();
 
-        return Object.keys(InitVideoSearchState).some((key) => {
-            return state[key as keyof typeof InitVideoSearchState]
-                !== InitVideoSearchState[key as keyof typeof InitVideoSearchState];
-        });
-    }
-}));
+                return Object.keys(InitVideoSearchState).some((key) => {
+                    return state[key as keyof typeof InitVideoSearchState]
+                        !== InitVideoSearchState[key as keyof typeof InitVideoSearchState];
+                });
+            }
+        }),
+        {
+            name: "video-search-store",
+            onRehydrateStorage: () => (state) => {
+                if (!state) return;
+                state.videoDateRange = normalizePersistedDateRange(state.videoDateRange);
+                state.commentsDateRange = normalizePersistedDateRange(state.commentsDateRange);
+            },
+        },
+    ),
+);

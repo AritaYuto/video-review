@@ -1,5 +1,7 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { DateRange } from "react-day-picker";
+import { normalizePersistedDateRange } from "@/lib/utils/date-helper";
 
 interface CommentSearchState {
     dateRange: DateRange | undefined;
@@ -28,22 +30,33 @@ const InitCommentSearchState = {
     filterText: "",
 };
 
-export const useCommentSearchStore = create<CommentSearchState>((set, get) => ({
-    ...InitCommentSearchState,
+export const useCommentSearchStore = create<CommentSearchState>()(
+    persist(
+        (set, get) => ({
+            ...InitCommentSearchState,
 
-    setDateRange: (x: DateRange | undefined) => set({ dateRange: x }),
-    setHasDrawing: (x: boolean) => set({ hasDrawing: x }),
-    setHasIssue: (x: boolean) => set({ hasIssue: x }),
-    setFetchAllComments: (x: boolean) => set({ fetchAllComments: x }),
-    setCommentUser: (x: string | undefined) => set({ user: x }),
-    setFilterText: (x: string) => set({ filterText: x }),
-    clear: () => set(InitCommentSearchState),
-    isFiltering: () => {
-        const state = get();
+            setDateRange: (x: DateRange | undefined) => set({ dateRange: x }),
+            setHasDrawing: (x: boolean) => set({ hasDrawing: x }),
+            setHasIssue: (x: boolean) => set({ hasIssue: x }),
+            setFetchAllComments: (x: boolean) => set({ fetchAllComments: x }),
+            setCommentUser: (x: string | undefined) => set({ user: x }),
+            setFilterText: (x: string) => set({ filterText: x }),
+            clear: () => set(InitCommentSearchState),
+            isFiltering: () => {
+                const state = get();
 
-        return Object.keys(InitCommentSearchState).some((key) => {
-            return state[key as keyof typeof InitCommentSearchState]
-                !== InitCommentSearchState[key as keyof typeof InitCommentSearchState];
-        });
-    }
-}));
+                return Object.keys(InitCommentSearchState).some((key) => {
+                    return state[key as keyof typeof InitCommentSearchState]
+                        !== InitCommentSearchState[key as keyof typeof InitCommentSearchState];
+                });
+            },
+        }),
+        {
+            name: "comment-search-store",
+            onRehydrateStorage: () => (state) => {
+                if (!state) return;
+                state.dateRange = normalizePersistedDateRange(state.dateRange);
+            },
+        },
+    ),
+);

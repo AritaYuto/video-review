@@ -44,3 +44,20 @@ export const isRecent = (range?: DateRange, days = 3) => {
     return isSameDate(to, today)
         && isSameDate(from, expectedFrom);
 };
+
+/**
+ * Revives DateRange restored from zustand persist.
+ *
+ * zustand persist serializes Date objects into strings via JSON,
+ * so we need to convert them back to Date before using date APIs.
+ */
+export const normalizePersistedDateRange = (
+    range?: DateRange,
+): DateRange | undefined => {
+    if (!range) return range;
+
+    return {
+        from: range.from ? new Date(range.from) : undefined,
+        to: range.to ? new Date(range.to) : undefined,
+    };
+};
