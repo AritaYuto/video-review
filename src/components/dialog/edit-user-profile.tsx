@@ -4,9 +4,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Button } from "@/ui/button";
 import { useTranslations } from "next-intl";
-import { avatarUrl, uploadAvatar } from "@/lib/fetch-wrapper";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { useAvatarStore } from "@/stores/avatar-store";
+import { uploadAvatar } from "@/lib/fetch-wrapper";
 
 export default function EditUserProfileDialog({
     open,
@@ -19,9 +20,8 @@ export default function EditUserProfileDialog({
     const t = useTranslations("edit-user-profile");
     const email = useAuthStore((s) => s.email);
     const name = useAuthStore((s) => s.displayName);
-    const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | undefined>(undefined);
 
-
+    const {icon, fetchAvatar} = useAvatarStore();
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -31,20 +31,20 @@ export default function EditUserProfileDialog({
 
         void (async () => {
             try {
-                const result = await avatarUrl(email);
-                setCurrentAvatarUrl(result);
-            } catch {
-                setCurrentAvatarUrl(undefined);
-            }
+                fetchAvatar(email);
+            } catch {}
         })();
     }, [email])
 
     const previewUrl = useMemo(() => {
+        if(!email) {
+            return undefined;
+        }
         if (file) {
             return URL.createObjectURL(file);
         }
-        return currentAvatarUrl;
-    }, [file, currentAvatarUrl]);
+        return icon(email);
+    }, [file, email]);
 
     const onSubmit = async () => {
         if (!file || !email) return;

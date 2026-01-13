@@ -1,4 +1,4 @@
-export async function avatar(email: string): Promise<string | undefined> {
+export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | undefined> {
     const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
     const token = process.env.JIRA_API_TOKEN;
 
@@ -30,5 +30,11 @@ export async function avatar(email: string): Promise<string | undefined> {
     }
 
     const avatarUrl = `${base}/secure/useravatar?ownerId=${latest.owner}&avatarId=${latest.id}`;
-    return avatarUrl;
+    const imgRes = await fetch(avatarUrl, {headers: { Authorization: `Bearer ${token}` }});
+
+
+    if (!imgRes.ok) {
+        return undefined;
+    }
+    return Buffer.from(await imgRes.arrayBuffer());
 }

@@ -30,7 +30,7 @@ import { CardHeader } from "@/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useTranslations } from "next-intl";
 import { isViewer } from "@/lib/role";
-import { avatarUrl } from "@/lib/fetch-wrapper";
+import { useAvatarStore } from "@/stores/avatar-store";
 
 // Dropdown menu item for copying a shareable link to the selected comment.
 function DropdownMenu_SharedLink() {
@@ -117,21 +117,14 @@ function DropdownMenu_Delete(props: { comment: VideoComment }) {
 
 export default function CommentCardHeader(props: { comment: VideoComment }) {
     const { role } = useAuthStore();
-    const [ avatarFallback, setAvatarFallback] = useState<string | undefined>(undefined);
+    const { icon, fetchAvatar } = useAvatarStore();
 
     useEffect(() => {
-        if (!props.comment.userEmail) {
-            setAvatarFallback(undefined);
-            return;
-        }
-
+    
         void (async () => {
             try {
-                const result = await avatarUrl(props.comment.userEmail);
-                setAvatarFallback(result);
-            } catch {
-                setAvatarFallback(undefined);
-            }
+                await fetchAvatar(props.comment.userEmail);
+            } catch { }
         })();
     }, [props.comment.userEmail]);
 
@@ -139,7 +132,8 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
         <CardHeader className="flex flex-row items-center justify-between px-3 pb-1">
             <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
-                    {(avatarFallback) ? (<AvatarImage src={avatarFallback} />)  : (<AvatarFallback />)}
+                    {icon(props.comment.userEmail) ? (<><AvatarImage src={icon(props.comment.userEmail)} /></>) : (<><AvatarFallback/></>)}
+                    
                 </Avatar>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>

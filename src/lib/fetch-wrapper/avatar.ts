@@ -22,10 +22,20 @@ export async function uploadAvatar(data: {
     return json.ok;
 }
 
-export async function avatarUrl(email: string): Promise<string | undefined> {
-    const res = await fetch(`/api/v1/avatar?email=${email}`, { method: "get" });
+export async function fetchLocal(email: string): Promise<string | undefined> {
+    const res = await fetch(`/api/v1/avatar/local?email=${encodeURIComponent(email)}`);
     if (!res.ok) return undefined;
 
     const json = await res.json();
-    return json.avatarUrl;
+    return json?.avatarUrl;
+}
+
+export async function fetchIntegration(email: string): Promise<string | undefined> {
+    const res = await fetch(`/api//v1/avatar/integration?email=${encodeURIComponent(email)}`);
+    if (!res.ok) return undefined;
+
+    const blob = await res.blob();
+    if (blob.size === 0) return undefined;
+
+    return URL.createObjectURL(blob);
 }
