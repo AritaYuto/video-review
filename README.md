@@ -76,7 +76,7 @@ Badges and color cues highlight what needs action at a glance.
 Designed to fit into real production workflows.
 
 - A maintenance CLI for admins (user management and data operations)  
-  See: [maintenance README](./maintenance/README.jp.md)
+  See: [maintenance README](./maintenance/README.md)
 - Upload videos via API from DCC tools, automated tests, or CI
 
 ## 🧭 Roadmap
