@@ -166,6 +166,9 @@ commentsRouter.patch("/", async (c) => {
         const updated = await prisma.videoComment.update({
             where: { id },
             data: updateData,
+            include: { 
+                slackMessage: true
+            }
         });
 
         return c.json(updated, { status: 200 });

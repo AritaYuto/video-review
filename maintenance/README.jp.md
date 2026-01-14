@@ -6,7 +6,7 @@ VideoReview のメンテナンス用 CLI ツールです
 ## ビルド方法
 
 ### Windows
-> GOOS=windows GOARCH=amd64 go build -o video-review-cli
+> $env:GOOS="windows"; $env:GOARCH="amd64"; go build -o video-review-cli.exe
 
 ### Mac
 > GOOS=darwin GOARCH=arm64 go build -o video-review-cli
@@ -31,6 +31,7 @@ VideoReviewを動作させているサーバーURL
 
 ##### 動画のリストを取得します（JSON）
 > go run . get-videos 
+> go run . get-videos --include_revisions true
 
 ##### 動画のリビジョン情報を取得します（JSON）
 > go run . get-videos-rev --video_id {uuid}

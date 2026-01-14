@@ -6,7 +6,7 @@ It is an **internal administrator tool** separate from the main application.
 ## Build Instructions
 
 ### Windows
-> GOOS=windows GOARCH=amd64 go build -o video-review-cli
+> $env:GOOS="windows"; $env:GOARCH="amd64"; go build -o video-review-cli.exe
 
 ### Mac
 > GOOS=darwin GOARCH=arm64 go build -o video-review-cli
@@ -30,6 +30,7 @@ Set the same value as in .env
 
 ##### Get the video list (JSON)
 > go run . get-videos
+> go run . get-videos --include_revisions true
 
 ##### Get a video's revision information (JSON)
 > go run . get-videos-rev --video_id {uuid}
