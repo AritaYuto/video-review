@@ -112,6 +112,7 @@ listRouter.openapi({
             ...(includeRevisions ? {
                 include: {
                 revisions: {
+                    where: { deleted: false },
                     orderBy: { revision: "asc" },
                 },
             },
