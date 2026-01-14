@@ -68,22 +68,78 @@ export class LocalStorage implements FileStorage {
     }
 
     async deleteObject(storageKey: string): Promise<boolean> {
+        console.log("[deleteObject] called");
+        console.log("[deleteObject] storageKey =", storageKey);
+
         const abs = this.resolveStoragePath(storageKey);
-        if (!abs || !fs.existsSync(abs)) {
+        console.log("[deleteObject] resolved abs path =", abs);
+
+        if (!abs) {
+            console.warn("[deleteObject] resolveStoragePath returned null/undefined");
+            return false;
+        }
+
+        const existsBefore = fs.existsSync(abs);
+        console.log("[deleteObject] exists before delete =", existsBefore);
+
+        if (!existsBefore) {
+            console.warn("[deleteObject] file does not exist:", abs);
             return false;
         }
 
         try {
-            fs.rmSync(abs);
-            return !fs.existsSync(abs);
-        } catch { return false; }
+            console.log("[deleteObject] fs.rmSync start");
+
+            fs.rmSync(abs, {
+                recursive: true,
+                force: true,
+            });
+
+            console.log("[deleteObject] fs.rmSync done");
+
+            const existsAfter = fs.existsSync(abs);
+            console.log("[deleteObject] exists after delete =", existsAfter);
+
+            if (existsAfter) {
+                console.error("[deleteObject] delete attempted but file still exists:", abs);
+            }
+
+            return !existsAfter;
+        } catch (err) {
+            console.error("[deleteObject] exception while deleting:", abs);
+            console.error(err);
+            return false;
+        }
     }
 
+    /**
+     * Resolves a storageKey into an absolute filesystem path under the uploads directory.
+     *
+     * This function exists for two reasons:
+     * 1. Backward compatibility:
+     *    In early versions, some records were persisted with API-facing paths
+     *    (e.g. "/api/uploads/...") instead of pure storage-relative keys.
+     *    To keep those legacy records working, we strip the "/api/uploads/" prefix
+     *    only when it appears at the beginning of the key.
+     *
+     * 2. Safety:
+     *    The resolved path is strictly constrained to stay inside the uploads
+     *    base directory to prevent path traversal or accidental deletion of
+     *    files outside the storage root.
+     *
+     * Behavior:
+     * - Removes a leading "/api/uploads/" prefix if present (legacy compatibility).
+     * - Removes any remaining leading slashes to avoid absolute path resolution.
+     * - Resolves the path relative to "<localBaseDirectory>/uploads".
+     * - Returns undefined if the resolved path escapes the uploads directory.
+     */
     resolveStoragePath(storageKey: string): string | undefined {
         let key = storageKey;
-        if (storageKey.includes("api/uploads/")) {
-            key = storageKey.replace("api/uploads/", "");
+        if (key.startsWith("/api/uploads/")) {
+            key = key.slice("/api/uploads/".length);
         }
+
+        key = key.replace(/^[/\\]+/, "");
         const baseDir = path.join(this.localBaseDirectory, "uploads");
         const resolved = path.resolve(baseDir, key);
 
