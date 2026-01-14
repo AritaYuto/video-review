@@ -6,7 +6,7 @@ It is an **internal administrator tool** separate from the main application.
 ## Build Instructions
 
 ### Windows
-> GOOS=windows GOARCH=amd64 go build -o video-review-cli
+> $env:GOOS="windows"; $env:GOARCH="amd64"; go build -o video-review-cli.exe
 
 ### Mac
 > GOOS=darwin GOARCH=arm64 go build -o video-review-cli
