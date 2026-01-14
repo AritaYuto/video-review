@@ -27,6 +27,10 @@ const QuerySchema = z.object({
         .string()
         .transform(v => v === "true")
         .optional(),
+    includeRevisions: z
+        .string()
+        .transform(v => v === "true")
+        .optional(),
 });
 
 listRouter.openapi({
@@ -60,6 +64,7 @@ listRouter.openapi({
         hasIssue,
         hasComment,
         user,
+        includeRevisions,
     } = query;
 
     const videoDateRange = toDateRange(new Date(Number(videoFrom)), new Date(Number(videoTo)));
@@ -68,16 +73,18 @@ listRouter.openapi({
     const whereVideoComment: PrismaTypes.VideoCommentWhereInput = { deleted: false };
     const whereVideo: PrismaTypes.VideoWhereInput = { deleted: false };
 
+    const includeVideoRevisions: PrismaTypes.VideoRevisionInclude = {}
+
     if (user) {
         whereVideoComment.userName = user;
     }
 
-    if(commentsDateRange.from !== undefined && commentsDateRange.to !== undefined) {
-        whereVideoComment.createdAt =  { gte: commentsDateRange.from, lte: commentsDateRange.to };
+    if (commentsDateRange.from !== undefined && commentsDateRange.to !== undefined) {
+        whereVideoComment.createdAt = { gte: commentsDateRange.from, lte: commentsDateRange.to };
     }
 
-    if(videoDateRange.from !== undefined && videoDateRange.to !== undefined) {
-        whereVideo.latestUpdatedAt =  { gte: videoDateRange.from, lte: videoDateRange.to };
+    if (videoDateRange.from !== undefined && videoDateRange.to !== undefined) {
+        whereVideo.latestUpdatedAt = { gte: videoDateRange.from, lte: videoDateRange.to };
     }
 
     if (hasDrawing) {
@@ -102,16 +109,15 @@ listRouter.openapi({
     try {
         const videos = await prisma.video.findMany({
             where: whereVideo,
-            select: {
-                id: true,
-                title: true,
-                folderKey: true,
-                scenePath: true,
-                latestUpdatedAt: true,
+            ...(includeRevisions ? {
+                include: {
+                revisions: {
+                    orderBy: { revision: "asc" },
+                },
             },
+            } : {}),
             orderBy: { title: "asc" },
         });
-
         return c.json(videos);
     } catch (err) {
         return c.json({ error: "Failed to fetch videos" }, { status: 500 });
