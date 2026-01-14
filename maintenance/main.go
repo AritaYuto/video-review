@@ -110,9 +110,16 @@ func runCreateAdmin(cmd string, args []string) {
 }
 
 func runGetVideos(cmd string, args []string) {
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
+	includeRevisions := fs.String("include_revisions", "false", "include revisions")
+	fs.Parse(args)
+
 	fetch(FetchOptions{
 		Method: "GET",
 		Path:   "/api/v1/videos",
+		Query: map[string]string{
+			"includeRevisions": *includeRevisions,
+		},
 	})
 }
 

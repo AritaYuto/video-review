@@ -30,6 +30,7 @@ Set the same value as in .env
 
 ##### Get the video list (JSON)
 > go run . get-videos
+> go run . get-videos --include_revisions true
 
 ##### Get a video's revision information (JSON)
 > go run . get-videos-rev --video_id {uuid}
