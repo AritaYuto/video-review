@@ -19,9 +19,9 @@ VideoReview のメンテナンス用 CLI ツールです
 VideoReviewを動作させているサーバーURL
 > VIDEO_REVIEW_SERVER_URL
 
-メンテナンス用トークン  
+VideoReview API トークン  
 .env と同じものを設定してください
-> ADMIN_MAINTENANCE_TOKEN
+> VIDEO_REVIEW_API_TOKEN
 
 
 ### コマンド一覧
@@ -43,3 +43,6 @@ VideoReviewを動作させているサーバーURL
 * ファイル削除＋論理削除を行います
 * 実行後に元に戻すことはできません
 > go run .  purge-revision --video_id {uuid} --revision 1
+
+##### 動画をアップロードします
+> go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"
