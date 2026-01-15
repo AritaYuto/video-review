@@ -19,9 +19,9 @@ It is an **internal administrator tool** separate from the main application.
 URL of the server running VideoReview
 > VIDEO_REVIEW_SERVER_URL
 
-Maintenance Token  
+VideoReview API Token  
 Set the same value as in .env
-> ADMIN_MAINTENANCE_TOKEN
+> VIDEO_REVIEW_API_TOKEN
 
 ### Command List
 
@@ -42,3 +42,6 @@ Set the same value as in .env
 * Performs file deletion + logical deletion
 * Cannot be undone after execution
 > go run . purge-revision --video_id {uuid} --revision 1
+
+##### Upload a video
+> go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"

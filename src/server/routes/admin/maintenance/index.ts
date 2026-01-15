@@ -39,7 +39,20 @@ maintenanceRouter.openapi({
         }
     },
 }, async (c) => {
-    if (c.req.header("x-maintenance-token") !== process.env.ADMIN_MAINTENANCE_TOKEN) {
+   // NOTE:
+    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
+    // x-maintenance-token is kept temporarily for backward compatibility.
+
+    const apiToken = c.req.header("x-api-token");
+    const maintenanceToken = c.req.header("x-maintenance-token");
+
+    const isApiTokenValid =
+    apiToken && apiToken === process.env.VIDEO_REVIEW_API_TOKEN;
+
+    const isLegacyMaintenanceTokenValid =
+    maintenanceToken && maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN;
+
+    if (!isApiTokenValid && !isLegacyMaintenanceTokenValid) {
         return c.json({ error: "Forbidden" }, 403);
     }
 
@@ -91,7 +104,20 @@ maintenanceRouter.openapi({
         }
     },
 }, async (c) => {
-    if (c.req.header("x-maintenance-token") !== process.env.ADMIN_MAINTENANCE_TOKEN) {
+   // NOTE:
+    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
+    // x-maintenance-token is kept temporarily for backward compatibility.
+
+    const apiToken = c.req.header("x-api-token");
+    const maintenanceToken = c.req.header("x-maintenance-token");
+
+    const isApiTokenValid =
+    apiToken && apiToken === process.env.VIDEO_REVIEW_API_TOKEN;
+
+    const isLegacyMaintenanceTokenValid =
+    maintenanceToken && maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN;
+
+    if (!isApiTokenValid && !isLegacyMaintenanceTokenValid) {
         return c.json({ error: "Forbidden" }, 403);
     }
 
