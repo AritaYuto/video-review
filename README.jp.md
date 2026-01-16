@@ -20,7 +20,7 @@ videoreview.contact.info@gmail.com
 
 ## 🤝 Contributing
 
-参加方法は `CONTRIBUTING.jp.md` を参照してください。
+参加方法は [CONTRIBUTING.jp.md](./CONTRIBUTING.jp.md) を参照してください。
 
 # ✨ Key Features
 
