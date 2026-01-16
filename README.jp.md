@@ -9,6 +9,8 @@ Slack や JIRA など、既存のワークフローとも連携できるため�
 
 映像制作やゲーム開発など、制作現場でのチーム内レビューを想定して設計されています
 
+<img src="./documents/resources/welcome.png" controls="true" width="1280"></video>
+
 # Need help setting it up?
 
 オンプレミス構成や既存ツールとの連携など、導入時の相談や検証のサポートも可能です  
@@ -21,6 +23,31 @@ videoreview.contact.info@gmail.com
 参加方法は `CONTRIBUTING.jp.md` を参照してください。
 
 # ✨ Key Features
+
+## 💻 Flexible Deployment: On-premise or Cloud
+VideoReviewはオンプレミス環境での運用を前提に設計しています  
+社内ネットワーク内で動画を完結させることで、機密性の高い映像素材を外部に出さずにレビューを行えます  
+
+一方で、運用やチーム構成に応じて
+- AWS S3
+- NextCloud 
+
+ストレージとして選択することも可能です  
+オンプレ・クラウドを用途に応じて使い分けることで、セキュリティ・導入コスト・運用負荷のバランスを柔軟に取れます  
+
+---
+
+## 💬 Actionable Comment Panel
+
+コメント一覧は、SNSライクで直感的なUIを採用しています
+
+- 描画付きコメント
+- チケット連携されたコメント
+- 重要な指摘
+
+これらはバッジや色分けによって強調され、  
+読む前に「対応が必要かどうか」が一目で分かります
+
 
 ## 🔔 Never Miss Feedback with Slack & JIRA
 レビューは、見るだけでは終わりません。
@@ -38,16 +65,14 @@ videoreview.contact.info@gmail.com
 
 動画レビューを次のアクションに直結する起点として扱えます
 
-## 💻 Flexible Deployment: On-premise or Cloud
-VideoReviewはオンプレミス環境での運用を前提に設計しています  
-社内ネットワーク内で動画を完結させることで、機密性の高い映像素材を外部に出さずにレビューを行えます  
+### 🔗 Workflow Integrations
 
-一方で、運用やチーム構成に応じて
-- AWS S3
-- NextCloud 
+| Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
+| ---- | ---- |
+| <img src="./documents/resources/comment.gif" width="340"></video> | <img src="./documents/resources/custom-protocol.gif" width="640"></video> |
 
-ストレージとして選択することも可能です  
-オンプレ・クラウドを用途に応じて使い分けることで、セキュリティ・導入コスト・運用負荷のバランスを柔軟に取れます  
+
+# ✨ Advanced Features
 
 ## 🔍 Powerful Search for Review Workflow
 
@@ -60,16 +85,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 日々のレビューから、後日の振り返りまで、  
 必要な情報にすぐたどり着けます
 
-## 💬 Actionable Comment Panel
-
-コメント一覧は、SNSライクで直感的なUIを採用しています
-
-- 描画付きコメント
-- チケット連携されたコメント
-- 重要な指摘
-
-これらはバッジや色分けによって強調され、  
-読む前に「対応が必要かどうか」が一目で分かります
+<img src="./documents/resources/movie_search.gif" width="420"></video>
 
 ## 🔧 Built for Production Pipelines
 
@@ -79,6 +95,15 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 ユーザー管理やデータ操作をスクリプトから実行できます  
 また、API 経由で動画をアップロードできるため、  
 DCC ツールや自動テスト、CI などから直接連携することが可能です
+
+以下は、動画をアップロードするコマンド例になります
+```bash
+go run . upload-video \
+  --title "title" \
+  --folder_key "folder_key" \
+  --scene_path "scene_path" \
+  --video_path "/path/to/video.mp4"
+```
 
 ## 🧭 Roadmap
 

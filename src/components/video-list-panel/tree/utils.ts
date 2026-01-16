@@ -1,59 +1,57 @@
 import { Video } from "@/lib/db-types";
-import { VideoNode } from "@/components/video-list-panel/tree/types";import dayjs from "dayjs";
+import { VideoNode } from "@/components/video-list-panel/tree/types"; import dayjs from "dayjs";
 import { NodeApi } from "react-arborist";
-;
 
 export function buildTree(
     videos: Video[],
     unReadVideoIds: string[],
 ): VideoNode[] {
-    const root: Record<string, any> = {};
+    const root: VideoNode = {
+        id: "root",
+        name: "",
+        type: "folder",
+        children: [],
+        unread: false,
+    };
+
+    const folderIndex = new Map<string, VideoNode>();
+    folderIndex.set("", root);
 
     for (const v of videos) {
         const parts = v.folderKey.split("/").filter(Boolean);
-        let node = root;
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            if (!node[part]) {
-                // folder node
-                node[part] = {
-                    id: parts.slice(0, i + 1).join("/"),
+        let currentPath = "";
+        let parent = root;
+
+        for (const part of parts) {
+            // Build a stable folder path incrementally (e.g. "01_root/02_child").
+            currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+            let folder = folderIndex.get(currentPath);
+            if (!folder) {
+                folder = {
+                    id: currentPath,
                     name: part,
                     type: "folder",
-                    children: {},
+                    children: [],
+                    unread: false,
                 };
+                parent.children!.push(folder);
+                folderIndex.set(currentPath, folder);
             }
-            if (i === parts.length - 1) {
-                // movie node
-                node[part].children[v.id] = {
-                    id: v.id,
-                    name: v.title,
-                    type: "video",
-                    video: v,
-                };
-            }
-            node = node[part].children;
+            parent = folder;
         }
+
+        parent.children!.push({
+            id: v.id,
+            name: v.title,
+            type: "video",
+            video: v,
+            unread: false,
+        });
     }
 
-    const toArray = (obj: Record<string, any>): VideoNode[] =>
-        Object.values(obj).map((n: any) => ({
-            id: n.id,
-            name: n.name,
-            type: n.type,
-            unread: false,
-            ...(n.video ? { video: n.video } : {}),
-            ...(n.children ? { children: toArray(n.children) } : {}),
-        }));
-
-    const final = [
-        ...toArray(root)
-            .map(pruneVideoNode)
-            .filter((n): n is VideoNode => n !== null),
-    ];
-
-    markUnread(final, unReadVideoIds);
-    return final;
+    markUnread([root], unReadVideoIds);
+    return root.children!;
 }
 
 export function markUnread(nodes: VideoNode[], unReadVideoIds: string[]): boolean {

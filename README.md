@@ -12,6 +12,8 @@ It integrates with existing workflows such as Slack and Jira, allowing feedback 
 
 This project is designed for team reviews in production environments such as video production and game development.
 
+<img src="./documents/resources/welcome.png" controls="true" width="1280"></video>
+
 ## Need help setting it up?
 
 We can help with on-premise setups and integrations with existing tools.  
@@ -26,31 +28,51 @@ Please see `CONTRIBUTING.md` for how to get involved.
 
 ## ✨ Key Features
 
-### 🔔 Never Miss Feedback with Slack & Jira
-
-Reviews should not end at "watching."
-
-By integrating with Slack and Jira, VideoReview naturally connects feedback to your existing workflow.  
-Important comments and ticketed feedback become visible to the whole team and are easy to catch.
-
-It also supports a custom protocol to connect directly to external tools and apps, for example:
-
-- Launch an engine or editor from the relevant video scene
-- Hook into your own production pipeline
-
-Video review becomes a starting point for the next action.
-
 ### 💻 Flexible Deployment: On‑premise or Cloud
+**Review confidential videos without sending them outside your network.**
 
-VideoReview is designed with on‑premise operation in mind.  
-Keeping videos inside your internal network lets you review confidential footage without sending it outside.
+VideoReview is designed with on-premise operation in mind, allowing teams to review confidential footage securely inside their internal network.
 
 Depending on your needs, you can also choose:
 - AWS S3
 - NextCloud
 
-You can balance security, cost, and operational overhead by using on‑premise or cloud storage as needed.
+---
 
+### 💬 Actionable Comment Panel
+**Turn video comments into clear, actionable feedback.**
+
+The comment list is designed with a social‑style, intuitive UI:
+
+- Comments with drawings
+- Comments linked to tickets
+- Highlighted important comments
+
+Badges and color cues highlight what needs action at a glance.
+
+### 🔔 Never Miss Feedback with Slack & Jira
+**Make feedback visible where your team already works.**
+
+Reviews should not end at "watching."
+
+By integrating with Slack and Jira, VideoReview naturally connects feedback to your existing workflow,
+making important comments and ticketed feedback visible to the whole team.
+
+Beyond messaging and issue tracking, VideoReview also supports a custom protocol to connect directly to external tools and apps:
+- Launch an engine or editor from the relevant video scene
+- Hook into your own production pipeline
+
+Video review becomes a starting point for the next action.
+
+### 🔗 Workflow Integrations
+The following examples show how feedback flows beyond video review:
+
+| Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
+| ---- | ---- |
+| <img src="./documents/resources/comment.gif" width="340"></video> | <img src="./documents/resources/custom-protocol.gif" width="640"></video> |
+
+
+# ✨ Advanced Features
 ### 🔍 Powerful Search for Review Workflow
 
 Search videos and comments independently:
@@ -59,17 +81,9 @@ Search videos and comments independently:
 - Filter by specific people or time ranges
 - Narrow down to drawings or ticketed feedback
 
-From day‑to‑day reviews to later retrospectives, the right info is always close.
+From day-to-day reviews to later retrospectives, the right info is always close.
 
-### 💬 Actionable Comment Panel
-
-The comment list is designed with a social‑style, intuitive UI:
-
-- Comments with drawings
-- Comments linked to tickets
-- Important feedback
-
-Badges and color cues highlight what needs action at a glance.
+<img src="./documents/resources/movie_search.gif" width="420"></video>
 
 ### 🔧 Built for Production Pipelines
 
@@ -78,6 +92,16 @@ Designed to fit into real production workflows.
 - A maintenance CLI for admins (user management and data operations)  
   See: [maintenance README](./maintenance/README.md)
 - Upload videos via API from DCC tools, automated tests, or CI
+
+For example, videos can be uploaded from scripts or pipelines with a single command:
+
+```bash
+go run . upload-video \
+  --title "title" \
+  --folder_key "folder_key" \
+  --scene_path "scene_path" \
+  --video_path "/path/to/video.mp4"
+```
 
 ## 🧭 Roadmap
 
