@@ -1,64 +1,130 @@
-# VideoReview 
+# VideoReview
 
 > 🚀 **Live Demo**  
-> Try VideoReview in your browser:  
+> Try it here:  
 > https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/
 
-📘 日本語版 README はこちら → [README.jp.md](./README.jp.md)
+📘 Read this in Japanese → [README.jp.md](./README.jp.md)
 
-VideoReview is a lightweight review tool where team members can upload videos,
-add timeline comments, draw directly on frames, and communicate like using your everyday social media.  
-It is designed to support feedback workflows in game development, video production, and other collaborative environments.  
+VideoReview is a web service that helps teams go beyond just "watching" review videos.  
+Upload videos, leave comments or draw directly on frames, and share feedback in a lightweight, social-style flow.  
+It integrates with existing workflows such as Slack and Jira, allowing feedback to naturally lead to next actions.
 
-<img src="./documents/resources/drawing.gif" controls="true" width="800"></video>
+This project is designed for team reviews in production environments such as video production and game development.
+
+<img src="./documents/resources/welcome.png" controls="true" width="1280"></video>
+
+## Need help setting it up?
+
+We can help with on-premise setups and integrations with existing tools.  
+If you'd like support, feel free to reach out:
+
+videoreview.contact.info@gmail.com
+
+## 🤝 Contributing
+
+We want more people to use VideoReview, and we'd love to build it together as OSS.  
+Please see `CONTRIBUTING.md` for how to get involved.
 
 ## ✨ Key Features
 
-### From Discovery to Feedback: A Seamless Workflow
+### 💻 Flexible Deployment: On‑premise or Cloud
+**Review confidential videos without sending them outside your network.**
 
-* **Fast Search:**   
-Quickly find videos using keywords, even in large libraries.
-* **Tree-Based Organization:**  
-Manage videos using a hierarchical tree structure. This ensures you always have the full context of where a video belongs (e.g., Chapter 1 > Boss Battle).
-* **Activity Indicators:**  
-New comments are marked with a "New" icon, so you never miss an update or a request for review.
+VideoReview is designed with on-premise operation in mind, allowing teams to review confidential footage securely inside their internal network.
 
-<img src="./documents/resources/search_movie.gif" controls="true" width="300"></video>
+Depending on your needs, you can also choose:
+- AWS S3
+- NextCloud
 
-### Integrated Communication & Task Management
+---
 
-* **Slack Integration:**  
-Push comments, timestamps, and screenshots directly to Slack. Team members can see the feedback and jump to the exact video frame with a single click.
+### 💬 Actionable Comment Panel
+**Turn video comments into clear, actionable feedback.**
 
-<img src="./documents/resources/slack.gif" controls="true" width="300"></video>
+The comment list is designed with a social‑style, intuitive UI:
+
+- Comments with drawings
+- Comments linked to tickets
+- Highlighted important comments
+
+Badges and color cues highlight what needs action at a glance.
+
+### 🔔 Never Miss Feedback with Slack & Jira
+**Make feedback visible where your team already works.**
+
+Reviews should not end at "watching."
+
+By integrating with Slack and Jira, VideoReview naturally connects feedback to your existing workflow,
+making important comments and ticketed feedback visible to the whole team.
+
+Beyond messaging and issue tracking, VideoReview also supports a custom protocol to connect directly to external tools and apps:
+- Launch an engine or editor from the relevant video scene
+- Hook into your own production pipeline
+
+Video review becomes a starting point for the next action.
+
+### 🔗 Workflow Integrations
+The following examples show how feedback flows beyond video review:
+
+| Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
+| ---- | ---- |
+| <img src="./documents/resources/comment.gif" width="340"></video> | <img src="./documents/resources/custom-protocol.gif" width="640"></video> |
 
 
-* **Jira Ticket Creation:**  
-Convert feedback into action. Create Atlassian Jira tickets directly from comments to bridge the gap between "Review" and "Development."
+# ✨ Advanced Features
+### 🔍 Powerful Search for Review Workflow
 
-<img src="./documents/resources/create_issue.gif" controls="true" width="300"></video>
+Search videos and comments independently:
 
-* **Visual Annotations:**  
-Draw directly on the video player. Use arrows and sketches to explain nuances like motion, positioning, or VFX timing that words can't describe.
+- Find videos that have comments
+- Filter by specific people or time ranges
+- Narrow down to drawings or ticketed feedback
 
-<img src="./documents/resources/drawing.gif" controls="true" width="800"></video>
+From day-to-day reviews to later retrospectives, the right info is always close.
 
-### Flexible Deployment & Automation
+<img src="./documents/resources/movie_search.gif" width="420"></video>
 
-* **REST API for Automation:**   
-Integrate VideoReview into your CI/CD pipeline or build scripts. Automatically upload the latest build recordings for daily reviews.
-* **Security-First Storage:**  
-Run VideoReview entirely on-premises to keep confidential game assets within your internal network, or use AWS S3, NextCloud for scalable cloud storage.
+### 🔧 Built for Production Pipelines
 
+Designed to fit into real production workflows.
+
+- A maintenance CLI for admins (user management and data operations)  
+  See: [maintenance README](./maintenance/README.md)
+- Upload videos via API from DCC tools, automated tests, or CI
+
+For example, videos can be uploaded from scripts or pipelines with a single command:
+
+```bash
+go run . upload-video \
+  --title "title" \
+  --folder_key "folder_key" \
+  --scene_path "scene_path" \
+  --video_path "/path/to/video.mp4"
+```
+
+## 🧭 Roadmap
+
+VideoReview aims to stay useful in real production environments and will evolve step by step.
+
+Our guiding ideas are:
+
+- On‑premise‑first design and operations
+- Integrations that fit naturally into existing workflows
+- Review as a path to the next action
+- Pipeline integration and automation
+
+Specific features and priorities will adjust based on real usage and feedback.
+
+---
 
 ## 🚀 Development Setup
-This project supports **two development setups**:
-- **Docker**
-- **Local / On‑premise (without Docker)**
 
-## 🐳 Option A: Docker
+We support two setup options: Docker and local.
 
-If you have Docker and Docker Compose installed, you can start everything with:
+## 🐳 Docker
+
+Prerequisites: Docker and Docker Compose
 
 ```bash
 # Install dependencies
@@ -67,11 +133,10 @@ npm install
 docker compose up -d --build
 ```
 
-## 💻 Option B: Local / On‑premise Setup (without Docker)
+## 💻 Local / On‑premise Setup
 
-Use this option if you want to run everything directly on your local machine.
+#### Required tools
 
-#### Required tools.
 * node v24
 * postgreSQL
 
@@ -101,6 +166,7 @@ npm run dev
 - API Documentation (Swagger)  
   http://localhost:3489/api/docs
 
+---
 
 ## 🛠 Build & Deploy
 
@@ -118,4 +184,5 @@ npm run start
 ```
 
 ## 📄 License
+
 This project is licensed under the **MIT License**.

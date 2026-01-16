@@ -73,8 +73,6 @@ listRouter.openapi({
     const whereVideoComment: PrismaTypes.VideoCommentWhereInput = { deleted: false };
     const whereVideo: PrismaTypes.VideoWhereInput = { deleted: false };
 
-    const includeVideoRevisions: PrismaTypes.VideoRevisionInclude = {}
-
     if (user) {
         whereVideoComment.userName = user;
     }
@@ -111,13 +109,27 @@ listRouter.openapi({
             where: whereVideo,
             ...(includeRevisions ? {
                 include: {
-                revisions: {
-                    where: { deleted: false },
-                    orderBy: { revision: "asc" },
+                    revisions: {
+                        where: { deleted: false },
+                        orderBy: { revision: "asc" },
+                    },
                 },
-            },
             } : {}),
-            orderBy: { title: "asc" },
+            orderBy: [
+                { folderKey: "asc" },
+                { title: "asc" },
+            ]
+        });
+        
+        const previewCount = Math.min(videos.length, 30);
+        const preview = videos.slice(0, previewCount).map(v => ({
+            folderKey: v.folderKey,
+            title: v.title,
+        }));
+
+        console.log("[VideoSearch]", {
+            total: videos.length,
+            preview,
         });
         return c.json(videos);
     } catch (err) {

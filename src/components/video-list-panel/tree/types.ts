@@ -4,7 +4,7 @@ export interface VideoNode {
     id: string;
     name: string;
     type: "folder" | "video";
-    children?: VideoNode[];
+    children: VideoNode[];
     video?: Video;
     unread: boolean;
 }
