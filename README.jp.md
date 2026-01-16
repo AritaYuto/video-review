@@ -82,8 +82,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 - 特定の人・期間のレビューを抽出する
 - 描画やチケット付きの指摘を絞り込む
 
-日々のレビューから、後日の振り返りまで、  
-必要な情報にすぐたどり着けます
+日々のレビューから、後日の振り返りまで必要な情報にすぐたどり着けます
 
 <img src="./documents/resources/movie_search.gif" width="420"></video>
 
@@ -122,11 +121,72 @@ VideoReview は、制作現場で使われ続けることを前提に、
 
 ---
 
-## 🚀 開発環境のセットアップ
-Dockerとローカルの２つのセットアップをサポートしています
+## 🚀 Getting Started
 
-## 🐳 環境構築：Docker
-前提：Docker、Docker Composeを事前にインストールしておいてください
+### 🐳 Docker
+
+### 前提
+* Docker、Docker Composeを事前にインストールしておいてください
+
+### 必要な設定
+
+以下の変数について [compose.prod.yml](./compose.prod.yml) 設定してからDockerの起動をしてください
+
+```yaml
+environment:
+  VIDEO_REVIEW_API_TOKEN: your-strong-random-secret
+  JWT_SECRET: your-random-api-token
+
+volumes:
+  - /mnt/data/videoreview:/storage
+```
+
+### Build & Run
+```bash
+# 1. イメージの作成
+docker build -t videoreview:latest -f docker/web/Dockerfile.prod .
+
+# 2. DBを起動
+docker compose -f compose.prod.yml up -d db
+
+# 3. DB構築 (初回起動、またはschemaが更新されたとき)
+docker compose -f compose.prod.yml run --rm videoreview npm run prisma:deploy
+
+# 4. サービス起動
+docker compose -f compose.prod.yml up -d videoreview
+
+```
+
+## 💻 Local / On‑premise Setup
+VideoReviewをサーバーやローカルマシンで直接実行する際はこちら
+
+### Prerequisites
+* node v24
+* postgreSQL
+
+### 環境変数の設定
+
+```bash
+cp .example.env .env
+```
+
+.env ファイルを編集し必要な値を設定してください
+
+```bash
+LOCAL_ROOTDIR="/path/.../..."
+DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
+VIDEO_REVIEW_API_TOKEN="xxxx"
+JWT_SECRET="xxxxxxx"
+```
+
+### 注意事項
+
+本番環境では、LOCAL_ROOTDIR を明示的に設定することを強く推奨します
+
+LOCAL_ROOTDIR が設定されていないか無効な場合、アプリケーションは ./uploads にフォールバックします。  
+長期保存には適さない可能性があります
+
+## 🐳 Docker (Development)
 
 ```bash
 # Install dependencies
@@ -135,31 +195,7 @@ npm install
 docker compose up -d --build
 ```
 
-## 💻 環境構築：ローカルに構築（オンプレ）
-
-#### 必要なツール
-* node v24
-* postgreSQL
-
-```bash
-# Install dependencies
-npm install
-
-cp .example.env .env
-
-# Required .env Values
-DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
-JWT_SECRET="xxxxxxx"
-
-# Generate Prisma Client
-npm run prisma:deploy
-npm run prisma:generate
-
-# Start the development server
-npm run dev
-```
-
-### 開発サーバーへアクセス
+### Access
 
 - Web UI  
   http://localhost:3489
@@ -169,22 +205,7 @@ npm run dev
 
 ---
 
-## 🛠 ビルド & デプロイ
-
-```
-# Install dependencies
-npm install
-
-cp .example.env .env
-
-# Run build
-npm run build
-
-# Start server
-npm run start
-```
-
-## 📄 ライセンス
+## 📄 License
 
 このプロジェクトは **MIT License** のもとで公開されています。  
 詳しくは [LICENSE](./LICENSE) をご確認ください。

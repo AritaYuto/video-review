@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Busboy from "busboy";
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { Readable } from "stream";
 
@@ -23,7 +24,7 @@ export async function receiveMultipart(req: Request, onUploadProcess: (filename:
 
         busboy.on("file", (_name, file, info) => {
             try {
-                const tmpDir = path.join(process.cwd(), "uploads", "tmp");
+                const tmpDir = path.join(os.tmpdir(), "videoreview-tmp");
                 fs.mkdirSync(tmpDir, { recursive: true });
 
                 const unique = `${Date.now()}_${Math.random().toString(36).slice(2)}`;

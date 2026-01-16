@@ -13,6 +13,8 @@ services:
       JWT_SECRET: local-dev-secret
     volumes:
       - .:/app
+      # If you want to specify Local Storage
+      # - /mnt/d/data/videoreview:/storage
     depends_on:
       - db
 
@@ -26,7 +28,7 @@ services:
       POSTGRES_PASSWORD: videoreview
       POSTGRES_DB: videoreview
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - videoreview-db:/var/lib/postgresql/data
 
   localstack:
       env_file:
@@ -40,7 +42,6 @@ services:
       environment:
           # https://docs.localstack.cloud/references/configuration/
           - DEBUG=${DEBUG:-0}
-          - LAMBDA_KEEPALIVE_MS=2592000000 # 30 days
       volumes:
           - ./docker/localstack:/etc/localstack/init/ready.d
 
@@ -74,6 +75,6 @@ services:
       - nextcloud-db
 
 volumes:
-  pgdata:
+  videoreview-db:
   nextcloud-db:
   nextcloud-data:

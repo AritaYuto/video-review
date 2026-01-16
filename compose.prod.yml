@@ -1,0 +1,41 @@
+services:
+  videoreview:
+    image: videoreview:latest
+    container_name: videoreview
+    restart: unless-stopped
+
+    ports:
+      - "3489:3489"
+
+    environment:
+      VIDEO_REVIEW_API_TOKEN: ${VIDEO_REVIEW_API_TOKEN}
+      JWT_SECRET: ${JWT_SECRET} 
+      NODE_ENV: production
+      LOCAL_ROOTDIR: /storage
+      DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
+
+    volumes:
+      - videoreview-storage:/storage
+
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: videoreview-db
+    restart: unless-stopped
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_USER: videoreview
+      POSTGRES_PASSWORD: videoreview
+      POSTGRES_DB: videoreview
+
+    volumes:
+      - videoreview-db:/var/lib/postgresql/data
+
+volumes:
+  videoreview-storage:
+  videoreview-db:

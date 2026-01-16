@@ -1,0 +1,16 @@
+FROM node:24-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY . .
+
+RUN apt-get update \
+ && apt-get update -y && apt-get install -y openssl \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
