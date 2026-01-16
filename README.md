@@ -118,44 +118,103 @@ Specific features and priorities will adjust based on real usage and feedback.
 
 ---
 
-## 🚀 Development Setup
+## 🚀 Getting Started
 
-We support two setup options: Docker and local.
+## 🐳 Docker (Production)
+Recommended for production and long-term operation.
 
-## 🐳 Docker
+### Prerequisites
+* Docker and Docker Compose
 
-Prerequisites: Docker and Docker Compose
+### Environment Configuration
+
+```bash
+cp .example.env .env
+```
+
+Edit .env and set the required values
+
+```bash
+VIDEO_REVIEW_API_TOKEN=your-strong-random-secret
+JWT_SECRET=your-random-api-token
+```
+
+## Storage location (Production) 
+
+Edit [compose.prod.yml](./compose.prod.yml) and set the host path for storage.
+
+```yaml
+volumes:
+  - /mnt/data/videoreview:/storage
+```
+
+### Build & Run
+```bash
+# 1. Create image
+docker build -t videoreview:latest -f docker/web/Dockerfile.prod .
+
+# 2. Run only DB
+docker compose -f compose.prod.yml up -d db
+
+# 3. Run prisma deploy (just once, for initial setup or schema changes)
+docker compose -f compose.prod.yml run --rm videoreview npm run prisma:deploy
+
+# 4. Run web service
+docker compose -f compose.prod.yml up -d videoreview
+
+```
+
+## 💻 Local / On‑premise Setup
+Use this method when running VideoReview directly on a server or local machine.
+
+### Prerequisites
+* node v24
+* postgreSQL
+
+### Environment Configuration
+
+```bash
+cp .example.env .env
+```
+
+Edit .env and set the required values
+
+```bash
+LOCAL_ROOTDIR="/path/.../..."
+DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
+JWT_SECRET="xxxxxxx"
+```
+
+### Build & Run
+
+```bash
+# Install dependencies
+npm install
+
+# Generate Prisma Client
+npm run prisma:deploy
+npm run prisma:generate
+
+# Start the application
+npm run build
+npm run start
+```
+
+### Notes
+
+In production environments, it is strongly recommended to set LOCAL_ROOTDIR explicitly.
+
+If LOCAL_ROOTDIR is not set or invalid, the application falls back to ./uploads, which may not be suitable for long-term storage.
+
+--- 
+
+## 🐳 Docker (Development)
 
 ```bash
 # Install dependencies
 npm install
 # Start containers
 docker compose up -d --build
-```
-
-## 💻 Local / On‑premise Setup
-
-#### Required tools
-
-* node v24
-* postgreSQL
-
-```bash
-# Install dependencies
-npm install
-
-cp .example.env .env
-
-# Required .env Values
-DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
-JWT_SECRET="xxxxxxx"
-
-# Generate Prisma Client
-npm run prisma:deploy
-npm run prisma:generate
-
-# Start the development server
-npm run dev
 ```
 
 ### Access
@@ -167,21 +226,6 @@ npm run dev
   http://localhost:3489/api/docs
 
 ---
-
-## 🛠 Build & Deploy
-
-```
-# Install dependencies
-npm install
-
-cp .example.env .env
-
-# Run build
-npm run build
-
-# Start server
-npm run start
-```
 
 ## 📄 License
 

@@ -1,3 +1,4 @@
+import { LocalBaseDirectory } from "@/server/lib/storage/local";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import fs from "fs";
 import path from "path";
@@ -25,7 +26,7 @@ localRouter.openapi({
     if(!relativePath) {
         return c.json({ error: "missing path" }, 400);
     }
-    const filePath = path.join(process.cwd(), "uploads", relativePath);
+    const filePath = path.join(LocalBaseDirectory(), relativePath);
     const ext = path.extname(filePath).toLowerCase();
 
     try {

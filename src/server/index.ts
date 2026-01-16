@@ -25,6 +25,9 @@ import { avatarRouter } from "./routes/avatar";
 
 export const app = new Hono().basePath("/api");
 
+console.log("JWT_SECRET:", process.env.JWT_SECRET ? "SET" : "NOT SET");
+console.log("JWT_SECRET:", process.env.VIDEO_REVIEW_API_TOKEN ? "SET" : "NOT SET");
+
 // v1 API
 app.route("/v1/media", mediaRouter);
 app.route("/v1/read-status", readStatusRouter);

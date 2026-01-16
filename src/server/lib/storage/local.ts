@@ -9,30 +9,42 @@ import Stream from 'stream';
 
 import "server-only"
 
-export class LocalStorage implements FileStorage {
-    localBaseDirectory: string;
-
-    constructor(localBaseDirectory: string) {
-        this.localBaseDirectory = localBaseDirectory;
+let localBaseDirectory: string | undefined;
+export const LocalBaseDirectory = () => {
+    if(!localBaseDirectory){
+        if(process.env.LOCAL_ROOTDIR && fs.existsSync(process.env.LOCAL_ROOTDIR)) {
+            localBaseDirectory = process.env.LOCAL_ROOTDIR
+        } else {
+            console.warn(`
+                [WARN] LOCAL_ROOTDIR is not set or invalid.
+                Falling back to default directory: ./uploads
+                For production use, please configure LOCAL_ROOTDIR explicitly.
+            `);
+            localBaseDirectory = path.join(process.cwd(), "uploads") 
+        }
     }
+    return localBaseDirectory;
+}
+
+export class LocalStorage implements FileStorage {
 
     type(): string {
         return UploadStorageType.local;
     }
 
     async hasObject(storageKey: string): Promise<boolean> {
-        const abs = path.join(this.localBaseDirectory, "uploads", storageKey);
+        const abs = path.join(LocalBaseDirectory(), storageKey);
         return fs.existsSync(abs);
     }
 
     async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
-        const fullPath = path.join(process.cwd(), "uploads", storageKey);
+        const fullPath = path.join(process.cwd(), storageKey);
         await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.promises.writeFile(fullPath, src);
     }
 
     async directUploadFromFile(storageKey: string, src: string): Promise<void> {
-        const fullPath = path.join(process.cwd(), "uploads", storageKey);
+        const fullPath = path.join(process.cwd(), storageKey);
         await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
         await fs.promises.rename(src, fullPath);
     }
@@ -130,7 +142,7 @@ export class LocalStorage implements FileStorage {
      * Behavior:
      * - Removes a leading "/api/uploads/" prefix if present (legacy compatibility).
      * - Removes any remaining leading slashes to avoid absolute path resolution.
-     * - Resolves the path relative to "<localBaseDirectory>/uploads".
+     * - Resolves the path relative to "<localBaseDirectory>".
      * - Returns undefined if the resolved path escapes the uploads directory.
      */
     resolveStoragePath(storageKey: string): string | undefined {
@@ -140,7 +152,7 @@ export class LocalStorage implements FileStorage {
         }
 
         key = key.replace(/^[/\\]+/, "");
-        const baseDir = path.join(this.localBaseDirectory, "uploads");
+        const baseDir = path.join(LocalBaseDirectory());
         const resolved = path.resolve(baseDir, key);
 
         if (!resolved.startsWith(baseDir + path.sep)) {

@@ -24,6 +24,6 @@ export const VideoReviewStorage: FileStorage = (() => {
         case "nextCloud":
             return new NextCloudStorage();
         default:
-            return new LocalStorage(process.cwd());
+            return new LocalStorage();
     }
 })();
