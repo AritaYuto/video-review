@@ -52,7 +52,7 @@ export function buildTree(
     }
 
     markUnread([root], unReadVideoIds);
-    return root.children!;
+    return root.children;
 }
 
 export function markUnread(nodes: VideoNode[], unReadVideoIds: string[]): boolean {
