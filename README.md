@@ -24,7 +24,7 @@ videoreview.contact.info@gmail.com
 ## 🤝 Contributing
 
 We want more people to use VideoReview, and we'd love to build it together as OSS.  
-Please see `CONTRIBUTING.md` for how to get involved.
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved.
 
 ## ✨ Key Features
 
