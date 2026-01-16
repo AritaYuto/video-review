@@ -1,15 +1,63 @@
-# VideoReview
+<!-- HERO -->
+<div align="center">
 
-> 🚀 デモサイトを用意しています！試してみてください！  
-> https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/
+  <h1>VideoReview</h1>
 
-VideoReview は、動画レビューを「見るだけ」で終わらせないための Web サービスです  
-動画をアップロードし、コメントやお絵かきを添えながら、SNSのような感覚でフィードバックを共有できます  
-Slack や JIRA など、既存のワークフローとも連携できるため次のアクションへ自然につながります
+  <p>
+    A self-hosted video review hub for small-to-mid teams.
+    <br/>
+    Comment on timelines, draw on frames, and connect feedback to action.
+  </p>
 
-映像制作やゲーム開発など、制作現場でのチーム内レビューを想定して設計されています
+  <!-- Buttons -->
+  <p>
+    <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/" target="_blank" rel="noopener noreferrer">
+      <img alt="Start Demo" src="https://img.shields.io/badge/Start%20Demo-Open-blue?style=for-the-badge" />
+    </a>
+    <a href="./documents/jp/README.md">
+      <img alt="Documentation" src="https://img.shields.io/badge/Documentation-Open-3369b4?style=for-the-badge" />
+    </a>
+  </p>
 
-<img src="./documents/resources/welcome.png" controls="true" width="1280"></video>
+  <p align="center">
+    <a href="https://github.com/KirisameMarisa/video-review/stargazers">
+      <img src="https://img.shields.io/github/stars/KirisameMarisa/video-review?style=social" alt="GitHub stars" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />
+    </a>
+  </p>
+</div>
+
+<hr/>
+
+<!-- One-liner + bullets -->
+<h3>What it is</h3>
+
+<p>
+  VideoReviewは、動画レビューを「見るだけ」で終わらせないための
+  <b>セルフホスト型の動画レビュー Web サービス</b>です。<br/>
+  動画をアップロードし、タイムライン上にコメントを残したり、
+  フレームに直接描き込みながらSNSのようにフィードバックを共有できます。
+</p>
+
+<p>
+  現在は <b>Slack</b> や <b>Jira</b> と連携し、
+  レビューで出た課題を次のワークフローへ自然につなげることができます。<br/>
+  また、特定のツールやエンジンに依存しない設計となっており、
+  既存の制作ワークフローに合わせて拡張していくことを前提としています。
+</p>
+
+<p>
+  ゲーム開発や映像制作など制作現場における
+  <b>チーム内レビュー</b>を想定して設計されています。
+</p>
+
+<!-- Screenshot -->
+<p align="center">
+  <img src="./documents/resources/welcome.png" alt="VideoReview screenshot" width="1280" />
+</p>
 
 # Need help setting it up?
 

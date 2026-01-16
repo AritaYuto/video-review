@@ -1,18 +1,64 @@
-# VideoReview
+<!-- HERO -->
+<div align="center">
 
-> 🚀 **Live Demo**  
-> Try it here:  
-> https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/
+  <h1>VideoReview</h1>
 
-📘 Read this in Japanese → [README.jp.md](./README.jp.md)
+  <p>
+    A self-hosted video review hub for small-to-mid teams.
+    <br/>
+    Comment on timelines, draw on frames, and connect feedback to action.
+  </p>
 
-VideoReview is a web service that helps teams go beyond just "watching" review videos.  
-Upload videos, leave comments or draw directly on frames, and share feedback in a lightweight, social-style flow.  
-It integrates with existing workflows such as Slack and Jira, allowing feedback to naturally lead to next actions.
+  <!-- Buttons -->
+  <p>
+    <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/" target="_blank" rel="noopener noreferrer">
+      <img alt="Start Demo" src="https://img.shields.io/badge/Start%20Demo-Open-blue?style=for-the-badge" />
+    </a>
+    <a href="./documents/en/README.md">
+      <img alt="Documentation" src="https://img.shields.io/badge/Documentation-Open-3369b4?style=for-the-badge" />
+    </a>
+    <a href="./README.jp.md">
+      <img alt="日本語 README" src="https://img.shields.io/badge/README-日本語-ff69b4?style=for-the-badge" />
+    </a>
+  </p>
 
-This project is designed for team reviews in production environments such as video production and game development.
+  <p align="center">
+    <a href="https://github.com/KirisameMarisa/video-review/stargazers">
+      <img src="https://img.shields.io/github/stars/KirisameMarisa/video-review?style=social" alt="GitHub stars" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />
+    </a>
+  </p>
+</div>
 
-<img src="./documents/resources/welcome.png" controls="true" width="1280"></video>
+<hr/>
+
+<!-- One-liner + bullets -->
+<h3>What it is</h3>
+
+<p>
+  VideoReview helps teams go beyond just “watching” review videos.
+  Upload videos, leave timeline comments, draw directly on frames,
+  and connect feedback to action.
+</p>
+
+<p>
+  It currently integrates with <b>Slack</b> and <b>Jira</b>,
+  and is designed to be extended to fit into existing production workflows.
+</p>
+
+<ul>
+  <li><b>Workflow integrations</b> — Slack, Jira (more to come)</li>
+  <li><b>Extensible by design</b> — built to fit into existing pipelines</li>
+  <li><b>Engine / tool agnostic</b> — not tied to a single platform</li>
+</ul>
+
+<!-- Screenshot -->
+<p align="center">
+  <img src="./documents/resources/welcome.png" alt="VideoReview screenshot" width="1280" />
+</p>
 
 ## Need help setting it up?
 
