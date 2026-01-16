@@ -35,16 +35,17 @@ export function buildTree(
                     children: [],
                     unread: false,
                 };
-                parent.children!.push(folder);
+                parent.children.push(folder);
                 folderIndex.set(currentPath, folder);
             }
             parent = folder;
         }
 
-        parent.children!.push({
+        parent.children.push({
             id: v.id,
             name: v.title,
             type: "video",
+            children: [],
             video: v,
             unread: false,
         });
