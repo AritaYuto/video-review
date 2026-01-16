@@ -27,7 +27,7 @@
       <img src="https://img.shields.io/github/stars/KirisameMarisa/video-review?style=social" alt="GitHub stars" />
     </a>
     &nbsp;&nbsp;
-    <a href="https://opensource.org/licenses/MIT">
+    <a href="./LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />
     </a>
   </p>
