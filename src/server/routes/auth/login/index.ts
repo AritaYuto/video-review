@@ -1,5 +1,5 @@
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { loginAsAdmin } from "@/routes/auth/login/admin";
+import { loginUser } from "@/server/routes/auth/login/user";
 import { loginAsGuest } from "@/routes/auth/login/guest";
 import { loginWithJira } from "@/routes/integrations/jira/auth";
 
@@ -9,7 +9,7 @@ loginRouter.openapi({
     method: "post",
     summary: "Login as admin",
     description: "Logs in a user as an admin.",
-    path: "/admin",
+    path: "/user",
     requestBody: {
         required: true,
         content: {
@@ -42,7 +42,7 @@ loginRouter.openapi({
             description: "Unauthorized",
         },
     },
-}, loginAsAdmin);
+}, loginUser);
 
 loginRouter.openapi({
     method: "post",

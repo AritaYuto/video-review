@@ -16,8 +16,8 @@ type Command struct {
 
 var commands = map[string]Command{
 	"create-admin": {
-		Run:  RunCreateAdmin,
-		Desc: "Create admin user",
+		Run:  RunCreateUser,
+		Desc: "Create user",
 	},
 	"get-videos": {
 		Run:  RunGetVideos,

@@ -1,10 +1,9 @@
 import { JwtError, signToken } from "@/server/lib/token";
-import { Role } from "@/lib/role";
 import { Context } from "hono";
 import bcrypt from "bcrypt";
 import { prisma } from "@/server/lib/db";
 
-export async function loginAsAdmin(c: Context) {
+export async function loginUser(c: Context) {
     try {
         const { email, password } = await c.req.json();
 
@@ -37,9 +36,8 @@ export async function loginAsAdmin(c: Context) {
             return c.json({ error: "authentication failed" }, 401);
         }
 
-        const role: Role = 'admin';
         let tokenPayload: Record<string, any> = {
-            id: identity.user.id, displayName: identity.user.displayName, role
+            id: identity.user.id, displayName: identity.user.displayName, role: identity.user.role
         };
         const token = signToken(tokenPayload);
 
@@ -49,7 +47,7 @@ export async function loginAsAdmin(c: Context) {
                 id: identity.user.id,
                 email: email,
                 displayName: identity.user.displayName,
-                role,
+                role: identity.user.role,
             },
             { status: 200 }
         );
