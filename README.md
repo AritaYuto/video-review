@@ -129,7 +129,7 @@ Search videos and comments independently:
 
 From day-to-day reviews to later retrospectives, the right info is always close.
 
-<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="420"></video>
+<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="420"></img>
 
 ### 🔧 Built for Production Pipelines
 
