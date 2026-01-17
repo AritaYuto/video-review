@@ -57,7 +57,7 @@
 
 <!-- Screenshot -->
 <p align="center">
-  <img src="./documents/resources/welcome.png" alt="VideoReview screenshot" width="1280" />
+  <img src="https://github.com/user-attachments/assets/532f55eb-0f47-45aa-b17c-2e7a8bb5e191" alt="VideoReview screenshot" width="1280" />
 </p>
 
 ## Need help setting it up?
@@ -115,7 +115,7 @@ The following examples show how feedback flows beyond video review:
 
 | Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
 | ---- | ---- |
-| <img src="./documents/resources/comment.gif" width="340"></video> | <img src="./documents/resources/custom-protocol.gif" width="640"></video> |
+| <img src="https://github.com/user-attachments/assets/e075f4fb-33cd-4b6c-9977-a9d24872f797" width="340"></video> | <img src="https://github.com/user-attachments/assets/e49670b2-5cfb-4f50-9863-f3bbe7e074fa" width="640"></video> |
 
 
 # ✨ Advanced Features
@@ -129,7 +129,7 @@ Search videos and comments independently:
 
 From day-to-day reviews to later retrospectives, the right info is always close.
 
-<img src="./documents/resources/movie_search.gif" width="420"></video>
+<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="420"></video>
 
 ### 🔧 Built for Production Pipelines
 
