@@ -1,39 +1,35 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
 import bcrypt from "bcrypt";
 import { maintenanceRouter } from "@/routes/admin/maintenance";
+import { Role, isAdmin, isViewer } from "@/lib/role"
 
 export const adminRouter = new Hono();
 
+const CreateUserBody = z.object({
+    displayName: z.string().optional(),
+    role: z.enum(["viewer", "admin"]).optional(),
+    email: z.string().optional(),
+    pass: z.string().min(6).optional(),
+});
+
 adminRouter.openapi({
     method: "post",
-    summary: "Create admin user",
-    description: "Creates a new admin user.",
+    summary: "Create user",
+    description: "Creates a new user.",
     path: "/user",
-    requestBody: {
-        required: true,
-        content: {
-            "application/json": {
-                schema: {
-                    type: "object",
-                    properties: {
-                        email: {
-                            type: "string",
-                            description: "Email of the admin user",
-                        },
-                        pass: {
-                            type: "string",
-                            description: "Password of the admin user",
-                        },
-                    },
-                    required: ["email", "pass"],
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: CreateUserBody,
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Admin user created successfully",
+            description: "user created successfully",
         },
         400: {
             description: "Invalid parameters",
@@ -42,7 +38,7 @@ adminRouter.openapi({
             description: "Forbidden",
         },
         410: {
-            description: "Admin already exists",
+            description: "User already exists",
         },
     },
 }, async (c) => {
@@ -63,22 +59,35 @@ adminRouter.openapi({
         return c.json({ error: "Forbidden" }, 403);
     }
 
-    const { email, pass } = await c.req.json();
-    if (!email || !pass) {
-        return c.json({ error: "email and pass are required" }, 400);
+    const body = c.req.valid("json");
+    const { 
+        email, 
+        pass,
+        displayName,
+        role
+    } = body;
+
+    if (!email || !pass || !role) {
+        return c.json({ error: "email, pass, role are required" }, 400);
     }
+
+    if(!isViewer(role as Role) && !isAdmin(role as Role)) {
+        return c.json({ error: "The role must be either viewer or admin." }, 400);
+    }
+
+    let name = displayName ? displayName : "User"
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
-        return c.json({ error: "Admin already exists. Skip." }, 410);
+        return c.json({ error: "User already exists. Skip." }, 410);
     }
 
     const hash = await bcrypt.hash(pass, 10);
     await prisma.user.create({
         data: {
             email,
-            displayName: "admin",
-            role: "admin",
+            displayName: name,
+            role: role,
             identities: {
                 create: {
                     provider: "password",
