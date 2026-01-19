@@ -21,7 +21,7 @@ func RunCreateUser(cmd string, args []string) {
 
 	Fetch(FetchOptions{
 		Method: POST,
-		Path:   "/api/v1/admin/user",
+		Path:   "/api/v1/admin/create-user",
 		Json: map[string]any{
 			"email":       email,
 			"pass":        pass,

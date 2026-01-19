@@ -1,5 +1,8 @@
 services:
   videoreview:
+    env_file:
+      - .env
+      
     image: videoreview:latest
     container_name: videoreview
     restart: unless-stopped
@@ -8,8 +11,6 @@ services:
       - "3489:3489"
 
     environment:
-      VIDEO_REVIEW_API_TOKEN: ${VIDEO_REVIEW_API_TOKEN}
-      JWT_SECRET: ${JWT_SECRET} 
       NODE_ENV: production
       LOCAL_ROOTDIR: /storage
       DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
