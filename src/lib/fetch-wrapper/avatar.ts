@@ -1,9 +1,10 @@
 import { useAuthStore } from "@/stores/auth-store";
+import { ApiError, ApiResult } from "@/lib/utils/api-result";
 
 export async function uploadAvatar(data: {
     email: string,
     file: File;
-}): Promise<boolean> {
+}): Promise<ApiResult<void>> {
     const token = useAuthStore.getState().token;
     const formData = new FormData();
     formData.append("email", data.email);
@@ -17,9 +18,10 @@ export async function uploadAvatar(data: {
         },
     });
 
-    if (!res.ok) throw new Error("Failed to upload avatar icon");
-    const json = await res.json();
-    return json.ok;
+    if(res.ok) {
+        return { ok: true, data: undefined }
+    }
+    return ApiError(res);
 }
 
 export async function fetchLocal(email: string): Promise<string | undefined> {

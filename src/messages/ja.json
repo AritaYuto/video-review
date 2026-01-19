@@ -1,4 +1,10 @@
 {
+    "bootstrap": {
+        "title": "管理者の設定",
+        "email": "メールアドレス",
+        "password": "パスワード",
+        "initialize": "初期設定"
+    },
     "video-title": {
         "noSelection": "未選択",
         "revisionInfo": "Rev: {revision} ({uploadedAt})",
@@ -97,7 +103,10 @@
         "clear": "クリア"
     },
     "edit-user-profile": {
+        "displayName": "表示名",
         "title": "プロフィール 編集",
+        "apiToken": "",
+        "rotateApiToken": "Api Token Generate",
         "save": "保存",
         "saving": "保存中…",
         "cancel": "キャンセル",

@@ -14,19 +14,31 @@ It is an **internal administrator tool** separate from the main application.
 ### Linux
 > GOOS=linux GOARCH=amd64 go build -o video-review-cli
 
+## API Token
+
+VideoReview uses an API token for maintenance and automation.
+
+After initial setup, an administrator can generate an API token
+from the web UI.
+
+See the [Admin Guide](../documents/admin-guide.md) for details.
+
 ## Required Environment Variables
 
 URL of the server running VideoReview
 > VIDEO_REVIEW_SERVER_URL
 
 VideoReview API Token  
-Set the same value as in .env
+Set the API token generated from the web UI
 > VIDEO_REVIEW_API_TOKEN
 
 ### Command List
 
-##### Create an administrator
-> go run . create-admin --email hoge@gmail.com --pass 123abc
+##### bootstrap
+> go run . bootstrap --email Nijika@example.com --pass 123abc
+
+##### Create an user
+> go run . create-user --name Nijika --email Nijika@example.com --pass 123abc
 
 ##### Get the video list (JSON)
 > go run . get-videos

@@ -1,8 +1,11 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
+import { authorize, JwtError } from "@/server/lib/token";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
+import { hash, randomBytes } from "crypto";
 
 export const maintenanceRouter = new Hono();
 
@@ -39,21 +42,13 @@ maintenanceRouter.openapi({
         }
     },
 }, async (c) => {
-   // NOTE:
-    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
-    // x-maintenance-token is kept temporarily for backward compatibility.
-
-    const apiToken = c.req.header("x-api-token");
-    const maintenanceToken = c.req.header("x-maintenance-token");
-
-    const isApiTokenValid =
-    apiToken && apiToken === process.env.VIDEO_REVIEW_API_TOKEN;
-
-    const isLegacyMaintenanceTokenValid =
-    maintenanceToken && maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN;
-
-    if (!isApiTokenValid && !isLegacyMaintenanceTokenValid) {
-        return c.json({ error: "Forbidden" }, 403);
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
     const body = c.req.valid("json");
@@ -104,21 +99,13 @@ maintenanceRouter.openapi({
         }
     },
 }, async (c) => {
-   // NOTE:
-    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
-    // x-maintenance-token is kept temporarily for backward compatibility.
-
-    const apiToken = c.req.header("x-api-token");
-    const maintenanceToken = c.req.header("x-maintenance-token");
-
-    const isApiTokenValid =
-    apiToken && apiToken === process.env.VIDEO_REVIEW_API_TOKEN;
-
-    const isLegacyMaintenanceTokenValid =
-    maintenanceToken && maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN;
-
-    if (!isApiTokenValid && !isLegacyMaintenanceTokenValid) {
-        return c.json({ error: "Forbidden" }, 403);
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
     const body = c.req.valid("json");
@@ -159,4 +146,53 @@ maintenanceRouter.openapi({
     }
 
     return c.json({ success: true, videoId, revision }, { status: 200 });
+});
+
+maintenanceRouter.openapi({
+    method: "post",
+    summary: "rotate token",
+    path: "/api-token/rotate",
+    responses: {
+        200: {
+            description: "rotate api token",
+        }
+    },
+}, async (c) => {
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const apiToken = randomBytes(32).toString("hex");
+    const tokenHash = hash("sha256", apiToken);
+    await prisma.systemSecret.upsert({
+        where: { key: "API_TOKEN" },
+        update: { valueHash: tokenHash },
+        create: { key: "API_TOKEN", valueHash: tokenHash },
+    });
+    return c.json({ token: apiToken });
+});
+
+maintenanceRouter.openapi({
+    method: "get",
+    summary: "check status",
+    path: "/status",
+    responses: {
+        200: {
+            description: "check initialized",
+        }
+    },
+}, async (c) => {
+    const hasAdmin = await prisma.user.count({ where: { role: "admin" } }) > 0;
+    const hasJwt = await prisma.systemSecret.findUnique({
+        where: { key: "JWT_SECRET" },
+    });
+
+    return c.json({
+        initialized: hasAdmin && !!hasJwt,
+    });
 });

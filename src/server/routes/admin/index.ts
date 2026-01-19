@@ -1,39 +1,118 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import bcrypt from "bcrypt";
+import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
 import { maintenanceRouter } from "@/routes/admin/maintenance";
+import { authorize, JwtError } from "@/server/lib/token";
+import { ContentfulStatusCode } from "hono/utils/http-status";
+import bcrypt from "bcrypt";
+import { hash, randomBytes } from "crypto";
 
 export const adminRouter = new Hono();
 
+const CreateAdminBody = z.object({
+    email: z.string().optional(),
+    pass: z.string().min(6).optional(),
+});
+
+const CreateUserBody = z.object({
+    displayName: z.string().optional(),
+    email: z.string().optional(),
+    pass: z.string().min(6).optional(),
+});
+
+const UpdateRoleBody = z.object({
+    userId: z.string().optional(),
+    role: z.enum(["viewer", "admin"]).optional(),
+});
+
 adminRouter.openapi({
     method: "post",
-    summary: "Create admin user",
-    description: "Creates a new admin user.",
-    path: "/user",
-    requestBody: {
-        required: true,
-        content: {
-            "application/json": {
-                schema: {
-                    type: "object",
-                    properties: {
-                        email: {
-                            type: "string",
-                            description: "Email of the admin user",
-                        },
-                        pass: {
-                            type: "string",
-                            description: "Password of the admin user",
-                        },
-                    },
-                    required: ["email", "pass"],
+    summary: "boostrap",
+    path: "/bootstrap",
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: CreateAdminBody,
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Admin user created successfully",
+            description: "admin user created successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        410: {
+            description: "admin user already exists",
+        },
+    },
+}, async (c) => {
+    const body = c.req.valid("json");
+    const {
+        email,
+        pass,
+    } = body;
+
+    if (await prisma.user.count() > 0) {
+        return c.json({ error: "Already initialized" }, 410);
+    }
+
+    if (!email || !pass) {
+        return c.json({ error: "email, pass, role are required" }, 400);
+    }
+
+    const exists = await prisma.systemSecret.findUnique({
+        where: { key: "JWT_SECRET" },
+    });
+
+    if (exists) {
+        return c.json({ error: "Already initialized" }, 410);
+    }
+
+    const jwtSecret = randomBytes(64).toString("hex");
+    await prisma.systemSecret.create({
+        data: {
+            key: "JWT_SECRET",
+            valueHash: hash("sha256", jwtSecret),
+        },
+    });
+
+    await prisma.user.create({
+        data: {
+            email,
+            displayName: "admin",
+            role: "admin",
+            identities: {
+                create: {
+                    provider: "password",
+                    providerUid: email,
+                    secretHash: await bcrypt.hash(pass, 10),
+                },
+            },
+        },
+    });
+    return c.json({ success: true }, { status: 200 });
+});
+
+adminRouter.openapi({
+    method: "post",
+    summary: "Create user(only viewer)",
+    description: "Creates a new user.",
+    path: "/create-user",
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: CreateUserBody,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "user created successfully",
         },
         400: {
             description: "Invalid parameters",
@@ -42,43 +121,43 @@ adminRouter.openapi({
             description: "Forbidden",
         },
         410: {
-            description: "Admin already exists",
+            description: "User already exists",
         },
     },
 }, async (c) => {
-    // NOTE:
-    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
-    // x-maintenance-token is kept temporarily for backward compatibility.
-
-    const apiToken = c.req.header("x-api-token");
-    const maintenanceToken = c.req.header("x-maintenance-token");
-
-    const isApiTokenValid =
-    apiToken && apiToken === process.env.VIDEO_REVIEW_API_TOKEN;
-
-    const isLegacyMaintenanceTokenValid =
-    maintenanceToken && maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN;
-
-    if (!isApiTokenValid && !isLegacyMaintenanceTokenValid) {
-        return c.json({ error: "Forbidden" }, 403);
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const { email, pass } = await c.req.json();
+    const body = c.req.valid("json");
+    const {
+        email,
+        pass,
+        displayName,
+    } = body;
+
     if (!email || !pass) {
-        return c.json({ error: "email and pass are required" }, 400);
+        return c.json({ error: "email, pass, role are required" }, 400);
     }
+
+    let name = displayName ? displayName : "User"
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
-        return c.json({ error: "Admin already exists. Skip." }, 410);
+        return c.json({ error: "User already exists. Skip." }, 410);
     }
 
     const hash = await bcrypt.hash(pass, 10);
     await prisma.user.create({
         data: {
             email,
-            displayName: "admin",
-            role: "admin",
+            displayName: name,
+            role: "viewer",
             identities: {
                 create: {
                     provider: "password",
@@ -89,6 +168,57 @@ adminRouter.openapi({
         },
     });
     return c.json({ success: true }, { status: 200 });
+});
+
+adminRouter.openapi({
+    method: "patch",
+    summary: "Update role",
+    path: "/role-update",
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: UpdateRoleBody,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Role update successfully",
+        },
+        400: {
+            description: "Invalid parameters",
+        },
+        403: {
+            description: "Forbidden",
+        },
+        410: {
+            description: "invalid userid",
+        },
+    },
+}, async (c) => {
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof JwtError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const body = c.req.valid("json");
+    const { userId, role } = body;
+
+    if (!userId) {
+        return c.json({ error: "userId is required" }, 400);
+    }
+
+    const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { role },
+    });
+    return c.json(updated, { status: 200 });
 });
 
 adminRouter.route("/maintenance", maintenanceRouter);

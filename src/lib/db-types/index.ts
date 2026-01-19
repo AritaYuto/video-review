@@ -5,7 +5,6 @@ export type {
     User,
     UserVideoReadStatus,
     Identity,
-    ApiToken
 } from "@prisma/client";
 
 export { UploadStorageType } from "@prisma/client";

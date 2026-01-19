@@ -32,7 +32,7 @@ transferRouter.openapi({
     },
 }, async (c) => {
     try {
-        authorize(c.req.raw, ["admin"]);
+        await authorize(c.req.raw, ["admin"]);
     } catch (e) {
         if (e instanceof JwtError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);

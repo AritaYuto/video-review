@@ -21,12 +21,10 @@ import { downloadRouter } from "@/routes/media/download";
 import { uploadStatusRouter } from "./routes/upload-status";
 import { swaggerUI } from "@hono/swagger-ui";
 import { ensurePrismaWarmup } from "@/server/lib/db";
-import { avatarRouter } from "./routes/avatar";
+import { avatarRouter } from "@/routes/avatar";
+import { userRouter } from "@/routes/user";
 
 export const app = new Hono().basePath("/api");
-
-console.log("JWT_SECRET:", process.env.JWT_SECRET ? "SET" : "NOT SET");
-console.log("JWT_SECRET:", process.env.VIDEO_REVIEW_API_TOKEN ? "SET" : "NOT SET");
 
 // v1 API
 app.route("/v1/media", mediaRouter);
@@ -39,6 +37,7 @@ app.route("/v1/videos", videosRouter);
 app.route("/v1/drawing", drawingRouter);
 app.route("/v1/upload-status", uploadStatusRouter);
 app.route("/v1/avatar", avatarRouter);
+app.route("/v1/user", userRouter);
 
 // deprecate API
 app.route("/uploads", localRouter);

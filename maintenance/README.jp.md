@@ -14,20 +14,29 @@ VideoReview のメンテナンス用 CLI ツールです
 ### Linux
 > GOOS=linux GOARCH=amd64 go build -o video-review-cli
 
-## 必須環境変数
+### API Tokenの生成
+
+VideoReviewのメンテナンスCLIを利用するためには、APIトークンが必要になります  
+adminユーザーがWebUI上でトークンを発行することができます
+
+詳しくは、[Admin Guide](../documents/admin-guide.md) でご確認ください
+
+
+### 必須環境変数
 
 VideoReviewを動作させているサーバーURL
 > VIDEO_REVIEW_SERVER_URL
 
-VideoReview API トークン  
-.env と同じものを設定してください
+VideoReview にて発行した API トークンを設定
 > VIDEO_REVIEW_API_TOKEN
-
 
 ### コマンド一覧
 
 ##### 管理者を作成します
-> go run . create-admin --email hoge@gmail.com --pass 123abc
+> go run . bootstrap --email Nijika@example.com --pass 123abc
+
+##### ユーザーを作成します
+> go run . create-user --name Nijika --email Nijika@example.com --pass 123abc
 
 ##### 動画のリストを取得します（JSON）
 > go run . get-videos 

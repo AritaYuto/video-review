@@ -67,7 +67,7 @@ export default function Login() {
                     <TabsList>
                         <TabsTrigger value="guest">Guest</TabsTrigger>
                         <TabsTrigger value="jira">JIRA</TabsTrigger>
-                        <TabsTrigger value="admin">Admin</TabsTrigger>
+                        <TabsTrigger value="user">Email & Password</TabsTrigger>
                     </TabsList>
                     <TabsContent value="guest">
                         <div className="login-card rounded-2xl bg-[#1f1f1f] p-3 shadow-xl">
@@ -97,7 +97,7 @@ export default function Login() {
                             <ButtonLogin exec={handleLogin} title={t("ok")} />
                         </div>
                     </TabsContent>
-                    <TabsContent value="admin">
+                    <TabsContent value="user">
                         <div className="login-card rounded-2xl bg-[#1f1f1f] p-3 shadow-xl">
                             <div className="grid gap-3">
                                 <Label htmlFor="email">{t("email")}</Label>

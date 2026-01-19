@@ -172,17 +172,9 @@ Recommended for production and long-term operation.
 ### Prerequisites
 * Docker and Docker Compose
 
-### Environment Configuration
-
 ```bash
 cp .example.env .env
-```
-
-Edit .env and set the required values
-
-```bash
-VIDEO_REVIEW_API_TOKEN=your-strong-random-secret
-JWT_SECRET=your-random-api-token
+cp compose.prod.example.yml compose.prod.yml
 ```
 
 ## Storage location (Production) 
@@ -228,7 +220,6 @@ Edit .env and set the required values
 ```bash
 LOCAL_ROOTDIR="/path/.../..."
 DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
-JWT_SECRET="xxxxxxx"
 ```
 
 ### Build & Run

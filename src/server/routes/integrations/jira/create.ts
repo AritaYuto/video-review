@@ -22,7 +22,7 @@ createRouter.openapi({
     },
 }, async (c) => {
 try {
-        authorize(c.req.raw, ["viewer", "admin"]);
+        await authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {
         if (e instanceof JwtError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);

@@ -19,6 +19,7 @@ interface AuthState {
         token: string,
         displayName: string,
     ) => void;
+    setDisplayName: (name: string) => void;
     logout: () => void;
 }
 
@@ -47,6 +48,10 @@ export const useAuthStore = create<AuthState>()(
 
             setAuth: (userId, email, role, token, displayName) => {
                 set({ userId, email, role, token, displayName });
+            },
+
+            setDisplayName: (name) => {
+                set({displayName: name})
             },
 
             logout: () => {

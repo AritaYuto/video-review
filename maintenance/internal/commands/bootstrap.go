@@ -6,21 +6,21 @@ import (
 	. "videoreview-maintenance/internal/lib"
 )
 
-func RunCreateAdmin(cmd string, args []string) {
+func RunBootstrap(cmd string, args []string) {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
-	email := fs.String("email", "", "admin email")
-	pass := fs.String("pass", "", "admin password")
+	email := fs.String("email", "", "user email")
+	pass := fs.String("pass", "", "user password")
 	fs.Parse(args)
 
 	if *email == "" || *pass == "" {
-		fmt.Println("email and pass are required")
+		fmt.Println("email, pass are required")
 		fs.Usage()
 		return
 	}
 
 	Fetch(FetchOptions{
 		Method: POST,
-		Path:   "/api/v1/admin/user",
+		Path:   "/api/v1/admin/bootstrap",
 		Json: map[string]any{
 			"email": email,
 			"pass":  pass,
