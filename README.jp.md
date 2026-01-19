@@ -38,20 +38,20 @@
 <p>
   VideoReviewは、動画レビューを「見るだけ」で終わらせないための
   <b>セルフホスト型の動画レビュー Web サービス</b>です。<br/>
-  動画をアップロードし、タイムライン上にコメントを残したり、
+  動画をアップロードし、タイムライン上にコメントを残したり
   フレームに直接描き込みながらSNSのようにフィードバックを共有できます。
 </p>
 
 <p>
-  現在は <b>Slack</b> や <b>Jira</b> と連携し、
+  現在は <b>Slack</b> や <b>Jira</b> と連携し
   レビューで出た課題を次のワークフローへ自然につなげることができます。<br/>
-  また、特定のツールやエンジンに依存しない設計となっており、
-  既存の制作ワークフローに合わせて拡張していくことを前提としています。
+  また、特定のツールやエンジンに依存しない設計となっており
+  既存の制作ワークフローに合わせて拡張していくことを前提としています
 </p>
 
 <p>
   ゲーム開発や映像制作など制作現場における
-  <b>チーム内レビュー</b>を想定して設計されています。
+  <b>チーム内レビュー</b>を想定して設計されています
 </p>
 
 <!-- Screenshot -->
@@ -62,13 +62,13 @@
 # Need help setting it up?
 
 オンプレミス構成や既存ツールとの連携など、導入時の相談や検証のサポートも可能です  
-必要であれば、こちらまでご連絡ください
+必要であればこちらまでご連絡ください
 
 videoreview.contact.info@gmail.com
 
 ## 🤝 Contributing
 
-参加方法は [CONTRIBUTING.jp.md](./CONTRIBUTING.jp.md) を参照してください。
+参加方法は [CONTRIBUTING.jp.md](./CONTRIBUTING.jp.md) を参照してください
 
 # ✨ Key Features
 
@@ -91,14 +91,12 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 
 - 描画付きコメント
 - チケット連携されたコメント
-- 重要な指摘
+- 新着コメント
 
-これらはバッジや色分けによって強調され、  
-読む前に「対応が必要かどうか」が一目で分かります
+これらはバッジや色分けによって強調され、読む前に一目で分かります
 
 
 ## 🔔 Never Miss Feedback with Slack & JIRA
-レビューは、見るだけでは終わりません。
 
 このツールは、Slack や JIRA と連携することで、
 レビューの発生や指摘を既存のワークフローに自然に組み込みます
@@ -154,7 +152,7 @@ go run . upload-video \
 
 ## 🧭 Roadmap
 
-VideoReview は、制作現場で使われ続けることを前提に、  
+VideoReview は、制作現場で使われ続けることを前提に  
 少しずつ改善・拡張していく予定です
 
 今後も、以下の考え方を軸に開発を進めます
@@ -181,7 +179,7 @@ cp .example.env .env
 cp compose.prod.example.yml compose.prod.yml
 ```
 
-### 必要な設定
+### ストレージパスの設定
 
 動画などを保存するストレージパスを設定してください [compose.prod.yml](./compose.prod.yml)
 
@@ -230,7 +228,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 
 本番環境では、LOCAL_ROOTDIR を明示的に設定することを強く推奨します
 
-LOCAL_ROOTDIR が設定されていないか無効な場合、アプリケーションは ./uploads にフォールバックします。  
+LOCAL_ROOTDIR が設定されていないか無効な場合、アプリケーションは ./uploads にフォールバックします  
 長期保存には適さない可能性があります
 
 ## 🐳 Docker (Development)
@@ -254,5 +252,5 @@ docker compose up -d --build
 
 ## 📄 License
 
-このプロジェクトは **MIT License** のもとで公開されています。  
-詳しくは [LICENSE](./LICENSE) をご確認ください。
+このプロジェクトは **MIT License** のもとで公開されています  
+詳しくは [LICENSE](./LICENSE) をご確認ください
