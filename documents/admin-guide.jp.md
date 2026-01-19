@@ -10,7 +10,7 @@ API トークンは、**管理者（admin）ユーザーのみ**が Web UI か�
 
 画面左下の **⚙（Settings）アイコン** をクリックします。
 
-![Settings](https://github.com/user-attachments/assets/72a62a9d-c11f-4e08-81f8-7710cdf65b1d)
+![Settings](https://github.com/user-attachments/assets/b4b9f1a1-5167-4680-ab61-f8bd40319c4e)
 
 ---
 
@@ -24,7 +24,7 @@ API トークンは、**管理者（admin）ユーザーのみ**が Web UI か�
 
 プロフィール画面で **「API Token Generate」** ボタンをクリックします。
 
-![API Token Generate](https://github.com/user-attachments/assets/b4b9f1a1-5167-4680-ab61-f8bd40319c4e)
+![API Token Generate](https://github.com/user-attachments/assets/72a62a9d-c11f-4e08-81f8-7710cdf65b1d)
 
 ---
 
