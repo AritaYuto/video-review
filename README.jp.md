@@ -178,7 +178,7 @@ VideoReview は、制作現場で使われ続けることを前提に、
 
 ### 必要な設定
 
-以下の変数について [compose.prod.yml](./compose.prod.yml) 設定してからDockerの起動をしてください
+動画などを保存するストレージパスを設定してください [compose.prod.yml](./compose.prod.yml)
 
 ```yaml
 volumes:
