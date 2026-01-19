@@ -92,7 +92,7 @@ The comment list is designed with a social‑style, intuitive UI:
 
 - Comments with drawings
 - Comments linked to tickets
-- Highlighted important comments
+- New comments
 
 Badges and color cues highlight what needs action at a glance.
 
