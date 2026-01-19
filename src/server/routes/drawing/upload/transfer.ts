@@ -47,7 +47,7 @@ transferRouter.openapi({
     },
 }, async (c) => {
     try {
-        authorize(c.req.raw, ["viewer", "admin", "guest"]);
+        await authorize(c.req.raw, ["viewer", "admin", "guest"]);
     } catch (e) {
         if (e instanceof JwtError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);

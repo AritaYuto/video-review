@@ -25,9 +25,11 @@ Set the same value as in .env
 
 ### Command List
 
+##### bootstrap
+> go run . bootstrap --email Nijika@example.com --pass 123abc
+
 ##### Create an user
-> go run . create-user --name Marisa --role admin --email Marisa@example.com --pass 123abc
-> go run . create-user --name Nijika --role viewer --email Nijika@example.com --pass 123abc
+> go run . create-user --name Nijika --email Nijika@example.com --pass 123abc
 
 ##### Get the video list (JSON)
 > go run . get-videos

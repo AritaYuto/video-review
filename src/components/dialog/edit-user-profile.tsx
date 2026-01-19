@@ -8,6 +8,10 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useAvatarStore } from "@/stores/avatar-store";
 import { uploadAvatar } from "@/lib/fetch-wrapper";
+import { ControlRow } from "@/ui/control-row";
+import { apiTokenRotate } from "@/lib/fetch-wrapper/admin";
+import { Input } from "@/ui/input";
+import { updateUser } from "@/lib/fetch-wrapper/user";
 
 export default function EditUserProfileDialog({
     open,
@@ -18,26 +22,27 @@ export default function EditUserProfileDialog({
 }) {
     const MAX_SIZE = 1_000_000; // 1MB
     const t = useTranslations("edit-user-profile");
-    const email = useAuthStore((s) => s.email);
-    const name = useAuthStore((s) => s.displayName);
+    const { setDisplayName, displayName, userId, email, role } = useAuthStore();
 
-    const {icon, fetchAvatar} = useAvatarStore();
+    const [editDisplayName, setEditDisplayName] = useState<string>(displayName ?? "");
+    const [apiToken, setApiToken] = useState<string | null>(null);
+    const { icon, fetchAvatar } = useAvatarStore();
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if(!email) return;
+        if (!email) return;
 
         void (async () => {
             try {
                 fetchAvatar(email);
-            } catch {}
+            } catch { }
         })();
     }, [email])
 
     const previewUrl = useMemo(() => {
-        if(!email) {
+        if (!email) {
             return undefined;
         }
         if (file) {
@@ -47,20 +52,47 @@ export default function EditUserProfileDialog({
     }, [file, email]);
 
     const onSubmit = async () => {
-        if (!file || !email) return;
-
         try {
+            const errorMsg = []
             setLoading(true);
             setError(null);
-            await uploadAvatar({ email, file });
+            if (file && email) {
+                const result = await uploadAvatar({ email, file });
+                if(!result.ok) {
+                    errorMsg.push(result.msg);
+                }
+            }
+
+            const result = await updateUser({ userId: userId ?? undefined, displayName: editDisplayName })
+            if(result.ok) {
+                setDisplayName(editDisplayName);
+            } else {
+                errorMsg.push(result.msg);
+            }
+
+            if(errorMsg.length > 0) {
+                setError(t("saveFailed") + ":\n" + errorMsg.join("\n"));
+                return;
+            }
             onClose();
-        } catch {
-            setError(t("saveFailed"));
         } finally {
+            setDisplayName(editDisplayName);
             setLoading(false);
         }
     };
 
+    async function onRotateApiToken() {
+        setError(null);
+
+        try {
+            const res = await apiTokenRotate();
+            if (res.ok) {
+                setApiToken(res.data);
+            }
+        } catch {
+            setError(t("rotateFailed"));
+        }
+    }
 
     function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files?.[0];
@@ -90,7 +122,7 @@ export default function EditUserProfileDialog({
                         <Avatar className="h-24 w-24">
                             <AvatarImage src={previewUrl} />
                             <AvatarFallback>
-                                {name}
+                                {displayName}
                             </AvatarFallback>
                         </Avatar>
 
@@ -122,6 +154,41 @@ export default function EditUserProfileDialog({
                             {error}
                         </div>
                     )}
+
+                    {ControlRow(t("displayName"), () => {
+                        return (
+                            <Input id="displayName"
+                                type="text"
+                                value={editDisplayName ?? ""}
+                                onChange={(x) => setEditDisplayName(x.target.value)}
+                                className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                        );
+                    })}
+
+                    <div>
+                        {ControlRow(t("apiToken"), () => {
+                            return (
+                                <div className="flex justify-between">
+                                    <Button
+                                        variant="destructive"
+                                        onClick={onRotateApiToken}
+                                        disabled={loading}
+                                        className="w-full"
+                                    >
+                                        {t("rotateApiToken")}
+                                    </Button>
+                                </div>
+
+                            );
+                        }, role !== "admin")}
+                        <div>
+                            {apiToken && (
+                                <div className="mt-3 w-full rounded bg-black/40 p-2 text-xs text-white break-all">
+                                    {apiToken}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <DialogFooter>
@@ -134,7 +201,6 @@ export default function EditUserProfileDialog({
                     </Button>
                     <Button
                         onClick={onSubmit}
-                        disabled={!file || loading}
                     >
                         {loading ? t("saving") : t("save")}
                     </Button>

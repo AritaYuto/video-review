@@ -12,7 +12,11 @@
  * @param label - Text displayed on the left side
  * @param control - Render function for the right-side control
  */
-export function ControlRow(label: string, control: () => React.ReactElement) {
+export function ControlRow(label: string, control: () => React.ReactElement, collaped?: boolean) {
+    if(collaped === true) {
+        return;
+    }
+
     return (
         <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">

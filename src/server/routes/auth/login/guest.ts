@@ -7,11 +7,6 @@ export async function loginAsGuest(c: Context) {
     try {
         const { displayName } = await c.req.json();
 
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return c.json({ error: "jwt configuration is missing" }, 500);
-        }
-
         if (!displayName) {
             return c.json({ error: "missing displayName" }, 400);
         }
@@ -20,7 +15,7 @@ export async function loginAsGuest(c: Context) {
         let tokenPayload: Record<string, any> = {
             id: uuidv4(), displayName, role
         };
-        const token = signToken(tokenPayload);
+        const token = await signToken(tokenPayload);
 
         return c.json(
             {

@@ -1,4 +1,9 @@
 {
+    "bootstrap": {
+        "email": "Email",
+        "password": "Password",
+        "initialize": "Initialize"
+    },
     "video-title": {
         "noSelection": "No video selected",
         "revisionInfo": "Revision: {revision} ({uploadedAt})",
@@ -97,7 +102,10 @@
         "clear": "Clear"
     },
     "edit-user-profile": {
+        "displayName": "Display Name",
         "title": "Edit Profile",
+        "apiToken": "",
+        "rotateApiToken": "Api Token Generate",
         "save": "Save",
         "cancel": "Cancel",
         "saving": "Saving...",

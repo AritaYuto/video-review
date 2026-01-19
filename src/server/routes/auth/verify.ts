@@ -45,7 +45,7 @@ verifyRouter.openapi({
         }
 
         try {
-            const decoded = verifyToken(token);
+            const decoded = await verifyToken(token);
             return c.json(
                 { valid: true, decoded },
                 { status: 200 }

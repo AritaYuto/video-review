@@ -6,9 +6,8 @@ import (
 	. "videoreview-maintenance/internal/lib"
 )
 
-func RunCreateUser(cmd string, args []string) {
+func RunBootstrap(cmd string, args []string) {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
-	name := fs.String("name", "User", "user name")
 	email := fs.String("email", "", "user email")
 	pass := fs.String("pass", "", "user password")
 	fs.Parse(args)
@@ -21,11 +20,10 @@ func RunCreateUser(cmd string, args []string) {
 
 	Fetch(FetchOptions{
 		Method: POST,
-		Path:   "/api/v1/admin/user",
+		Path:   "/api/v1/admin/bootstrap",
 		Json: map[string]any{
-			"email":       email,
-			"pass":        pass,
-			"displayName": name,
+			"email": email,
+			"pass":  pass,
 		},
 	})
 }

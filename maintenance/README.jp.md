@@ -27,7 +27,10 @@ VideoReview API トークン
 ### コマンド一覧
 
 ##### 管理者を作成します
-> go run . create-admin --email hoge@gmail.com --pass 123abc
+> go run . bootstrap --email Nijika@example.com --pass 123abc
+
+##### ユーザーを作成します
+> go run . create-user --name Nijika --email Nijika@example.com --pass 123abc
 
 ##### 動画のリストを取得します（JSON）
 > go run . get-videos 

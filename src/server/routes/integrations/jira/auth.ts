@@ -36,7 +36,7 @@ export async function loginWithJira(c: Context) {
         let tokenPayload: Record<string, any> = {
             id: userDB.id, displayName: userDB.displayName, role
         };
-        const token = signToken(tokenPayload);
+        const token = await signToken(tokenPayload);
 
         return c.json(
             {

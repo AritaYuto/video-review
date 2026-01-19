@@ -9,14 +9,27 @@ import { Switch } from "@/ui/switch";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
 import { ControlRow } from "@/ui/control-row";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
 import { Separator } from "@/ui/separator";
 
 export function SettingPopover() {
     const t = useTranslations("setting");
+
+    const [ isLogged, setLogged ] = useState(false);
     const { locale, setLocale } = useLocale();
     const [ editProfileOpen, setEditProfileOpen] = useState(false);
+    const { verifyAuth } = useAuthStore();
+
+    useEffect(() => {
+        void (async () => {
+            try {
+                const auth = await verifyAuth();
+                setLogged(auth !== null); 
+            } catch { }
+        })();
+    }, [])
+
 
     return (
         <Popover>
@@ -54,7 +67,7 @@ export function SettingPopover() {
                                 <FontAwesomeIcon icon={faUserEdit} />
                             </Button>
                         );
-                    })}
+                    }, !isLogged)}
 
                     {/* Language setting */}
                     {ControlRow(t("language"), () => {
@@ -83,7 +96,7 @@ export function SettingPopover() {
                                 <FontAwesomeIcon icon={faRightFromBracket} />
                             </Button>
                         );
-                    })}
+                    }, !isLogged)}
 
                     <EditUserProfileDialog open={editProfileOpen} onClose={() => { setEditProfileOpen(false) }} />
                 </div>
