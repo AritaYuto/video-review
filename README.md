@@ -153,7 +153,7 @@ go run . upload-video \
 
 VideoReview aims to stay useful in real production environments and will evolve step by step.
 
-Our guiding ideas are:
+Guiding ideas are:
 
 - On‑premise‑first design and operations
 - Integrations that fit naturally into existing workflows
