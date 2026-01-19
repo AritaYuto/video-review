@@ -177,7 +177,7 @@ cp .example.env .env
 cp compose.prod.example.yml compose.prod.yml
 ```
 
-## Storage location (Production) 
+## Storage location
 
 Edit [compose.prod.yml](./compose.prod.yml) and set the host path for storage.
 
