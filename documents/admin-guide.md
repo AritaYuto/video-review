@@ -11,7 +11,7 @@ They are used for maintenance APIs and automation purposes.
 
 Click the **⚙ (Settings) icon** at the bottom-left of the screen.
 
-![Settings](https://github.com/user-attachments/assets/72a62a9d-c11f-4e08-81f8-7710cdf65b1d)
+![Settings](https://github.com/user-attachments/assets/b4b9f1a1-5167-4680-ab61-f8bd40319c4e)
 
 ---
 
@@ -25,7 +25,7 @@ Select **Edit Profile** from the settings menu.
 
 On the profile screen, click the **“API Token Generate”** button.
 
-![API Token Generate](https://github.com/user-attachments/assets/b4b9f1a1-5167-4680-ab61-f8bd40319c4e)
+![API Token Generate](https://github.com/user-attachments/assets/72a62a9d-c11f-4e08-81f8-7710cdf65b1d)
 
 ---
 
