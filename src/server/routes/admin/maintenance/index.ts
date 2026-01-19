@@ -1,7 +1,7 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize, getJwtSecret, JwtError } from "@/server/lib/token";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
@@ -188,11 +188,11 @@ maintenanceRouter.openapi({
     },
 }, async (c) => {
     const hasAdmin = await prisma.user.count({ where: { role: "admin" } }) > 0;
-    const hasJwt = await prisma.systemSecret.findUnique({
-        where: { key: "JWT_SECRET" },
-    });
+    const hasJwt = await getJwtSecret() !== undefined
 
     return c.json({
-        initialized: hasAdmin && !!hasJwt,
+        hasAdmin,
+        hasJwt,
+        initialized: hasAdmin && hasJwt,
     });
 });

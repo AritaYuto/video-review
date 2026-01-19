@@ -34,7 +34,7 @@ async function loadFromDb(name: string) {
     return token?.valueHash;
 }
 
-export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string> {
+export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string | undefined> {
     const cached = cache.get(dbKey);
     if (cached) return cached;
 
@@ -46,7 +46,7 @@ export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string> {
 
     const fromEnv = process.env[envKey];
     if (!fromEnv) {
-        throw new Error(`${dbKey} not found`);
+        throw undefined;
     }
 
     cache.set(dbKey, fromEnv);
