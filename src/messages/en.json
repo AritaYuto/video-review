@@ -1,5 +1,6 @@
 {
     "bootstrap": {
+        "title": "Please register an administrator",
         "email": "Email",
         "password": "Password",
         "initialize": "Initialize"

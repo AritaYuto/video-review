@@ -1,5 +1,6 @@
 {
     "bootstrap": {
+        "title": "管理者の設定",
         "email": "メールアドレス",
         "password": "パスワード",
         "initialize": "初期設定"

@@ -6,13 +6,14 @@ import path from "path";
 import fs from "fs";
 import { FileStorage } from "@/server/lib/storage";
 import Stream from 'stream';
+import { pipeline } from "stream/promises";
 
 import "server-only"
 
 let localBaseDirectory: string | undefined;
 export const LocalBaseDirectory = () => {
-    if(!localBaseDirectory){
-        if(process.env.LOCAL_ROOTDIR && fs.existsSync(process.env.LOCAL_ROOTDIR)) {
+    if (!localBaseDirectory) {
+        if (process.env.LOCAL_ROOTDIR && fs.existsSync(process.env.LOCAL_ROOTDIR)) {
             localBaseDirectory = process.env.LOCAL_ROOTDIR
         } else {
             console.warn(`
@@ -20,7 +21,7 @@ export const LocalBaseDirectory = () => {
                 Falling back to default directory: ./uploads
                 For production use, please configure LOCAL_ROOTDIR explicitly.
             `);
-            localBaseDirectory = path.join(process.cwd(), "uploads") 
+            localBaseDirectory = path.join(process.cwd(), "uploads")
         }
     }
     return localBaseDirectory;
@@ -38,15 +39,76 @@ export class LocalStorage implements FileStorage {
     }
 
     async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
-        const fullPath = path.join(process.cwd(), storageKey);
-        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
-        await fs.promises.writeFile(fullPath, src);
+        console.log("[directUploadFromBuffer] called");
+        console.log("[directUploadFromBuffer] storageKey =", storageKey);
+        console.log("[directUploadFromBuffer] contentType =", contentType);
+
+        const fullPath = this.resolveStoragePath(storageKey);
+        console.log("[directUploadFromBuffer] resolved fullPath =", fullPath);
+
+        if (!fullPath) {
+            console.error("[directUploadFromBuffer] fullPath is null/undefined. abort.");
+            return;
+        }
+
+        const dir = path.dirname(fullPath);
+        console.log("[directUploadFromBuffer] mkdir dir =", dir);
+        await fs.promises.mkdir(dir, { recursive: true });
+
+        console.log("[directUploadFromBuffer] start pipeline write");
+
+        await pipeline(
+            src,
+            fs.createWriteStream(fullPath)
+        );
+
+        console.log("[directUploadFromBuffer] pipeline write done");
+
+        const exists = fs.existsSync(fullPath);
+        console.log("[directUploadFromBuffer] exists after write =", exists);
     }
 
     async directUploadFromFile(storageKey: string, src: string): Promise<void> {
-        const fullPath = path.join(process.cwd(), storageKey);
-        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
-        await fs.promises.rename(src, fullPath);
+        console.log("[directUploadFromFile] called");
+        console.log("[directUploadFromFile] storageKey =", storageKey);
+        console.log("[directUploadFromFile] src =", src);
+
+        const fullPath = this.resolveStoragePath(storageKey);
+        console.log("[directUploadFromFile] resolved fullPath =", fullPath);
+
+        if (!fullPath) {
+            console.error("[directUploadFromFile] fullPath is null/undefined. abort.");
+            return;
+        }
+
+        const dir = path.dirname(fullPath);
+        console.log("[directUploadFromFile] mkdir dir =", dir);
+        await fs.promises.mkdir(dir, { recursive: true });
+
+        try {
+            console.log("[directUploadFromFile] try rename:", src, "->", fullPath);
+            await fs.promises.rename(src, fullPath);
+            console.log("[directUploadFromFile] rename success");
+        } catch (e: any) {
+            console.warn("[directUploadFromFile] rename failed:", e?.code, e?.message);
+
+            if (e?.code !== "EXDEV") {
+                throw e;
+            }
+
+            console.log("[directUploadFromFile] fallback to copy+unlink");
+
+            await pipeline(
+                fs.createReadStream(src),
+                fs.createWriteStream(fullPath)
+            );
+
+            await fs.promises.unlink(src);
+            console.log("[directUploadFromFile] fallback copy+unlink done");
+        }
+
+        const exists = fs.existsSync(fullPath);
+        console.log("[directUploadFromFile] exists after operation =", exists);
     }
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
