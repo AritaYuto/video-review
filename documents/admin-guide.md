@@ -9,19 +9,14 @@ They are used for maintenance APIs and automation purposes.
 
 ### Step 1: Open Settings
 
-Click the **⚙ (Settings) icon** at the bottom-left of the screen.
+1. Click the **⚙ (Settings) icon** at the bottom-left of the screen.
+2. Select **Edit Profile** from the settings menu.
 
 ![Settings](https://github.com/user-attachments/assets/b4b9f1a1-5167-4680-ab61-f8bd40319c4e)
 
 ---
 
-### Step 2: Open the Profile Screen
-
-Select **Edit Profile** from the settings menu.
-
----
-
-### Step 3: Generate an API Token
+### Step 2: Generate an API Token
 
 On the profile screen, click the **“API Token Generate”** button.
 
@@ -29,7 +24,7 @@ On the profile screen, click the **“API Token Generate”** button.
 
 ---
 
-### Step 4: Save the Token
+### Step 3: Save the Token
 
 Copy the generated API token and store it in a secure location.
 
