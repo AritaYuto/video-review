@@ -10,7 +10,7 @@ services:
       - "3489:3489"
     environment:
       DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
-      JWT_SECRET: local-dev-secret
+      LOCAL_ROOTDIR: /app/uploads
     volumes:
       - .:/app
       # If you want to specify Local Storage
