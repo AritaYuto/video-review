@@ -74,8 +74,9 @@ export default function EditUserProfileDialog({
                 setError(t("saveFailed") + ":\n" + errorMsg.join("\n"));
                 return;
             }
-            onClose();
+            Close();
         } finally {
+            setApiToken("");
             setDisplayName(editDisplayName);
             setLoading(false);
         }
@@ -107,8 +108,13 @@ export default function EditUserProfileDialog({
         setFile(f);
     }
 
+    const Close = () => {
+        setApiToken("");
+        onClose();
+    }
+
     return (
-        <Dialog open={open} onOpenChange={onClose}>
+        <Dialog open={open} onOpenChange={Close}>
             <DialogContent className="bg-[#202020]">
                 <DialogHeader>
                     <DialogTitle className="text-[#ff8800]">

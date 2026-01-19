@@ -10,7 +10,6 @@ import { useState } from "react";
 
 export default function Bootstrap() {
     const t = useTranslations("bootstrap");
-    const router = useRouter();
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
 
@@ -20,6 +19,7 @@ export default function Bootstrap() {
             alert(res.msg);
             return;
         }
+        const router = useRouter();
         router.push("/video-review/login");
     }
 

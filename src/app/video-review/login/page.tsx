@@ -1,12 +1,6 @@
 "use client"
-import Login from "@/components/login";
-import { SettingPopover } from "@/components/setting";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
-    return (
-        <div className="flex h-screen">
-            <Login />
-            <SettingPopover />
-        </div>
-    );
+export default function LegacyLoginPage() {
+    redirect("/login");
 }

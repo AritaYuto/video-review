@@ -178,13 +178,6 @@ Recommended for production and long-term operation.
 cp .example.env .env
 ```
 
-Edit .env and set the required values
-
-```bash
-VIDEO_REVIEW_API_TOKEN=your-strong-random-secret
-JWT_SECRET=your-random-api-token
-```
-
 ## Storage location (Production) 
 
 Edit [compose.prod.yml](./compose.prod.yml) and set the host path for storage.
@@ -228,7 +221,6 @@ Edit .env and set the required values
 ```bash
 LOCAL_ROOTDIR="/path/.../..."
 DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
-JWT_SECRET="xxxxxxx"
 ```
 
 ### Build & Run

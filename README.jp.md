@@ -181,10 +181,6 @@ VideoReview は、制作現場で使われ続けることを前提に、
 以下の変数について [compose.prod.yml](./compose.prod.yml) 設定してからDockerの起動をしてください
 
 ```yaml
-environment:
-  VIDEO_REVIEW_API_TOKEN: your-strong-random-secret
-  JWT_SECRET: your-random-api-token
-
 volumes:
   - /mnt/data/videoreview:/storage
 ```
@@ -223,8 +219,6 @@ cp .example.env .env
 ```bash
 LOCAL_ROOTDIR="/path/.../..."
 DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
-VIDEO_REVIEW_API_TOKEN="xxxx"
-JWT_SECRET="xxxxxxx"
 ```
 
 ### 注意事項

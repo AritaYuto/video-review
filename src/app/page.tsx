@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { withRetry } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { checkStatus } from "@/lib/fetch-wrapper/admin";
 
 export default function Home() {
     const router = useRouter();
@@ -38,7 +39,13 @@ export default function Home() {
             setWarmupDB(result);
 
             if(result) {
-                router.replace(await verifyAuth() ? "/video-review/review" : "/video-review/login");
+                const status = await checkStatus();
+                const initialized = status.ok && status.data
+                if(initialized) {
+                    router.replace(await verifyAuth() ? "/video-review/review" : "/login");
+                } else {
+                    router.replace("/bootstrap");
+                }
             }
         })();
     }, [router]);

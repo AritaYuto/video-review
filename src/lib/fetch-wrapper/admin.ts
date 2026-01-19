@@ -30,3 +30,14 @@ export async function apiTokenRotate(): Promise<ApiResult<string>> {
     return ApiError(res);
 }
 
+export async function checkStatus(): Promise<ApiResult<boolean>> {
+    const res = await fetch(`/api/v1/admin/maintenance/status`, { method: "get" });
+
+    if(res.ok) {
+        const data = await res.json();
+        return { ok: true, data: data.initialized }
+    }
+
+    return ApiError(res);
+}
+

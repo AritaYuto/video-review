@@ -167,7 +167,7 @@ maintenanceRouter.openapi({
         return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const apiToken  = randomBytes(32).toString("hex");
+    const apiToken = randomBytes(32).toString("hex");
     const tokenHash = hash("sha256", apiToken);
     await prisma.systemSecret.upsert({
         where: { key: "API_TOKEN" },
@@ -175,4 +175,24 @@ maintenanceRouter.openapi({
         create: { key: "API_TOKEN", valueHash: tokenHash },
     });
     return c.json({ token: apiToken });
+});
+
+maintenanceRouter.openapi({
+    method: "get",
+    summary: "check status",
+    path: "/status",
+    responses: {
+        200: {
+            description: "check initialized",
+        }
+    },
+}, async (c) => {
+    const hasAdmin = await prisma.user.count({ where: { role: "admin" } }) > 0;
+    const hasJwt = await prisma.systemSecret.findUnique({
+        where: { key: "JWT_SECRET" },
+    });
+
+    return c.json({
+        initialized: hasAdmin && !!hasJwt,
+    });
 });
