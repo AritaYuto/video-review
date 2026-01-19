@@ -29,9 +29,19 @@
     </a>
   </p>
 </div>
-
 <hr/>
 
+<h3>🔎 Online Demo</h3>
+<p>
+  すぐに試せるオンラインデモ環境はこちら →
+  <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/"
+     target="_blank" rel="noopener noreferrer"
+     style="font-weight: 600;">
+    View Online Demo!
+  </a>
+</p>
+
+<hr/>
 <!-- One-liner + bullets -->
 <h3>What it is</h3>
 
@@ -170,6 +180,10 @@ VideoReview は、制作現場で使われ続けることを前提に
 ### 前提
 * Docker、Docker Composeを事前にインストールしておいてください
 
+---
+
+### 設定ファイルのコピー
+
 ```bash
 cp .example.env .env
 cp compose.prod.example.yml compose.prod.yml
@@ -197,7 +211,6 @@ docker compose -f compose.prod.yml run --rm videoreview npm run prisma:deploy
 
 # 4. サービス起動
 docker compose -f compose.prod.yml up -d videoreview
-
 ```
 
 ## 💻 Local / On‑premise Setup
@@ -209,11 +222,11 @@ VideoReviewをサーバーやローカルマシンで直接実行する際はこ
 
 ### 環境変数の設定
 
+.env ファイルをコピー後、編集し必要な値を設定してください
+
 ```bash
 cp .example.env .env
 ```
-
-.env ファイルを編集し必要な値を設定してください
 
 ```bash
 LOCAL_ROOTDIR="/path/.../..."
@@ -222,10 +235,18 @@ DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 
 ### 注意事項
 
-本番環境では、LOCAL_ROOTDIR を明示的に設定することを強く推奨します
+本番環境では、動画保存用のストレージを **必ず明示的に設定してください**。
 
-LOCAL_ROOTDIR が設定されていないか無効な場合、アプリケーションは ./uploads にフォールバックします  
-長期保存には適さない可能性があります
+`LOCAL_ROOTDIR` が未設定、または無効な場合、  
+アプリケーションは `process.cwd()/uploads` にフォールバックして
+動画ファイルを保存します。
+
+このフォールバック挙動は以下の理由から、長期保存や本番運用には適していません。
+
+- アプリケーションの再配置や更新でファイルが失われる可能性がある
+- Docker 環境では、コンテナ内部の一時的なファイルシステムに保存される
+- volume マウントされていない場合、コンテナ再作成で動画が消失する
+- 保存場所が不明確になり、バックアップや容量管理が困難
 
 ## 🐳 Docker (Development)
 

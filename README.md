@@ -35,6 +35,17 @@
 
 <hr/>
 
+<h3>🔎 Online Demo</h3>
+<p>
+  Try the online demo here (no installation required) →
+  <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/"
+     target="_blank" rel="noopener noreferrer"
+     style="font-weight: 600;">
+    View Online Demo!
+  </a>
+</p>
+<hr/>
+
 <!-- One-liner + bullets -->
 <h3>What it is</h3>
 
@@ -45,7 +56,7 @@
 </p>
 
 <p>
-  It currently integrates with <b>Slack</b> and <b>Jira</b>,
+  It integrates with <b>Slack</b> and <b>Jira</b>,
   and is designed to be extended to fit into existing production workflows.
 </p>
 
@@ -169,13 +180,17 @@ Recommended for production and long-term operation.
 
 ### Prerequisites
 * Docker and Docker Compose
+---
+
+### Copy setting files
 
 ```bash
 cp .example.env .env
 cp compose.prod.example.yml compose.prod.yml
 ```
 
-## Storage location
+
+### Storage location
 
 Edit [compose.prod.yml](./compose.prod.yml) and set the host path for storage.
 
@@ -209,11 +224,11 @@ Use this method when running VideoReview directly on a server or local machine.
 
 ### Environment Configuration
 
+Please copy .env and edit it to set the required values
+
 ```bash
 cp .example.env .env
 ```
-
-Edit .env and set the required values
 
 ```bash
 LOCAL_ROOTDIR="/path/.../..."
@@ -237,9 +252,18 @@ npm run start
 
 ### Notes
 
-In production environments, it is strongly recommended to set LOCAL_ROOTDIR explicitly.
+In production environments, it is strongly recommended to explicitly set `LOCAL_ROOTDIR`.
 
-If LOCAL_ROOTDIR is not set or invalid, the application falls back to ./uploads, which may not be suitable for long-term storage.
+If `LOCAL_ROOTDIR` is not set or is invalid, the application falls back to
+`process.cwd()/uploads` to store uploaded video files.
+
+This fallback behavior is **not suitable for production use or long-term storage**
+for the following reasons:
+
+- Files may be lost during application updates or redeployment
+- In Docker environments, files are stored inside the container filesystem
+- Without a mounted volume, files will be removed when the container is recreated
+- The storage location is unclear, making backups and capacity management difficult
 
 --- 
 
