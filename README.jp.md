@@ -176,6 +176,11 @@ VideoReview は、制作現場で使われ続けることを前提に、
 ### 前提
 * Docker、Docker Composeを事前にインストールしておいてください
 
+```bash
+cp .example.env .env
+cp compose.prod.example.yml compose.prod.yml
+```
+
 ### 必要な設定
 
 動画などを保存するストレージパスを設定してください [compose.prod.yml](./compose.prod.yml)

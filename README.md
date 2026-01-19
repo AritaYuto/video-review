@@ -172,10 +172,9 @@ Recommended for production and long-term operation.
 ### Prerequisites
 * Docker and Docker Compose
 
-### Environment Configuration
-
 ```bash
 cp .example.env .env
+cp compose.prod.example.yml compose.prod.yml
 ```
 
 ## Storage location (Production) 
