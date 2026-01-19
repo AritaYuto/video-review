@@ -160,8 +160,6 @@ Our guiding ideas are:
 - Review as a path to the next action
 - Pipeline integration and automation
 
-Specific features and priorities will adjust based on real usage and feedback.
-
 ---
 
 ## 🚀 Getting Started
