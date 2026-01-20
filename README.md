@@ -128,7 +128,7 @@ keeping feedback actionable without switching tools.
 
 #### Unity Auto-Open via Custom Protocol
 
-<img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="700" />
+<img src="https://github.com/user-attachments/assets/b9c84fbc-a0a4-49ad-b038-1ee4d376fcd7" width="700" />
 
 Jump directly from a review comment to the relevant scene in Unity,
 making video review a clear starting point for the next task.
