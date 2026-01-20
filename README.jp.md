@@ -107,24 +107,33 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 
 ## 🔔 Never Miss Feedback with Slack & JIRA
 
-このツールは、Slack や JIRA と連携することで、
-レビューの発生や指摘を既存のワークフローに自然に組み込むことができます  
-重要なコメントやチケット化された指摘は、
-チーム全体に可視化され、見逃されにくくなります
+VideoReview は、Slack や Jira と連携することで
+レビュー中に生まれたフィードバックをそのまま普段のワークフローにつなげます  
+コメントは自然に議論や作業に引き継がれ
+「あとで対応しよう」が埋もれてしまうことを防ぎます
 
-さらに、カスタムプロトコル を通じて、
-外部ツールやアプリケーションと直接連携することも可能です
+---
 
-- 動画の該当シーンからエンジンやエディタを起動する
-- 独自の制作パイプラインに接続する
+#### Slack & Jira Integration
 
-動画レビューを次のアクションに直結する起点として扱えます
+<img src="https://github.com/user-attachments/assets/d5a23dba-b83b-4927-b202-a0079e339755" width="700" />
 
-### 🔗 Workflow Integrations
+レビュータイムライン上のコメントを、
+Slack へ共有したり、Jira のチケットとして起票することができます  
+ツールを行き来せずに、
+フィードバックをそのままタスクに変換できます
 
-| Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
-| ---- | ---- |
-| <img src="https://github.com/user-attachments/assets/d5a23dba-b83b-4927-b202-a0079e339755" width="640"></video> | <img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="640"></video> |
+---
+
+#### カスタムプロトコルによる Unity 連携
+
+<img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="700" />
+
+レビューコメントから、
+該当する Unity のシーンを直接開くことができます  
+動画レビューが、
+次に何を直すか・どこから作業するかを決める
+**起点**になることを意識した設計です
 
 # ✨ Advanced Features
 
@@ -138,7 +147,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 
 日々のレビューから、後日の振り返りまで必要な情報にすぐたどり着けます
 
-<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="420"></img>
+<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="700"></img>
 
 ## 🔧 Built for Production Pipelines
 

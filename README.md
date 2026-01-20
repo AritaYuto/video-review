@@ -108,26 +108,30 @@ The comment list is designed with a social‑style, intuitive UI:
 Badges and color cues highlight what needs action at a glance.
 
 ### 🔔 Never Miss Feedback with Slack & Jira
+
 **Make feedback visible where your team already works.**
 
-Reviews should not end at "watching."
+Reviews should not end at “watching”.  
+By integrating with Slack and Jira, VideoReview turns review feedback into part of your existing workflow,
+so comments naturally lead to discussion and action.
 
-By integrating with Slack and Jira, VideoReview naturally connects feedback to your existing workflow,
-making important comments and ticketed feedback visible to the whole team.
+---
 
-Beyond messaging and issue tracking, VideoReview also supports a custom protocol to connect directly to external tools and apps:
-- Launch an engine or editor from the relevant video scene
-- Hook into your own production pipeline
+#### Slack & Jira Integration
 
-Video review becomes a starting point for the next action.
+<img src="https://github.com/user-attachments/assets/d5a23dba-b83b-4927-b202-a0079e339755" width="700" />
 
-### 🔗 Workflow Integrations
-The following examples show how feedback flows beyond video review:
+From the review timeline, comments can be shared to Slack or converted into Jira issues,
+keeping feedback actionable without switching tools.
 
-| Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
-| ---- | ---- |
-| <img src="https://github.com/user-attachments/assets/d5a23dba-b83b-4927-b202-a0079e339755" width="640"></video> | <img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="640"></video> |
+---
 
+#### Unity Auto-Open via Custom Protocol
+
+<img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="700" />
+
+Jump directly from a review comment to the relevant scene in Unity,
+making video review a clear starting point for the next task.
 
 # ✨ Advanced Features
 ### 🔍 Powerful Search for Review Workflow
@@ -140,7 +144,7 @@ Search videos and comments independently:
 
 From day-to-day reviews to later retrospectives, the right info is always close.
 
-<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="420"></img>
+<img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="700"></img>
 
 ### 🔧 Built for Production Pipelines
 
