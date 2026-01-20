@@ -14,9 +14,6 @@
     <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/" target="_blank" rel="noopener noreferrer">
       <img alt="Start Demo" src="https://img.shields.io/badge/Start%20Demo-Open-blue?style=for-the-badge" />
     </a>
-    <a href="./documents/en/README.md">
-      <img alt="Documentation" src="https://img.shields.io/badge/Documentation-Open-3369b4?style=for-the-badge" />
-    </a>
     <a href="./README.jp.md">
       <img alt="日本語 README" src="https://img.shields.io/badge/README-日本語-ff69b4?style=for-the-badge" />
     </a>
@@ -130,8 +127,8 @@ keeping feedback actionable without switching tools.
 
 <img src="https://github.com/user-attachments/assets/b9c84fbc-a0a4-49ad-b038-1ee4d376fcd7" width="700" />
 
-Jump directly from a review comment to the relevant scene in Unity,
-making video review a clear starting point for the next task.
+Open the relevant Unity scene or asset directly from a reviewed video,
+so feedback naturally leads into the next step of work.
 
 # ✨ Advanced Features
 ### 🔍 Powerful Search for Review Workflow
@@ -273,6 +270,22 @@ for the following reasons:
 
 ## 🐳 Docker (Development)
 
+### Prerequisites
+* node v24
+* postgreSQL
+
+### Environment Configuration
+
+Please copy .env and edit it to set the required values
+
+```bash
+cp .example.env .env
+```
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
+```
+
+### Run docker compose
 ```bash
 # Install dependencies
 npm install

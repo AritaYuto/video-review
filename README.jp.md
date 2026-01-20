@@ -14,9 +14,6 @@
     <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/" target="_blank" rel="noopener noreferrer">
       <img alt="Start Demo" src="https://img.shields.io/badge/Start%20Demo-Open-blue?style=for-the-badge" />
     </a>
-    <a href="./documents/jp/README.md">
-      <img alt="Documentation" src="https://img.shields.io/badge/Documentation-Open-3369b4?style=for-the-badge" />
-    </a>
   </p>
 
   <p align="center">
@@ -129,11 +126,8 @@ Slack へ共有したり、Jira のチケットとして起票することがで
 
 <img src="https://github.com/user-attachments/assets/b9c84fbc-a0a4-49ad-b038-1ee4d376fcd7" width="700" />
 
-レビューコメントから、
-該当する Unity のシーンを直接開くことができます  
-動画レビューが、
-次に何を直すか・どこから作業するかを決める
-**起点**になることを意識した設計です
+動画レビューに紐づいたファイルやシーンを直接開けるため、
+レビュー後の修正作業までスムーズにつながります
 
 # ✨ Advanced Features
 
@@ -258,6 +252,21 @@ DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 
 ## 🐳 Docker (Development)
 
+### Prerequisites
+* node v24
+* postgreSQL
+
+### 環境変数の設定
+.env ファイルをコピー後、編集し必要な値を設定してください
+
+```bash
+cp .example.env .env
+```
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
+```
+
+### Run docker compose
 ```bash
 # Install dependencies
 npm install
