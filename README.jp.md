@@ -124,8 +124,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 
 | Slack and JIRA Integration | Unity Auto-Open via Custom Protocol |
 | ---- | ---- |
-| <img src="https://github.com/user-attachments/assets/e075f4fb-33cd-4b6c-9977-a9d24872f797" width="340"></video> | <img src="https://github.com/user-attachments/assets/e49670b2-5cfb-4f50-9863-f3bbe7e074fa" width="640"></video> |
-
+| <img src="https://github.com/user-attachments/assets/d5a23dba-b83b-4927-b202-a0079e339755" width="640"></video> | <img src="https://github.com/user-attachments/assets/77f7dd2d-aa7a-494a-a44c-2f71d36dbeb8" width="640"></video> |
 
 # ✨ Advanced Features
 
