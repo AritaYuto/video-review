@@ -290,7 +290,7 @@ export default function VideoReview() {
     useEffect(() => {
         timelineTimeRef.current = timelineTime;
         applyTimelineTime();
-    }, [timelineTime]);
+    }, [selectedRevision, timelineTime]);
 
     return (
         <>
