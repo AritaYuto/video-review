@@ -1,3 +1,6 @@
+import { createVideoCommentLink } from "@/lib/url";
+import { getJiraBaseUrl } from "@/lib/utils/env";
+import { prisma } from "@/server/lib/db";
 import { authorize, JwtError } from "@/server/lib/token";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
@@ -30,7 +33,7 @@ try {
         return c.json({ error: "unauthorized" }, 401);
     }
 
-    const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
+    const base = getJiraBaseUrl();
     const token = process.env.JIRA_API_TOKEN;
     const project = process.env.JIRA_PROJECT;
     const assigneeEmail = process.env.JIRA_ASSIGNEE_USER;
@@ -41,16 +44,26 @@ try {
 
     try {
         const formData = await c.req.formData();
-        const summary = formData.get("summary") as string;
-        const description = formData.get("description") as string;
+        const commentId = formData.get("commentId") as string; 
         const issueType = formData.get("issueType") as string;
         const reporterEmail = formData.get("reporterEmail") as string;
         const file = formData.get("file") as File | null;
 
-        if (!summary || !description || !issueType) {
-            return c.json({ error: "invalid request body" }, 400);
+        if (!commentId) {
+            return c.json({ error: "missing commentId" }, 400);
         }
 
+        const comment = await prisma.videoComment.findUnique({
+            where: { id: commentId }
+        })
+
+        if(!comment) {
+            return c.json({ error: "not found comment" }, 400);
+        }
+
+        const summary = comment.comment;
+        const videoReviewURL = createVideoCommentLink(comment.videoId, comment.id);
+        const description = `Video Review LINK\n${videoReviewURL}`
         const res = await fetch(`${base}/rest/api/2/issue`, {
             method: "POST",
             headers: {

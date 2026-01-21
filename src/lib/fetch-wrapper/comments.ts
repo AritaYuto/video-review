@@ -1,6 +1,8 @@
 import { useAuthStore } from "@/stores/auth-store";
 import { VideoComment } from '@/lib/db-types';
 import { DateRange } from "react-day-picker";
+import { ApiError, ApiResult } from "@/lib/utils/api-result";
+import { string } from "zod";
 
 export async function fetchComments(data: {
     videoId: string,
@@ -61,7 +63,7 @@ export async function updateComment(data: {
     issueId?: string | null;
     drawingPath?: string | null;
     thumbsUp?: boolean;
-    slackTs?: string;
+    notifiedProviders?: string[];
 }) {
     const res = await fetch("/api/v1/comments", {
         method: "PATCH",
@@ -101,24 +103,6 @@ export async function deleteComment(id: string) {
 export async function getComment(commentId: string): Promise<VideoComment> {
     const res = await fetch(`/api/v1/comments/${commentId}`);
     if (!res.ok) throw new Error("Failed to comment");
-    return res.json();
-}
-
-export async function linkCommentToSlack(
-    commentId: string, 
-    slack: { ts: string, channelId: string}
-): Promise<VideoComment> {
-    const res = await fetch(`/api/v1/comments/${commentId}/link-slack`,{
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({     
-            ts: slack.ts,
-            channelId: slack.channelId 
-        }),
-    });
-    if (!res.ok) throw new Error("Failed linked");
     return res.json();
 }
 
@@ -178,7 +162,7 @@ export async function fetcCommentUsers(
         hasDrawing?: boolean,
         hasIssue?: boolean,
     }
-): Promise<{userName: string, userEmail: string}[]> {
+): Promise<{ userName: string, userEmail: string }[]> {
     const params = new URLSearchParams();
     if (data.videoId) params.set("videoId", data.videoId);
     if (data.hasDrawing) params.set("hasDrawing", data.hasDrawing ? "true" : "false");
@@ -194,4 +178,13 @@ export async function fetcCommentUsers(
     });
     if (!res.ok) return [];
     return await res.json();
+}
+
+export async function fetchExternalLink(commentId: string): Promise<ApiResult<Record<string, string>>> {
+    const res = await fetch(`/api/v1/comments/${commentId}/external-links`);
+    if(res.ok) {
+        const data = await res.json();
+        return { ok: true, data }
+    }
+    return ApiError(res);
 }

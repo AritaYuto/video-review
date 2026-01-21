@@ -47,7 +47,7 @@ function DropdownMenu_SharedLink() {
         if (selectedComment === null || selectedRevision === null) {
             return "";
         }
-        return createVideoCommentLink(selectedVideo?.id, selectedComment) ?? "";
+        return createVideoCommentLink(selectedVideo?.id, selectedComment?.id) ?? "";
     }
 
     return (

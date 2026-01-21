@@ -1,16 +1,14 @@
 import { useAuthStore } from "@/stores/auth-store";
 
 export async function createJiraIssue(
+    commentId: string,
     reporterEmail: string,
     issueType: string,
-    summary: string,
-    description: string,
     screenshot: Blob | null,
 ) {
     const token = useAuthStore.getState().token;
     const form = new FormData();
-    form.append("summary", summary);
-    form.append("description", description);
+    form.append("commentId", commentId);
     form.append("issueType", issueType);
     form.append("reporterEmail", reporterEmail);
     if (screenshot) {

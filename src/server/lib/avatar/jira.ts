@@ -1,5 +1,7 @@
+import { getJiraBaseUrl } from "@/lib/utils/env";
+
 export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | undefined> {
-    const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL;
+    const base = getJiraBaseUrl();
     const token = process.env.JIRA_API_TOKEN;
 
     if (!base || !token) {

@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from "react";
 import { CommentSearchDialog } from "@/components/dialog/comment-search";
 import { readVideoComment } from "@/lib/fetch-wrapper";
 import { useTranslations } from "next-intl";
-import { slackToast } from "@/components/slack";
 import CommentCard from "@/components/video-comment-panel/comment-card";
 import { useCommentSearchStore } from "@/stores/comment-search-store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,6 +20,7 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { X, Search } from "lucide-react";
 import { SidebarGroup, SidebarGroupContent, SidebarInput } from "@/ui/sidebar";
 import CalendarDateRadio from "@/ui/calendar-date-radio";
+import { chatToast } from "@/components/chat-notice";
 
 export default function VideoCommentPanel() {
     const t = useTranslations("video-comment-panel");
@@ -70,7 +70,7 @@ export default function VideoCommentPanel() {
                     userEmail: email ?? "",
                     thumbsUp: 0,
                 })
-                await handlePostCommentToSlack(id);
+                await handlePostCommentToChat(id);
             }
         } else {
             // Update flow for an existing comment.
@@ -83,9 +83,9 @@ export default function VideoCommentPanel() {
         }
     }
 
-    const handlePostCommentToSlack = async (id: string) => {
+    const handlePostCommentToChat = async (id: string) => {
         const screenshot = await captureFrame(videoRefElement);
-        return await slackToast(id, screenshot);
+        return await chatToast(id, screenshot);
     }
 
     useEffect(() => {

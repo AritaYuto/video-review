@@ -3,6 +3,7 @@ import { prisma } from "@/server/lib/db";
 import { Role } from "@/lib/role";
 import { Context } from "hono";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { getJiraBaseUrl } from "@/lib/utils/env";
 
 export async function loginWithJira(c: Context) {
     try {
@@ -58,7 +59,7 @@ export async function loginWithJira(c: Context) {
 }
 
 async function authenticateWithJira(email: string) {
-    const base = process.env.NEXT_PUBLIC_JIRA_BASE_URL!;
+    const base = getJiraBaseUrl();
     const res = await fetch(`${base}/rest/api/2/user/search?username=${email}`, {
         method: "GET",
         headers: {

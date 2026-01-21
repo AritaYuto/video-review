@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import * as api from "@/lib/fetch-wrapper";
 import { VideoComment, VideoRevision } from "@/lib/db-types";
-import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
 import { useVideoReviewStore } from "@/stores/video-review-store";
@@ -16,12 +15,11 @@ interface CommentState {
     setDisplayComments: (comments: VideoComment[]) => void;
     fetchComments: (videoRevision: VideoRevision) => Promise<void>;
     fetchNewComments: (videoId: string) => Promise<VideoComment[]>;
-    addComment: (c: Omit<VideoComment, "slackMessage" | "id" | "createdAt" | "updatedAt" | "deleted" | "drawingPath">) => Promise<string>;
+    addComment: (c: Omit<VideoComment, "notifiedProviders" | "id" | "createdAt" | "updatedAt" | "deleted" | "drawingPath">) => Promise<string>;
     updateComment: (comment: VideoComment) => void;
     deleteComment: (id: string) => Promise<void>;
     incrementThumbsUpCount: (id: string) => Promise<void>;
     issueLinkedComment: (id: string, user: string, issueType: string, screenshot: Blob | null) => Promise<void>;
-    slackLinkedComment: (id: string, ts: string, channelId: string) => Promise<void>;
 }
 
 export const useCommentStore = create<CommentState>((set, get) => ({
@@ -74,22 +72,13 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         const comment = get().comments.find((c) => c.id === id);
         if (!comment) return;
 
-        const description = `Video Review LINK\n${createVideoCommentLink(comment.videoId, comment)}`
         const issueId = await api.createJiraIssue(
+            id,
             user,
             issueType,
-            comment?.comment,
-            description,
             screenshot
         )
         const updated = await api.updateComment({ id, issueId: issueId });
-        set({
-            comments: get().comments.map((c) => (c.id === id ? updated : c)),
-        });
-    },
-
-    slackLinkedComment: async(id, ts, channelId) => {
-        const updated = await api.linkCommentToSlack(id, { ts, channelId });
         set({
             comments: get().comments.map((c) => (c.id === id ? updated : c)),
         });
