@@ -20,6 +20,8 @@ export default function VideoReviewPage() {
     const {
         selectVideo,
         selectVideoRevision,
+        loading,
+
     } = useVideoStore();
 
     const { setSelectComment, setTimelineTime } = useVideoReviewStore();
@@ -33,34 +35,39 @@ export default function VideoReviewPage() {
     }, []);
 
     useEffect(() => {
-        const duration = searchParams.get("t");
-        const commentId = searchParams.get("comment");
         if (!videoId) return;
-
         void (async () => {
-            try{
+            try {
                 const video = await api.getVideoFromId(videoId as string);
                 const rev = await api.fetchLatestRevision(videoId as string);
 
                 selectVideo(video);
                 selectVideoRevision(rev);
-                if (duration) {
-                    setTimelineTime(parseFloat(duration));
-                } else if (commentId) {
-                    setTimeout(async () => {
-                        const comment = await api.getComment(commentId as string);
-                        setTimelineTime(comment.time);
-                        setSelectComment(comment);
-                    }, 100);
-                } else {
-                    setTimelineTime(null);
-                    setSelectComment(null);
-                }
-            } catch(error) {
+
+            } catch (error) {
                 console.log("not found videoId", error)
             }
         })();
     }, [videoId, searchParams]);
+
+    useEffect(() => {
+        if(loading) return;
+        
+        const duration = searchParams.get("t");
+        const commentId = searchParams.get("comment");
+        if (duration) {
+            setTimelineTime(parseFloat(duration));
+        } else if (commentId) {
+            setTimeout(async () => {
+                const comment = await api.getComment(commentId as string);
+                setTimelineTime(comment.time);
+                setSelectComment(comment);
+            }, 100);
+        } else {
+            setTimelineTime(null);
+            setSelectComment(null);
+        }
+    }, [loading]);
 
     return (
         <div className="flex h-screen">
