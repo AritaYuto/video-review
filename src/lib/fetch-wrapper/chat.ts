@@ -22,6 +22,7 @@ export async function chat(commentId: string, screenshot: Blob | null)
     const user = useAuthStore.getState();
     const token = useAuthStore.getState().token;
     const form = new FormData();
+    form.append("baseURL", window.location.origin);
     form.append("commentId", comment.id);
     form.append("commentText", comment.comment);
     form.append("videoId", comment.videoId);
@@ -37,7 +38,7 @@ export async function chat(commentId: string, screenshot: Blob | null)
         form.append("screenshot", new File([screenshot], "screenshot.png"));
     }
 
-    const res = await fetch("/api/v1/chat/post", {
+    const res = await fetch("/api/v1/chat", {
         method: "POST",
         body: form,
         headers: {

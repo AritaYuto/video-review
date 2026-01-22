@@ -34,11 +34,12 @@ function getFile(form: FormData, key: string): File | undefined {
 }
 
 function buildChatContext(form: FormData):  ChatType {
+    const baseURL   = getStr(form, "baseURL");
     const videoId   = getStr(form, "videoId");
     const commentId = getStr(form, "commentId");
     const scenePath = getStr(form, "scenePath");
     const sceneLink = createOpenSceneLink(scenePath!) ?? undefined;
-    const videoLink = createVideoCommentLink(videoId!, commentId!) ?? undefined;
+    const videoLink = createVideoCommentLink(baseURL!, videoId!, commentId!) ?? undefined;
 
     return {
         commentId,

@@ -8,6 +8,7 @@ export async function createJiraIssue(
 ) {
     const token = useAuthStore.getState().token;
     const form = new FormData();
+    form.append("baseURL", window.location.origin);
     form.append("commentId", commentId);
     form.append("issueType", issueType);
     form.append("reporterEmail", reporterEmail);

@@ -44,6 +44,7 @@ try {
 
     try {
         const formData = await c.req.formData();
+        const baseURL = formData.get("baseURL") as string;
         const commentId = formData.get("commentId") as string; 
         const issueType = formData.get("issueType") as string;
         const reporterEmail = formData.get("reporterEmail") as string;
@@ -62,7 +63,7 @@ try {
         }
 
         const summary = comment.comment;
-        const videoReviewURL = createVideoCommentLink(comment.videoId, comment.id);
+        const videoReviewURL = createVideoCommentLink(baseURL!, comment.videoId, comment.id);
         const description = `Video Review LINK\n${videoReviewURL}`
         const res = await fetch(`${base}/rest/api/2/issue`, {
             method: "POST",

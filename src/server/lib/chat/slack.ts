@@ -26,7 +26,7 @@ export async function chatSlack(ctx: ChatType): Promise<boolean> {
     comment += `${ctx.userName}\n`;
     comment += `${ctx.commentText}\n`;
     comment += `<${ctx.videoLink}|VideoReview LINK>\n`;
-    if (ctx.sceneLink) {
+    if (ctx.scenePath) {
         comment += `<${ctx.sceneLink}|Open Scene>\n`;
     }
 
