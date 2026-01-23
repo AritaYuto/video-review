@@ -1,0 +1,35 @@
+import { UploadStorageType } from "@prisma/client";
+import { booleanEnv, resolveEnv, typeEnv } from "@/lib/env";
+import "server-only"
+
+export const env = {
+    DATABASE_URL: process.env.DATABASE_URL,
+    VIDEO_REVIEW_API_TOKEN: process.env.VIDEO_REVIEW_API_TOKEN,
+    VIDEO_REVIEW_STORAGE: typeEnv<UploadStorageType>(process.env.VIDEO_REVIEW_STORAGE, UploadStorageType.local),
+    VIDEO_REVIEW_LOCAL_ROOTDIR: resolveEnv(process.env.VIDEO_REVIEW_LOCAL_ROOTDIR, process.env.LOCAL_ROOTDIR),
+    EMAIL_ENABLE: booleanEnv(process.env.VIDEO_REVIEW_EMAIL_ENABLE),
+    SMTP_HOST: process.env.VIDEO_REVIEW_SMTP_HOST,
+    SMTP_PORT: process.env.VIDEO_REVIEW_SMTP_PORT,
+    EMAIL_FROM: process.env.VIDEO_REVIEW_EMAIL_FROM,
+    SLACK_TEAM: resolveEnv(process.env.VIDEO_REVIEW_SLACK_TEAM, process.env.SLACK_TEAM),
+    SLACK_API_TOKEN: resolveEnv(process.env.VIDEO_REVIEW_SLACK_API_TOKEN, process.env.SLACK_API_TOKEN),
+    SLACK_POST_CH: resolveEnv(process.env.VIDEO_REVIEW_SLACK_POST_CH, process.env.SLACK_POST_CH),
+    JIRA_BASE_URL: resolveEnv(process.env.VIDEO_REVIEW_JIRA_BASE_URL, resolveEnv(process.env.JIRA_BASE_URL, process.env.NEXT_PUBLIC_JIRA_BASE_URL)),
+    JIRA_API_TOKEN: resolveEnv(process.env.VIDEO_REVIEW_JIRA_API_TOKEN, process.env.JIRA_API_TOKEN),
+    JIRA_PROJECT: resolveEnv(process.env.VIDEO_REVIEW_JIRA_PROJECT, process.env.JIRA_PROJECT),
+    JIRA_ASSIGNEE_USER: resolveEnv(process.env.VIDEO_REVIEW_JIRA_ASSIGNEE_USER, process.env.JIRA_ASSIGNEE_USER),
+    WEBHOOK_TARGET: process.env.VIDEO_REVIEW_WEBHOOK_TARGET,
+    WEBHOOK_URL: process.env.VIDEO_REVIEW_WEBHOOK_URL,
+    SMTP_TLS_STRICT: booleanEnv(process.env.VIDEO_REVIEW_SMTP_TLS_STRICT),
+    S3_BUCKET: process.env.VIDEO_REVIEW_S3_BUCKET,
+    S3_REGION: process.env.VIDEO_REVIEW_S3_REGION,
+    S3_LOCALSTACK_ENDPOINT: process.env.VIDEO_REVIEW_S3_LOCALSTACK_ENDPOINT === "" ? undefined : process.env.VIDEO_REVIEW_S3_LOCALSTACK_ENDPOINT,
+    AWS_ACCESS_KEY_ID: process.env.VIDEO_REVIEW_AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.VIDEO_REVIEW_AWS_SECRET_ACCESS_KEY,
+    NEXTCLOUD_BASE_URL: process.env.VIDEO_REVIEW_NEXTCLOUD_BASE_URL,
+    NEXTCLOUD_USERNAME: process.env.VIDEO_REVIEW_NEXTCLOUD_USERNAME,
+    NEXTCLOUD_PASSWORD: process.env.VIDEO_REVIEW_NEXTCLOUD_PASSWORD,
+    NEXTCLOUD_ROOTDIR: process.env.VIDEO_REVIEW_NEXTCLOUD_ROOTDIR,
+    VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated: process.env.ADMIN_MAINTENANCE_TOKEN,
+    JWT_SECRET_deprecated: process.env.JWT_SECRET,
+} as const;

@@ -1,7 +1,8 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { authorize, getJwtSecret, JwtError } from "@/server/lib/token";
+import { authorize, getJwtSecret } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
@@ -45,7 +46,7 @@ maintenanceRouter.openapi({
     try {
         await authorize(c.req.raw, ["admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });
@@ -102,7 +103,7 @@ maintenanceRouter.openapi({
     try {
         await authorize(c.req.raw, ["admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });
@@ -161,7 +162,7 @@ maintenanceRouter.openapi({
     try {
         await authorize(c.req.raw, ["admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });

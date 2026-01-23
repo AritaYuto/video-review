@@ -1,64 +1,25 @@
-function resolveEnv(primary?: string, legacy?: string): string | undefined {
+import * as api from "@/lib/fetch-wrapper";
+
+export function resolveEnv(primary?: string, legacy?: string): string | undefined {
     return primary ?? legacy;
 }
 
-function booleanEnv(key?: string): boolean {
+export function booleanEnv(key?: string): boolean {
     if(!key) return false;
     return key === "true"
 }
 
-export function SLACK_TEAM(): string | undefined {
-    return resolveEnv(
-        process.env.VIDEO_REVIEW_SLACK_TEAM,
-        process.env.SLACK_TEAM // deprecated
-    );
+export function typeEnv<T>(key: string | undefined, defaultType: string | undefined): T {
+    if(!key || key === "") return defaultType as T;
+    return key as T;
 }
 
-export function SLACK_API_TOKEN(): string | undefined {
-    return resolveEnv(
-        process.env.VIDEO_REVIEW_SLACK_API_TOKEN,
-        process.env.SLACK_API_TOKEN // deprecated
-    );
-}
-
-export function SLACK_POST_CH(): string | undefined {
-    return resolveEnv(
-        process.env.VIDEO_REVIEW_SLACK_POST_CH,
-        process.env.SLACK_POST_CH // deprecated
-    );
-}
-
-export function EMAIL_ENABLE(): boolean {
-    return booleanEnv(process.env.VIDEO_REVIEW_EMAIL_ENABLE);
-}
-
-export function SMTP_HOST(): string | undefined {
-    return process.env.VIDEO_REVIEW_SMTP_HOST;
-}
-
-export function SMTP_PORT(): string | undefined {
-    return process.env.VIDEO_REVIEW_SMTP_PORT;
-}
-
-export function EMAIL_FROM(): string | undefined {
-    return process.env.VIDEO_REVIEW_EMAIL_FROM;
-}
-
-export function JIRA_BASE_URL(): string | undefined {
-    return resolveEnv(
-        process.env.JIRA_BASE_URL,
-        process.env.NEXT_PUBLIC_JIRA_BASE_URL // deprecated
-    );
-}
-
-export function WEBHOOK_TARGET(): string | undefined {
-    return process.env.VIDEO_REVIEW_WEBHOOK_TARGET;
-}
-
-export function WEBHOOK_URL(): string | undefined {
-    return process.env.VIDEO_REVIEW_WEBHOOK_URL;
-}
-
-export function SMTP_TLS_STRICT(): boolean {
-    return booleanEnv(process.env.VIDEO_REVIEW_SMTP_TLS_STRICT);
-}
+export const env = {
+    PUBLIC_VIDEO_REVIEW_TITLE: process.env.NEXT_PUBLIC_VIDEO_REVIEW_TITLE ?? "VideoReview",
+    PUBLIC_VIDEO_REVIEW_DESC: process.env.NEXT_PUBLIC_VIDEO_REVIEW_DESC ?? "Internal Video Review Tool",
+    PUBLIC_VIDEO_REVIEW_URL_SCHEMA: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_URL_SCHEMA, process.env.NEXT_PUBLIC_URL_SCHEMA),
+    PUBLIC_LOGIN_BG_URL: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_LOGIN_BG, process.env.NEXT_PUBLIC_LOGIN_BG),
+    PUBLIC_LOGIN_DEFAULT_TYPE: typeEnv<api.LoginType>(resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_LOGIN_DEFAULT_TYPE, process.env.NEXT_PUBLIC_LOGIN_DEFAULT_TYPE) , "guest"),
+    PUBLIC_JIRA_ISSUE_TYPE_TASK: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_JIRA_ISSUE_TYPE_TASK, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK),
+    PUBLIC_JIRA_ISSUE_TYPE_BUG: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_JIRA_ISSUE_TYPE_BUG, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG),
+} as const;

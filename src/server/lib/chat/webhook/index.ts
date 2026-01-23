@@ -1,6 +1,6 @@
 import { ChatType } from "@/server/lib/utils/chat-type";
 import { builders } from "@/server/lib/chat/webhook/builders";
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 
 export type WebhookTarget = "slack" | "teams";
 
@@ -21,8 +21,8 @@ async function sendWebhook(webhookUrl: string, payload: unknown): Promise<boolea
 }
 
 export async function chatWebhook(ctx: ChatType): Promise<boolean> {
-    const type = env.WEBHOOK_TARGET();
-    const url = env.WEBHOOK_URL();
+    const type = env.WEBHOOK_TARGET;
+    const url = env.WEBHOOK_URL;
 
     if(!type || !url) {
         return false;

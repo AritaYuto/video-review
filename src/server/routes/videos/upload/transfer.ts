@@ -1,5 +1,6 @@
 import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { receiveMultipart } from "@/server/lib/utils/receive-multipart";
@@ -34,7 +35,7 @@ transferRouter.openapi({
     try {
         await authorize(c.req.raw, ["admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });

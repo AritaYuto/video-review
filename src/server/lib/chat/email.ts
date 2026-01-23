@@ -1,6 +1,6 @@
 import { ChatType } from "@/server/lib/utils/chat-type";
 import nodemailer from "nodemailer";
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 
 function toEmailMessage(ctx: ChatType) {
     return {
@@ -20,10 +20,10 @@ function toEmailMessage(ctx: ChatType) {
 }
 
 export async function chatEmail(ctx: ChatType): Promise<boolean> {
-    const enable = env.EMAIL_ENABLE();
-    const smtpHost = env.SMTP_HOST();
-    const smtpPort = env.SMTP_PORT();
-    const from = env.EMAIL_FROM();
+    const enable = env.EMAIL_ENABLE;
+    const smtpHost = env.SMTP_HOST;
+    const smtpPort = env.SMTP_PORT;
+    const from = env.EMAIL_FROM;
     const to = ctx.email;
 
     console.info("[email] called", {
@@ -68,7 +68,7 @@ export async function chatEmail(ctx: ChatType): Promise<boolean> {
         port: Number(smtpPort),
         secure: false,
         tls: {
-            rejectUnauthorized: env.SMTP_TLS_STRICT(),
+            rejectUnauthorized: env.SMTP_TLS_STRICT,
         },
     });
 

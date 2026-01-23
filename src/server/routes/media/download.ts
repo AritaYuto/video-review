@@ -1,6 +1,7 @@
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { prisma } from "@/server/lib/db";
 
@@ -29,7 +30,7 @@ downloadRouter.openapi({
     try {
         await authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });

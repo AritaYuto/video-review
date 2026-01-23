@@ -4,7 +4,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { Readable } from "stream";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -96,7 +97,7 @@ avatarRouter.openapi({
         try {
             await authorize(c.req.raw, ["viewer", "admin"]);
         } catch (e) {
-            if (e instanceof JwtError) {
+            if (e instanceof ServerError) {
                 return c.json({ error: e.message }, e.status as ContentfulStatusCode);
             }
             return c.json({ error: "unauthorized" }, { status: 401 });
