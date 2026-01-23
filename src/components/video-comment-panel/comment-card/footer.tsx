@@ -19,7 +19,7 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
     }
 
     const openExternalLink = async (type: "slack" | "jira") => {
-        // すでに取得済みなら再利用
+        // jump from cache
         if (externalLinks?.[type]) {
             window.open(externalLinks[type], "_blank", "noreferrer");
             return;
@@ -48,7 +48,7 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
                     {hasIssueId && (
                         <Badge className="bg-white hover:bg-[#333]">
                             <button
-                                onClick={() => openExternalLink("jira")}
+                                onClick={async () => await openExternalLink("jira")}
                                 className="flex items-center gap-1 hover:text-[#ff8800] transition text-[#4ea7ff] text-xs hover:underline hover:text-[#ff8800]"
                             >
                                 {props.comment.issueId}
@@ -58,7 +58,7 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
                     {hasSlackMessage && (
                         <Badge className="bg-white hover:bg-[#333]">
                             <button
-                                onClick={() => openExternalLink("slack")}
+                                onClick={async () => await openExternalLink("slack")}
                                 className="flex items-center gap-1 text-black hover:text-[#ff8800] transition"
                             >
                                 <FontAwesomeIcon icon={faComment}/>
