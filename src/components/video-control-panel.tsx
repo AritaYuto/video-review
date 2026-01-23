@@ -58,7 +58,7 @@ export default function VideoControlPanel() {
         if (selectedRevision === null) {
             return "";
         }
-        return createVideoTimeLink(selectedVideo?.id, currentTime) ?? "";
+        return createVideoTimeLink(window.location.origin, selectedVideo?.id, currentTime) ?? "";
     };
 
     return (

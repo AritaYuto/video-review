@@ -69,21 +69,21 @@ model VideoRevision {
 }
 
 model VideoComment {
-  id           String         @id @default(uuid())
-  video        Video          @relation(fields: [videoId], references: [id])
-  videoId      String
-  videoRevNum  Int     
-  userName     String
-  userEmail    String         @default("")
-  comment      String         
-  time         Float          
-  issueId      String?        
-  slackMessage SlackMessage?  @relation("VideoCommentSlack")
-  drawingPath  String?        
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deleted      Boolean        @default(false)
-  thumbsUp     Int            @default(0)
+  id                String          @id @default(uuid())
+  video             Video           @relation(fields: [videoId], references: [id])
+  videoId           String
+  videoRevNum       Int     
+  userName          String
+  userEmail         String          @default("")
+  comment           String         
+  time              Float          
+  issueId           String?        
+  notifiedProviders String[]        @default([])
+  drawingPath       String?        
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deleted           Boolean         @default(false)
+  thumbsUp          Int             @default(0)
 }
 
 model SlackMessage {
@@ -91,8 +91,6 @@ model SlackMessage {
   channelId       String   
   ts              String   
   createdAt       DateTime       @default(now())
-
-  videoComment    VideoComment?  @relation("VideoCommentSlack", fields: [videoCommentId], references: [id])
   videoCommentId  String?        @unique
 
   threadMessages SlackThreadMessage[]

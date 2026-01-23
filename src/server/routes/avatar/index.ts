@@ -7,7 +7,6 @@ import { Readable } from "stream";
 import { authorize, JwtError } from "@/server/lib/token";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { v4 as uuidv4 } from 'uuid';
-import { getBaseUrl } from "@/lib/url";
 
 export const avatarRouter = new Hono();
 

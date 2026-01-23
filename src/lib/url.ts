@@ -1,35 +1,18 @@
-import { VideoComment } from '@/lib/db-types';
 
-export function getBaseUrl(req?: Request) {
-    if (typeof window !== "undefined") {
-        return window.location.origin;
-    }
-
-    if (!req) return "";
-
-    const proto =
-        req.headers.get("x-forwarded-proto") ??
-        (req.headers.get("host")?.startsWith("localhost") ? "http" : "https");
-
-    const host = req.headers.get("host");
-    if (!host) return "";
-
-    return `${proto}://${host}`;
-}
-
-export function createVideoCommentLink(videoId: string | null, comment: VideoComment): string | null {
+export function createVideoCommentLink(baseURL: string, videoId: string | null, commentId: string | null): string | null {
     if (videoId === null) {
         return null;
     }
-    const baseURL = window.location.origin
-    return `${baseURL}/video-review/review/${videoId}?comment=${comment?.id}`
+    if (commentId === null) {
+        return null;
+    }
+    return `${baseURL}/video-review/review/${videoId}?comment=${commentId}`
 }
 
-export function createVideoTimeLink(videoId: string | null, time: number): string | null {
+export function createVideoTimeLink(baseURL: string, videoId: string | null, time: number): string | null {
     if (videoId === null) {
         return null;
     }
-    const baseURL = window.location.origin
     return `${baseURL}/video-review/review/${videoId}?t=${time}`
 }
 

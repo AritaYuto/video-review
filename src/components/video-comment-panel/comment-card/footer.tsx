@@ -2,22 +2,43 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp, faComment, faPalette } from "@fortawesome/free-solid-svg-icons";
-import { formatDate } from "@/lib/utils";
 import { useCommentStore } from "@/stores/comment-store";
 import { VideoComment } from "@/lib/db-types";
 import { CardFooter } from "@/ui/card";
 import { Badge } from "@/ui/badge";
-import { Palette } from "lucide-react";
+import * as api from "@/lib/fetch-wrapper"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function CommentCardFooter(props: { comment: VideoComment }) {
     const { incrementThumbsUpCount } = useCommentStore();
+    const [externalLinks, setExternalLinks] = useState<Record<string, string> | null>(null);
 
     const handleLike = (id: string) => {
         incrementThumbsUpCount(id);
     }
 
-    const hasIssueId = props.comment.issueId && process.env.NEXT_PUBLIC_JIRA_BASE_URL !== undefined;
-    const hasSlackMessage = props.comment.slackMessage;
+    const openExternalLink = async (type: "slack" | "jira") => {
+        // jump from cache
+        if (externalLinks?.[type]) {
+            window.open(externalLinks[type], "_blank", "noreferrer");
+            return;
+        }
+
+        const res = await api.fetchExternalLink(props.comment.id);
+        if (!res.ok) {
+            return;
+        }
+
+        setExternalLinks(res.data);
+        if (res.data[type]) {
+            window.open(res.data[type], "_blank", "noreferrer");
+        }
+    }
+
+    const hasIssueId = props.comment.issueId !== "" && props.comment.issueId !== null;
+    const notifiedProviders = props.comment.notifiedProviders;
+    const hasSlackMessage = notifiedProviders.includes("slack");
     const hasDrawing = props.comment.drawingPath !== "" && props.comment.drawingPath !== null;
 
     return (
@@ -25,37 +46,37 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
             <div>
                 <div className="flex w-full gap-1">
                     {hasIssueId && (
-                        <Badge className="bg-white" >
-                            <a
-                                className="text-[#4ea7ff] text-xs hover:underline"
-                                href={`${process.env.NEXT_PUBLIC_JIRA_BASE_URL}/browse/${props.comment.issueId}`}
-                                target="_blank">
+                        <Badge className="bg-white hover:bg-[#333]">
+                            <button
+                                onClick={async () => await openExternalLink("jira")}
+                                className="flex items-center gap-1 hover:text-[#ff8800] transition text-[#4ea7ff] text-xs hover:underline hover:text-[#ff8800]"
+                            >
                                 {props.comment.issueId}
-                            </a>
+                            </button>
                         </Badge>
                     )}
                     {hasSlackMessage && (
-                        <Badge className="bg-white">
-                            <a
-                                href={`https://${process.env.NEXT_PUBLIC_SLACK_TEAM}.slack.com/archives/${props.comment.slackMessage?.channelId}/p${props.comment.slackMessage?.ts}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center justify-centertext-[#4A154B]hover:text-[#611f69]"
-                                aria-label="Open in Slack">
-                                <FontAwesomeIcon icon={faComment} className="flex items-center gap-1 text-black hover:text-[#ff8800] transition"/> 
-                                <span className="text-black">Slack</span>
-                            </a>
+                        <Badge className="bg-white hover:bg-[#333]">
+                            <button
+                                onClick={async () => await openExternalLink("slack")}
+                                className="flex items-center gap-1 text-black hover:text-[#ff8800] transition"
+                            >
+                                <FontAwesomeIcon icon={faComment}/>
+                                <span className="text-xs">Slack</span>
+                            </button>
                         </Badge>
                     )}
 
                     {hasDrawing && (
-                        <Badge className="bg-white">
-                                <FontAwesomeIcon icon={faPalette} size="xl" className="text-black"/> 
+                        <Badge className="bg-white hover:bg-[#333]">
+                            <button className="flex items-center gap-1 text-black hover:text-[#ff8800] transition">
+                            <FontAwesomeIcon icon={faPalette} size="xl"/>
+                            </button>
                         </Badge>
                     )}
 
-                    
-                    <Badge className="bg-white">
+
+                    <Badge className="bg-white hover:bg-[#333]">
                         {/* 👍 like button */}
                         <button
                             onClick={(e) => {

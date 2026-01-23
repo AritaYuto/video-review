@@ -1,6 +1,6 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { linkSlackRouter } from "./link-slack";
+import { externalLinksRouter } from "@/routes/comments/[id]/external-links";
 
 export const byIdRouter = new Hono();
 
@@ -36,4 +36,4 @@ byIdRouter.openapi({
     }
 });
 
-byIdRouter.route("/link-slack", linkSlackRouter)
+byIdRouter.route("external-links", externalLinksRouter)

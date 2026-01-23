@@ -85,10 +85,7 @@ commentsRouter.openapi({
 
         const comments = await prisma.videoComment.findMany({
             where,
-            orderBy: { time: "asc" },
-            include: { 
-                slackMessage: true
-            }
+            orderBy: { time: "asc" }
         });
 
         return c.json(comments, { status: 200 });
@@ -136,7 +133,7 @@ commentsRouter.post("/", async (c) => {
 commentsRouter.patch("/", async (c) => {
     try {
         const data = await c.req.json();
-        const { id, comment, deleted, issueId, drawingPath, thumbsUp } = data;
+        const { id, comment, deleted, issueId, drawingPath, thumbsUp, notifiedProviders } = data;
 
         // 400
         if (!id) {
@@ -162,13 +159,13 @@ commentsRouter.patch("/", async (c) => {
         if (thumbsUp === true) {
             updateData.thumbsUp = { increment: 1 };
         }
+        if (notifiedProviders) {
+            updateData.notifiedProviders = notifiedProviders;
+        }
 
         const updated = await prisma.videoComment.update({
             where: { id },
-            data: updateData,
-            include: { 
-                slackMessage: true
-            }
+            data: updateData
         });
 
         return c.json(updated, { status: 200 });

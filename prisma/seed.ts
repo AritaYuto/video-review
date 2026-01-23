@@ -119,6 +119,7 @@ async function seedComments(videoId: string, users: User[]) {
                 drawingPath: (Math.random() < 0.7 && i === 2) ? "/drawings/sample.png" : null,
                 issueId: (Math.random() < 0.7 && i === 1) ? "ISSUE-123" : null,
                 thumbsUp: (Math.random() < 0.7 && i === 4) ? 2 : 0,
+                notifiedProviders: (Math.random() < 0.7 && i === 1) ? ["slack"] : [],
             },
         }));
         t += 8.0;
