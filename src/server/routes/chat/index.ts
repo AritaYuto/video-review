@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ChatProviders, ChatType } from "@/server/lib/utils/chat-type";
 import { authorize, JwtError } from "@/server/lib/token";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { chatSlack } from "@/server/lib/chat/slack";
+import { chatSlack, chatWebhook, chatEmail } from "@/server/lib/chat";
 import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 
 export const chatRouter = new Hono();
@@ -15,6 +15,7 @@ const FormSchema = z.object({
     videoTitle: z.string().optional(),
     folderKey: z.string().optional(),
     scenePath: z.string().optional(),
+    email: z.string().optional(),
     userName: z.string().optional(),
     screenshot: z.any().openapi({
         type: "string",
@@ -48,6 +49,7 @@ function buildChatContext(form: FormData):  ChatType {
         videoTitle: getStr(form, "videoTitle"),
         folderKey: getStr(form, "folderKey"),
         scenePath,
+        email: getStr(form, "email"),
         userName: getStr(form, "userName"),
         screenshot: getFile(form, "screenshot"),
         sceneLink,
@@ -90,6 +92,10 @@ chatRouter.openapi({
     if (await chatSlack(ctx)) {
         notifiedProviders.push("slack");
     }
+
+    await chatWebhook(ctx);
+
+    await chatEmail(ctx);
 
     const toastData = {
         title: "Posted to " +  notifiedProviders.join(", "),

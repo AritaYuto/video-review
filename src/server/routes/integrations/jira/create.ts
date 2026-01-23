@@ -1,5 +1,5 @@
 import { createVideoCommentLink } from "@/lib/url";
-import { getJiraBaseUrl } from "@/lib/utils/env";
+import * as env from "@/lib/env";
 import { prisma } from "@/server/lib/db";
 import { authorize, JwtError } from "@/server/lib/token";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
@@ -33,7 +33,7 @@ try {
         return c.json({ error: "unauthorized" }, 401);
     }
 
-    const base = getJiraBaseUrl();
+    const base = env.JIRA_BASE_URL();
     const token = process.env.JIRA_API_TOKEN;
     const project = process.env.JIRA_PROJECT;
     const assigneeEmail = process.env.JIRA_ASSIGNEE_USER;

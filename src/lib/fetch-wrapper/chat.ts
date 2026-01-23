@@ -4,8 +4,8 @@ import { useVideoStore } from "@/stores/video-store";
 import { ApiError, ApiResult } from "@/lib/utils/api-result";
 
 export async function chat(commentId: string, screenshot: Blob | null)
-: Promise<ApiResult<{ notifiedProviders: string[], toastData: { title: string, comment: string }  }>> {
-    if(screenshot === null) {
+    : Promise<ApiResult<{ notifiedProviders: string[], toastData: { title: string, comment: string } }>> {
+    if (screenshot === null) {
         return { ok: false, msg: "screenshot null", code: "-1" }
     }
 
@@ -19,8 +19,7 @@ export async function chat(commentId: string, screenshot: Blob | null)
         return { ok: false, msg: "video not found", code: "-1" }
     }
 
-    const user = useAuthStore.getState();
-    const token = useAuthStore.getState().token;
+    const { displayName, email, token } = useAuthStore.getState();
     const form = new FormData();
     form.append("baseURL", window.location.origin);
     form.append("commentId", comment.id);
@@ -28,11 +27,14 @@ export async function chat(commentId: string, screenshot: Blob | null)
     form.append("videoId", comment.videoId);
     form.append("videoTitle", video.title);
     form.append("folderKey", video.folderKey);
-    if(video.scenePath) {
+    if (video.scenePath) {
         form.append("scenePath", video.scenePath);
     }
-    if(user.displayName) {
-        form.append("userName", user.displayName);
+    if (displayName) {
+        form.append("userName", displayName);
+    }
+    if (email) {
+        form.append("email", email);
     }
     if (screenshot) {
         form.append("screenshot", new File([screenshot], "screenshot.png"));
@@ -45,11 +47,11 @@ export async function chat(commentId: string, screenshot: Blob | null)
             Authorization: `Bearer ${token}`,
         },
     });
-    
-    if(!res.ok) {
+
+    if (!res.ok) {
         return ApiError(res);
     }
 
     const data = await res.json();
-    return {ok: true, data: { notifiedProviders: data.notifiedProviders, toastData: data.toastData } };
+    return { ok: true, data: { notifiedProviders: data.notifiedProviders, toastData: data.toastData } };
 }

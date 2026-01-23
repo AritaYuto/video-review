@@ -5,6 +5,7 @@ export interface ChatType {
     videoTitle: string | undefined,
     folderKey: string | undefined,
     scenePath: string | undefined,
+    email: string | undefined,
     userName: string | undefined,
     videoLink: string | undefined,
     sceneLink: string | undefined,

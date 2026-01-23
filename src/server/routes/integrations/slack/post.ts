@@ -2,6 +2,7 @@ import { authorize, JwtError } from "@/server/lib/token";
 import { WebClient } from "@slack/web-api";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import * as env from "@/lib/env";
 
 export const postRouter = new Hono();
 
@@ -31,8 +32,8 @@ postRouter.openapi({
         return c.json({ error: "unauthorized" }, 401);
     }
 
-    const token = process.env.SLACK_API_TOKEN!;
-    const channel = process.env.SLACK_POST_CH!;
+    const token = env.SLACK_API_TOKEN();
+    const channel = env.SLACK_POST_CH();
     if (!token || !channel) {
         return c.json({ error: "slack configuration is missing" }, 500);
     }

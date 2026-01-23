@@ -19,7 +19,7 @@ interface CommentState {
     updateComment: (comment: VideoComment) => void;
     deleteComment: (id: string) => Promise<void>;
     incrementThumbsUpCount: (id: string) => Promise<void>;
-    issueLinkedComment: (id: string, user: string, issueType: string, screenshot: Blob | null) => Promise<void>;
+    issueLinkedComment: (id: string, email: string, issueType: string, screenshot: Blob | null) => Promise<void>;
 }
 
 export const useCommentStore = create<CommentState>((set, get) => ({
@@ -68,13 +68,13 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         });
     },
 
-    issueLinkedComment: async (id, user, issueType, screenshot) => {
+    issueLinkedComment: async (id, email, issueType, screenshot) => {
         const comment = get().comments.find((c) => c.id === id);
         if (!comment) return;
 
         const issueId = await api.createJiraIssue(
             id,
-            user,
+            email,
             issueType,
             screenshot
         )
