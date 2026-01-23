@@ -68,7 +68,7 @@ export async function chatEmail(ctx: ChatType): Promise<boolean> {
         port: Number(smtpPort),
         secure: false,
         tls: {
-            rejectUnauthorized: false,
+            rejectUnauthorized: env.SMTP_TLS_STRICT(),
         },
     });
 

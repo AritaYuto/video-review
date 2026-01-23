@@ -95,4 +95,8 @@ VIDEO_REVIEW_EMAIL_ENABLE="true"
 VIDEO_REVIEW_SMTP_HOST="smtp"
 VIDEO_REVIEW_SMTP_PORT="25"
 VIDEO_REVIEW_EMAIL_FROM="VideoReview <noreply@videoreview.dev>"
+VIDEO_REVIEW_SMTP_TLS_STRICT="false"
 ```
+
+> VIDEO_REVIEW_SMTP_TLS_STRICT
+SMTPサーバーが有効で信頼できる証明書を使用している場合にのみ、trueに設定してください。

@@ -58,3 +58,7 @@ export function WEBHOOK_TARGET(): string | undefined {
 export function WEBHOOK_URL(): string | undefined {
     return process.env.VIDEO_REVIEW_WEBHOOK_URL;
 }
+
+export function SMTP_TLS_STRICT(): boolean {
+    return booleanEnv(process.env.VIDEO_REVIEW_SMTP_TLS_STRICT);
+}

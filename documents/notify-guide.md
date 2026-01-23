@@ -102,4 +102,9 @@ VIDEO_REVIEW_EMAIL_ENABLE="true"
 VIDEO_REVIEW_SMTP_HOST="smtp"
 VIDEO_REVIEW_SMTP_PORT="25"
 VIDEO_REVIEW_EMAIL_FROM="VideoReview <noreply@videoreview.dev>"
+VIDEO_REVIEW_SMTP_TLS_STRICT="false"
 ```
+
+> VIDEO_REVIEW_SMTP_TLS_STRICT
+Enable strict TLS certificate verification.  
+Set this to true only if your SMTP server uses a valid, trusted certificate.
