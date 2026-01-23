@@ -19,9 +19,9 @@ export const LocalBaseDirectory = () => {
             localBaseDirectory = local
         } else {
             console.warn(`
-                [WARN] LOCAL_ROOTDIR is not set or invalid.
+                [WARN] VIDEO_REVIEW_LOCAL_ROOTDIR is not set or invalid.
                 Falling back to default directory: ./uploads
-                For production use, please configure LOCAL_ROOTDIR explicitly.
+                For production use, please configure VIDEO_REVIEW_LOCAL_ROOTDIR explicitly.
             `);
             localBaseDirectory = path.join(process.cwd(), "uploads")
         }

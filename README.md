@@ -232,7 +232,7 @@ cp .example.env .env
 ```
 
 ```bash
-LOCAL_ROOTDIR="/path/.../..."
+VIDEO_REVIEW_LOCAL_ROOTDIR="/path/.../..."
 DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 ```
 
@@ -253,9 +253,9 @@ npm run start
 
 ### Notes
 
-In production environments, it is strongly recommended to explicitly set `LOCAL_ROOTDIR`.
+In production environments, it is strongly recommended to explicitly set `VIDEO_REVIEW_LOCAL_ROOTDIR`.
 
-If `LOCAL_ROOTDIR` is not set or is invalid, the application falls back to
+If `VIDEO_REVIEW_LOCAL_ROOTDIR` is not set or is invalid, the application falls back to
 `process.cwd()/uploads` to store uploaded video files.
 
 This fallback behavior is **not suitable for production use or long-term storage**
