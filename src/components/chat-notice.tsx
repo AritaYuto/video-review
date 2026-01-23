@@ -15,7 +15,7 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
     }
 
     const ret = await api.chat(commentId, screenshot);
-    if(!ret.ok) {
+    if(!ret.ok || ret.data.notifiedProviders.length === 0) {
         return false;
     }
     
