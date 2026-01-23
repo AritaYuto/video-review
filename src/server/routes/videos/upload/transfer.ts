@@ -5,6 +5,7 @@ import { getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { receiveMultipart } from "@/server/lib/utils/receive-multipart";
 import { VideoReviewStorage } from "@/server/lib/storage";
+import { generateThumbnail } from "@/server/lib/utils/generate-thumbnail";
 
 export const transferRouter = new Hono();
 
@@ -53,6 +54,7 @@ transferRouter.openapi({
     }
 
     return receiveMultipart(c.req.raw, async (tmpFilePath) => {
+        await generateThumbnail(session, tmpFilePath);
         await VideoReviewStorage.directUploadFromFile(session.storageKey, tmpFilePath);
     });
 });
