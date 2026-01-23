@@ -12,4 +12,4 @@ export interface ChatType {
     screenshot: any,
 };
 
-export type ChatProviders = "slack" | "teams" | "chatwork"
+export type ChatProviders = "slack" | "teams" | "chatwork" | "webhook" | "email"

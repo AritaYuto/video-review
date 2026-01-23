@@ -34,9 +34,9 @@ function getFile(form: FormData, key: string): File | undefined {
     return v instanceof File ? v : undefined;
 }
 
-function buildChatContext(form: FormData):  ChatType {
-    const baseURL   = getStr(form, "baseURL");
-    const videoId   = getStr(form, "videoId");
+function buildChatContext(form: FormData): ChatType {
+    const baseURL = getStr(form, "baseURL");
+    const videoId = getStr(form, "videoId");
     const commentId = getStr(form, "commentId");
     const scenePath = getStr(form, "scenePath");
     const sceneLink = createOpenSceneLink(scenePath!) ?? undefined;
@@ -93,12 +93,16 @@ chatRouter.openapi({
         notifiedProviders.push("slack");
     }
 
-    await chatWebhook(ctx);
+    if (await chatWebhook(ctx)) {
+        notifiedProviders.push("webhook");
+    }
 
-    await chatEmail(ctx);
+    if (await chatEmail(ctx)) {
+        notifiedProviders.push("email");
+    }
 
     const toastData = {
-        title: "Posted to " +  notifiedProviders.join(", "),
+        title: "Posted to " + notifiedProviders.join(", "),
         comment: ctx.commentText,
     }
     return c.json({ notifiedProviders, toastData }, 200);
