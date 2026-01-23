@@ -193,7 +193,7 @@ cp compose.prod.example.yml compose.prod.yml
 
 ### Storage location
 
-Edit [compose.prod.yml](./compose.prod.yml) and set the host path for storage.
+Edit `compose.prod.yml` and set the host path for storage.
 
 ```yaml
 volumes:

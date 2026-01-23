@@ -193,7 +193,7 @@ cp compose.prod.example.yml compose.prod.yml
 
 ### ストレージパスの設定
 
-動画などを保存するストレージパスを設定してください [compose.prod.yml](./compose.prod.yml)
+動画などを保存するストレージパスを設定してください `compose.prod.yml`
 
 ```yaml
 volumes:
