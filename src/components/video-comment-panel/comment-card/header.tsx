@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useTranslations } from "next-intl";
 import { isViewer } from "@/lib/role";
 import { useAvatarStore } from "@/stores/avatar-store";
+import { env } from "@/lib/env";
 
 // Dropdown menu item for copying a shareable link to the selected comment.
 function DropdownMenu_SharedLink() {
@@ -74,7 +75,7 @@ function DropdownMenu_CreateIssue(props: { disabled: boolean, comment: VideoComm
     // Issue type and icon are currently derived from translation IDs.
     // This couples UI text with logic, but keeps the menu definition simple for now.
     // Intended to be refactored to an explicit enum or prop-based issue type in the future.
-    const issueType = props.translateID === "commentItemTask" ? process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK : process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG
+    const issueType = props.translateID === "commentItemTask" ? env.PUBLIC_JIRA_ISSUE_TYPE_TASK : env.PUBLIC_JIRA_ISSUE_TYPE_BUG
     const icon = props.translateID === "commentItemTask" ? faListCheck : faBug;
 
     return (

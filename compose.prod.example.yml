@@ -12,7 +12,7 @@ services:
 
     environment:
       NODE_ENV: production
-      LOCAL_ROOTDIR: /storage
+      VIDEO_REVIEW_LOCAL_ROOTDIR: /storage
       DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
 
     volumes:

@@ -1,23 +1,27 @@
 import { S3Client } from "@aws-sdk/client-s3";
+import { UploadStorageType } from "@prisma/client";
+import { env } from "@/server/lib/env";
 
 import "server-only"
 
 function createS3Client(): S3Client | null {
+    if (env.VIDEO_REVIEW_STORAGE !== UploadStorageType.s3) {
+        return null;
+    }
+
     let s3: S3Client | null = null;
-    if (process.env.VIDEO_REVIEW_STORAGE === "s3") {
-        if (process.env.S3_LOCALSTACK_ENDPOINT === "") {
-            s3 = new S3Client({
-                region: process.env.S3_REGION!
-            });
-        } else {
-            s3 = new S3Client({
-                endpoint: process.env.S3_LOCALSTACK_ENDPOINT,
-                forcePathStyle: true,
-                region: process.env.S3_REGION!,
-                requestChecksumCalculation: "WHEN_SUPPORTED",
-                responseChecksumValidation: "WHEN_SUPPORTED"
-            });
-        }
+    if (env.S3_LOCALSTACK_ENDPOINT) {
+        s3 = new S3Client({
+            endpoint: env.S3_LOCALSTACK_ENDPOINT,
+            forcePathStyle: true,
+            region: env.S3_REGION,
+            requestChecksumCalculation: "WHEN_SUPPORTED",
+            responseChecksumValidation: "WHEN_SUPPORTED",
+        });
+    } else {
+        s3 = new S3Client({
+            region: env.S3_REGION,
+        });
     }
     return s3;
 }

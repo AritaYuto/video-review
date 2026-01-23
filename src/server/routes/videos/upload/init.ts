@@ -1,6 +1,7 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import path from "path";
 import { createSession } from "@/server/lib/upload-session";
@@ -48,7 +49,7 @@ initRouter.openapi({
     try {
         await authorize(c.req.raw, ["admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, { status: 401 });

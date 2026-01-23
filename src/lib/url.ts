@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 
 export function createVideoCommentLink(baseURL: string, videoId: string | null, commentId: string | null): string | null {
     if (videoId === null) {
@@ -17,7 +18,7 @@ export function createVideoTimeLink(baseURL: string, videoId: string | null, tim
 }
 
 export function createOpenSceneLink(scenePath: string): string | null {
-    const template = process.env.NEXT_PUBLIC_URL_SCHEMA;
+    const template = env.PUBLIC_VIDEO_REVIEW_URL_SCHEMA;
     if (!template) {
         return null;
     }

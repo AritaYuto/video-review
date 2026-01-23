@@ -231,7 +231,7 @@ cp .example.env .env
 ```
 
 ```bash
-LOCAL_ROOTDIR="/path/.../..."
+VIDEO_REVIEW_LOCAL_ROOTDIR="/path/.../..."
 DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 ```
 
@@ -239,7 +239,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 
 本番環境では、動画保存用のストレージを **必ず明示的に設定してください**。
 
-`LOCAL_ROOTDIR` が未設定、または無効な場合、  
+`VIDEO_REVIEW_LOCAL_ROOTDIR` が未設定、または無効な場合、  
 アプリケーションは `process.cwd()/uploads` にフォールバックして
 動画ファイルを保存します。
 

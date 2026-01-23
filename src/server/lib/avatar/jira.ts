@@ -1,8 +1,8 @@
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 
 export async function avatar(email: string): Promise<Buffer<ArrayBuffer> | undefined> {
-    const base = env.JIRA_BASE_URL();
-    const token = process.env.JIRA_API_TOKEN;
+    const base = env.JIRA_BASE_URL;
+    const token = env.JIRA_API_TOKEN;
 
     if (!base || !token) {
         return undefined;

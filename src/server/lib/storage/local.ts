@@ -7,19 +7,21 @@ import fs from "fs";
 import { FileStorage } from "@/server/lib/storage";
 import Stream from 'stream';
 import { pipeline } from "stream/promises";
+import { env } from "@/server/lib/env";
 
 import "server-only"
 
 let localBaseDirectory: string | undefined;
 export const LocalBaseDirectory = () => {
     if (!localBaseDirectory) {
-        if (process.env.LOCAL_ROOTDIR && fs.existsSync(process.env.LOCAL_ROOTDIR)) {
-            localBaseDirectory = process.env.LOCAL_ROOTDIR
+        const local = env.VIDEO_REVIEW_LOCAL_ROOTDIR;
+        if (local && fs.existsSync(local)) {
+            localBaseDirectory = local
         } else {
             console.warn(`
-                [WARN] LOCAL_ROOTDIR is not set or invalid.
+                [WARN] VIDEO_REVIEW_LOCAL_ROOTDIR is not set or invalid.
                 Falling back to default directory: ./uploads
-                For production use, please configure LOCAL_ROOTDIR explicitly.
+                For production use, please configure VIDEO_REVIEW_LOCAL_ROOTDIR explicitly.
             `);
             localBaseDirectory = path.join(process.cwd(), "uploads")
         }

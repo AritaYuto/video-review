@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { Buffer } from "node:buffer";
 import { Readable } from "stream";
+import { env } from "@/server/lib/env";
+
 import "server-only"
 
-const BaseURL = process.env.NEXTCLOUD_BASE_URL;
-const UserName = process.env.NEXTCLOUD_USERNAME;
-const Password = process.env.NEXTCLOUD_PASSWORD;
-const RootPath = process.env.NEXTCLOUD_ROOTDIR;
+const BaseURL = env.NEXTCLOUD_BASE_URL;
+const UserName = env.NEXTCLOUD_USERNAME;
+const Password = env.NEXTCLOUD_PASSWORD;
+const RootPath = env.NEXTCLOUD_ROOTDIR;
 
 export class NextCloudClient {
     readonly davBaseURL: string;

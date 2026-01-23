@@ -7,6 +7,7 @@ import { FileStorage } from "@/server/lib/storage";
 import { lookup } from "mime-types";
 import { createReadStream } from "fs";
 import { Readable } from "stream";
+import { env } from "@/server/lib/env";
 
 import "server-only"
 
@@ -21,7 +22,7 @@ export class S3Storage implements FileStorage {
         try {
             await s3Client.send(
                 new HeadObjectCommand({
-                    Bucket: process.env.S3_BUCKET!,
+                    Bucket: env.S3_BUCKET,
                     Key: storageKey,
                 })
             );
@@ -40,11 +41,11 @@ export class S3Storage implements FileStorage {
 
         try {
             const command = new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET!,
+                Bucket: env.S3_BUCKET,
                 Key: storageKey,
                 Body: src,
                 ContentType: contentType,
-                ...(process.env.S3_LOCALSTACK_ENDPOINT
+                ...(env.S3_LOCALSTACK_ENDPOINT
                     ? { ChecksumCRC32: "" }
                     : {}
                 ),
@@ -70,10 +71,10 @@ export class S3Storage implements FileStorage {
         let url = await getSignedUrl(
             s3Client,
             new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET!,
+                Bucket: env.S3_BUCKET,
                 Key: storageKey,
                 ContentType: contentType,
-                ...(process.env.S3_LOCALSTACK_ENDPOINT !== ""
+                ...(env.S3_LOCALSTACK_ENDPOINT
                     ? { ChecksumCRC32: '' }
                     : {}
                 ),
@@ -92,7 +93,7 @@ export class S3Storage implements FileStorage {
             let ret = await getSignedUrl(
                 s3Client,
                 new GetObjectCommand({
-                    Bucket: process.env.S3_BUCKET!,
+                    Bucket: env.S3_BUCKET,
                     Key: storageKey,
                 }),
                 { expiresIn: 60 * 10 }
@@ -114,7 +115,7 @@ export class S3Storage implements FileStorage {
         let url = await getSignedUrl(
             s3Client,
             new GetObjectCommand({
-                Bucket: process.env.S3_BUCKET!,
+                Bucket: env.S3_BUCKET,
                 Key: storageKey,
             }),
             { expiresIn: 600 }
@@ -131,7 +132,7 @@ export class S3Storage implements FileStorage {
 
         try {
             const command = new DeleteObjectCommand({
-                Bucket: process.env.S3_BUCKET!,
+                Bucket: env.S3_BUCKET,
                 Key: storageKey,
             });
 

@@ -1,31 +1,23 @@
 import { Role } from "@/lib/role";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "@/server/lib/db";
-
+import { ServerError } from "@/server/lib/server-error";
+import { env } from "@/server/lib/env";
 import "server-only"
+
 
 type SecretKey = {
     dbKey: string;
-    envKey: string;
+    envKey: string | undefined;
 };
 
 export const Secrets = {
-    JWT: { dbKey: "JWT_SECRET", envKey: "JWT_SECRET" },
-    API: { dbKey: "API_TOKEN", envKey: "VIDEO_REVIEW_API_TOKEN" },
+    JWT: { dbKey: "JWT_SECRET", envKey: env.VIDEO_REVIEW_API_TOKEN },
+    API: { dbKey: "API_TOKEN", envKey: env.JWT_SECRET_deprecated },
 } as const;
 
 const cache = new Map<string, string>();
 
-export class JwtError extends Error {
-    status: number;
-
-    constructor(message: string, statusCode: number) {
-        super(message);
-        this.name = "JwtError";
-        this.status = statusCode;
-        this.message = message;
-    }
-}
 
 async function loadFromDb(name: string) {
     const token = await prisma.systemSecret.findUnique({
@@ -44,7 +36,7 @@ export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string | 
         return fromDb;
     }
 
-    const fromEnv = process.env[envKey];
+    const fromEnv = envKey;
     if (!fromEnv) {
         throw undefined;
     }
@@ -60,12 +52,12 @@ export const getApiSecret = () => getSecret(Secrets.API);
 export async function verifyToken(token: string): Promise<JwtPayload> {
     const secret = await getJwtSecret();
     if (!secret) {
-        throw new JwtError("jwt configuration is missing", 500);
+        throw new ServerError("jwt configuration is missing", 500);
     }
 
     const decoded = jwt.verify(token, secret);
     if (typeof decoded === "string") {
-        throw new JwtError("invalid token payload", 401);
+        throw new ServerError("invalid token payload", 401);
     }
 
     return decoded;
@@ -74,7 +66,7 @@ export async function verifyToken(token: string): Promise<JwtPayload> {
 export async function signToken(payload: Record<string, any>): Promise<string> {
     const secret = await getJwtSecret();
     if (!secret) {
-        throw new JwtError("jwt configuration is missing", 500);
+        throw new ServerError("jwt configuration is missing", 500);
     }
     return jwt.sign(payload, secret, { expiresIn: "1d" });
 }
@@ -100,7 +92,7 @@ export async function authorize(req: Request, passedRoles: Role[]) {
 
     if (
         maintenanceToken &&
-        maintenanceToken === process.env.ADMIN_MAINTENANCE_TOKEN
+        maintenanceToken === env.VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated
     ) {
         return {
             type: "api-token" as const,
@@ -111,28 +103,28 @@ export async function authorize(req: Request, passedRoles: Role[]) {
     try {
         const authHeader = req.headers.get("authorization");
         if (!authHeader) {
-            throw new JwtError("missing authorization header", 500);
+            throw new ServerError("missing authorization header", 500);
         }
 
         const [type, token] = authHeader.split(" ");
         if (type !== "Bearer" || !token) {
-            throw new JwtError("invalid authorization format", 401);
+            throw new ServerError("invalid authorization format", 401);
         }
 
         const decoded = await verifyToken(token);
         if (typeof decoded === "string") {
-            throw new JwtError("invalid token", 401);
+            throw new ServerError("invalid token", 401);
         }
 
         if (!passedRoles.includes(decoded.role)) {
-            throw new JwtError("forbidden", 403);
+            throw new ServerError("forbidden", 403);
         }
         return {
             type: "jwt" as const,
             decoded,
         };
     } catch {
-        throw new JwtError("unauthorized", 401);
+        throw new ServerError("unauthorized", 401);
     }
 }
 

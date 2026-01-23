@@ -1,4 +1,5 @@
-import { JwtError, verifyToken } from "@/server/lib/token";
+import { verifyToken } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
 export const verifyRouter = new Hono();
@@ -51,7 +52,7 @@ verifyRouter.openapi({
                 { status: 200 }
             );
         } catch (e) {
-            if (e instanceof JwtError) {
+            if (e instanceof ServerError) {
                 return c.json({ error: e.message }, e.status as any);
             } else {
                 return c.json({ error: "invalid token" }, 401);

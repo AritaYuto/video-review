@@ -1,4 +1,4 @@
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 
@@ -51,7 +51,7 @@ externalLinksRouter.openapi({
             });
 
             if (slack) {
-                const slackTeam = env.SLACK_TEAM();
+                const slackTeam = env.SLACK_TEAM;
                 console.debug("[external-links] slackTeam", { slackTeam });
 
                 if (slackTeam) {
@@ -67,7 +67,7 @@ externalLinksRouter.openapi({
                 issueId: comment.issueId,
             });
 
-            const jiraBaseURL = env.JIRA_BASE_URL();
+            const jiraBaseURL = env.JIRA_BASE_URL;
             console.debug("[external-links] jiraBaseURL", { jiraBaseURL });
 
             if (jiraBaseURL) {

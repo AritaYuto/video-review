@@ -1,7 +1,8 @@
 import { createVideoCommentLink } from "@/lib/url";
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 import { prisma } from "@/server/lib/db";
-import { authorize, JwtError } from "@/server/lib/token";
+import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -27,16 +28,16 @@ createRouter.openapi({
 try {
         await authorize(c.req.raw, ["viewer", "admin"]);
     } catch (e) {
-        if (e instanceof JwtError) {
+        if (e instanceof ServerError) {
             return c.json({ error: e.message }, e.status as ContentfulStatusCode);
         }
         return c.json({ error: "unauthorized" }, 401);
     }
 
-    const base = env.JIRA_BASE_URL();
-    const token = process.env.JIRA_API_TOKEN;
-    const project = process.env.JIRA_PROJECT;
-    const assigneeEmail = process.env.JIRA_ASSIGNEE_USER;
+    const base = env.JIRA_BASE_URL;
+    const token = env.JIRA_API_TOKEN;
+    const project = env.JIRA_PROJECT;
+    const assigneeEmail = env.JIRA_ASSIGNEE_USER;
 
     if (!base || !token || !project) {
         return c.json({ error: "jira configuration is missing" }, 500);

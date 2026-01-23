@@ -1,14 +1,14 @@
 import { ChatType } from "@/server/lib/utils/chat-type";
 import { SlackClient } from "@/server/lib/utils/slack-client";
 import { prisma } from "@/server/lib/db";
-import * as env from "@/lib/env";
+import { env } from "@/server/lib/env";
 
 export async function chatSlack(ctx: ChatType): Promise<boolean> {
     if (!SlackClient){
         return false;
     }
     
-    const channel = env.SLACK_POST_CH();
+    const channel = env.SLACK_POST_CH;
     if (!channel) {
         console.warn("slack channel missing");
         return false;

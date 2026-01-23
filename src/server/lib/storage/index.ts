@@ -3,6 +3,8 @@ import { LocalStorage } from "@/server/lib/storage/local";
 import { NextCloudStorage } from "@/server/lib/storage/nextcloud";
 import { S3Storage } from "@/server/lib/storage/s3";
 import { Readable } from "stream";
+import { UploadStorageType } from "@/lib/db-types";
+import { env } from "@/server/lib/env";
 
 import "server-only"
 
@@ -18,11 +20,13 @@ export interface FileStorage {
 }
 
 export const VideoReviewStorage: FileStorage = (() => {
-    switch (process.env.VIDEO_REVIEW_STORAGE) {
-        case "s3":
+    switch (env.VIDEO_REVIEW_STORAGE) {
+        case UploadStorageType.s3:
             return new S3Storage();
-        case "nextCloud":
+        case UploadStorageType.nextCloud:
             return new NextCloudStorage();
+        case UploadStorageType.local:
+            return new LocalStorage();
         default:
             return new LocalStorage();
     }
