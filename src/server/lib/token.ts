@@ -4,7 +4,7 @@ import { prisma } from "@/server/lib/db";
 import { ServerError } from "@/server/lib/server-error";
 import { env } from "@/server/lib/env";
 import "server-only"
-
+import { hash } from "crypto";
 
 type SecretKey = {
     dbKey: string;
@@ -47,7 +47,7 @@ export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string | 
 
 export const getJwtSecret = () => getSecret(Secrets.JWT);
 
-export const getApiSecret = () => getSecret(Secrets.API);
+export const getApiSecretHash = () => getSecret(Secrets.API);
 
 export async function verifyToken(token: string): Promise<JwtPayload> {
     const secret = await getJwtSecret();
@@ -79,16 +79,30 @@ export async function authorize(req: Request, passedRoles: Role[]) {
     const maintenanceToken = req.headers.get("x-maintenance-token");
 
     try {
-        if (
-            apiToken &&
-            apiToken === await getApiSecret()
-        ) {
-            return {
-                type: "api-token" as const,
-                role: "admin",
-            };
+        if (apiToken) {
+            const apiTokenHash = hash("sha256", apiToken);
+            const storedHash = await getApiSecretHash();
+
+            if (!storedHash) {
+                throw new ServerError("api token configuration is missing", 500);
+            }
+
+            // Standard root.
+            if (apiTokenHash === storedHash) {
+                return {
+                    type: "api-token" as const,
+                    role: "admin",
+                };
+            }
+
+            // deprecated plain text root.
+            if (apiToken === storedHash) {
+                throw new ServerError("plain api token is no longer supported", 401);
+            }
+
+            throw new ServerError("invalid api token", 401);
         }
-    } catch {}
+    } catch { }
 
     if (
         maintenanceToken &&

@@ -58,6 +58,6 @@ thumbnailRouter.openapi({
 
     const storageKey = path.join("thumbnails", videoId, "thumb.png").replace(/\\/g, "/");
     const buffer = Buffer.from(await file.arrayBuffer());
-    await VideoReviewStorage.directUploadFromBuffer(storageKey, Readable.from(buffer), "image/png");
+    await VideoReviewStorage.directUploadFromBuffer(storageKey, Readable.from(buffer), "image/png", "public, max-age=86400, immutable");
     return c.json({ ok: true });
 });

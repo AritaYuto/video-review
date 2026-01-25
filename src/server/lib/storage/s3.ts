@@ -36,7 +36,7 @@ export class S3Storage implements FileStorage {
         }
     }
 
-    async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string): Promise<void> {
+    async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string, cacheControl?: string): Promise<void> {
         if (!s3Client) return Promise.reject(undefined);
 
         try {
@@ -45,6 +45,7 @@ export class S3Storage implements FileStorage {
                 Key: storageKey,
                 Body: src,
                 ContentType: contentType,
+                CacheControl: cacheControl,
                 ...(env.S3_LOCALSTACK_ENDPOINT
                     ? { ChecksumCRC32: "" }
                     : {}
@@ -89,6 +90,12 @@ export class S3Storage implements FileStorage {
 
     async fallbackURL(storageKey: string): Promise<string> {
         if (!s3Client) return Promise.reject(undefined);
+
+        const hasObject = await this.hasObject(storageKey);
+        if (!hasObject) {
+            return Promise.reject(undefined);
+        }
+
         try {
             let ret = await getSignedUrl(
                 s3Client,

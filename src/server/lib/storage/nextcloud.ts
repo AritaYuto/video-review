@@ -17,7 +17,7 @@ export class NextCloudStorage implements FileStorage {
         return nextCloudClient?.hasObject(storageKey) || false;
     }
 
-    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
+    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string, cacheControl?: string): Promise<void> {
         await nextCloudClient!.put(storageKey, src);
     }
 

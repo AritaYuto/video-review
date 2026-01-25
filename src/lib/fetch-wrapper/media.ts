@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
+import { ApiError, ApiResult } from "@/lib/utils/api-result";
 
 export async function downloadVideo(videoId: string, videoRevId: string): Promise<void> {
     const token = useAuthStore.getState().token;
@@ -35,7 +36,12 @@ export async function downloadVideo(videoId: string, videoRevId: string): Promis
     URL.revokeObjectURL(url);
 }
 
-export async function fetchMediaUrl(filePath: string): Promise<string> {
+export async function fetchMediaUrl(filePath: string): Promise<ApiResult<string>> {
     const res = await fetch(`/api/v1/media/resolver/${encodeURI(filePath)}`);
-    return (await res.json()).url;
+    if(!res.ok) {
+       return ApiError(res);
+    }
+
+    const json = await res.json();
+    return { ok: true, data: json.url };
 }
