@@ -43,6 +43,10 @@ var commands = map[string]Command{
 		Run:  RunUploadVideo,
 		Desc: "upload video",
 	},
+	"create-video-tmb": {
+		Run:  RunVideoThumbnail,
+		Desc: "create video thumbnail",
+	},
 }
 
 func main() {
