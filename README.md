@@ -276,13 +276,10 @@ for the following reasons:
 
 ### Environment Configuration
 
-Please copy .env and edit it to set the required values
+Please copy .env
 
 ```bash
 cp .example.env .env
-```
-```bash
-DATABASE_URL="postgresql://user:password@localhost:5432/videoreview"
 ```
 
 ### Run docker compose
