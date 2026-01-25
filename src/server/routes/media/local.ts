@@ -57,6 +57,11 @@ localRouter.openapi({
         }
 
         // image fallback
+        if (filePath.includes("/thumbnails/")) {
+            c.header("Cache-Control", "public, max-age=86400, immutable");
+        } else {
+            c.header("Cache-Control", "no-store");
+        }
         const data = await fs.promises.readFile(filePath);
         return c.body(data, 200);
     } catch (err: any) {

@@ -21,11 +21,11 @@ nextCloudRouter.openapi({
     },
 }, async (c) => {
     const relativePath = c.req.param('path');
-    if(!relativePath) {
+    if (!relativePath) {
         return c.json({ error: "missing path" }, 400);
     }
     const pathSegments = relativePath.split("/");
-    if(!pathSegments.length) {
+    if (!pathSegments.length) {
         return c.json({ error: "missing path" }, 400);
     }
 
@@ -38,6 +38,7 @@ nextCloudRouter.openapi({
     }
 
     const ncPath = pathSegments.join("/");
+    const isThumbnail = ncPath.startsWith("thumbnails/");
     const ncUrl = nextCloudClient.pathUnderRoot(ncPath);
     const range = c.req.header("range");
     const res = await fetch(ncUrl, {
@@ -56,6 +57,12 @@ nextCloudRouter.openapi({
     res.headers.forEach((value, key) => {
         headers.set(key, value);
     });
+
+    if (isThumbnail) {
+        headers.set("Cache-Control", "public, max-age=86400");
+    } else {
+        headers.set("Cache-Control", "no-store");
+    }
 
     return new Response(res.body, {
         status: res.status,

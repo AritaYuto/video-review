@@ -10,7 +10,7 @@ import "server-only"
 
 export interface FileStorage {
     type(): string;
-    directUploadFromBuffer(storageKey: string, src: Readable, contentType: string): Promise<void>;
+    directUploadFromBuffer(storageKey: string, src: Readable, contentType: string, cacheControl?: string): Promise<void>;
     directUploadFromFile(storageKey: string, src: string): Promise<void>;
     uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string>;
     fallbackURL(storageKey: string): Promise<string>;

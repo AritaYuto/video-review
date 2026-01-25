@@ -109,13 +109,12 @@ export default function VideoReview() {
                 if (!path) continue;
 
                 if (commentDrawingCache.current.has(path)) continue;
-                const url = await fetchMediaUrl(path);
-                if (canceled) return;
+                const res = await fetchMediaUrl(path);
+                if (canceled || !res.ok) return;
 
 
                 const img = new Image();
-                img.src = url;
-
+                img.src = res.data;
                 img.onload = () => {
                     if (canceled) return;
                     commentDrawingCache.current.set(path, img);
@@ -188,11 +187,9 @@ export default function VideoReview() {
 
         let canceled = false;
         void (async () => {
-            const url = await fetchMediaUrl(
-                selectedRevision.filePath
-            );
-            if (url && !canceled) {
-                setPlaybackUrl(url);
+            const res = await fetchMediaUrl(selectedRevision.filePath);
+            if (res.ok && !canceled) {
+                setPlaybackUrl(res.data);
             }
         })();
 

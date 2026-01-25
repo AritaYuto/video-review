@@ -21,7 +21,7 @@ resolverRouter.openapi({
     },
 }, async (c) => {
     const key = c.req.param("path");
-    if(!key) {
+    if (!key) {
         return c.json({ error: "invalid path" }, 400);
     }
 
@@ -29,10 +29,15 @@ resolverRouter.openapi({
         return c.json({ error: "invalid path" }, 400);
     }
 
-    const url = await VideoReviewStorage.fallbackURL(key);
-    if (!url) {
+    try {
+        const url = await VideoReviewStorage.fallbackURL(key);
+        console.log("Resolved URL for", key, "->", url);
+        if (!url) {
+            return c.json({ error: "file not found" }, 404);
+        }
+        return c.json({ url }, 200);
+    } catch (err) {
+        console.error("Error resolving media URL:", err);
         return c.json({ error: "file not found" }, 404);
     }
-
-    return c.json({ url });
 });

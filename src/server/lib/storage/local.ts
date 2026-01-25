@@ -40,7 +40,7 @@ export class LocalStorage implements FileStorage {
         return fs.existsSync(abs);
     }
 
-    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string): Promise<void> {
+    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string, cacheControl?: string): Promise<void> {
         console.log("[directUploadFromBuffer] called");
         console.log("[directUploadFromBuffer] storageKey =", storageKey);
         console.log("[directUploadFromBuffer] contentType =", contentType);

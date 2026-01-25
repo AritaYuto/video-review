@@ -33,8 +33,6 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
 
     const hideTitle = useMemo(() => currentColumns >= 3, [currentColumns]);
     const hideFolder = useMemo(() => currentColumns >= 2, [currentColumns]);
-
-    const [thumbnails, setThumbnails] = useState<ThumbnailData[]>([]);
     const thumbnailsCache = useRef<Map<string, ThumbnailData>>(new Map());
 
     useEffect(() => {
@@ -49,57 +47,6 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
         return () => observer.disconnect();
     }, []);
 
-    useEffect(() => {
-        const thumbnails: ThumbnailData[] = [];
-        for (const v of videos) {
-            const storageKey = `thumbnails/${v.id}/thumb.png`;
-
-            if (!thumbnailsCache.current.has(storageKey)) {
-                thumbnailsCache.current.set(storageKey, {
-                    id: v.id,
-                    title: v.title,
-                    folderKey: v.folderKey,
-                    url: undefined,
-                });
-            } else {
-                const existing = thumbnailsCache.current.get(storageKey)!;
-                thumbnails.push(existing);
-            }
-        }
-        setThumbnails(thumbnails);
-
-        let canceled = false;
-        const load = async () => {
-            const targets = Array.from(thumbnailsCache.current.entries())
-                .filter(([_, data]) => !data.url)
-                .slice(0, 12);
-
-            await Promise.all(
-                targets.map(async ([storageKey, data]) => {
-                    if (canceled) return;
-
-                    try {
-                        const url = await fetchMediaUrl(storageKey);
-                        if (canceled) return;
-
-                        console.log("Loaded thumbnail:", url, storageKey);
-
-                        thumbnailsCache.current.set(storageKey, {
-                            ...data,
-                            url,
-                        });
-                        setThumbnails(Array.from(thumbnailsCache.current.values()));
-                    } catch {
-                        // not found
-                    }
-                })
-            );
-        };
-
-        void load();
-        return () => { canceled = true; };
-    }, [videos]);
-
     return (
         <div
             ref={containerRef}
@@ -108,43 +55,19 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
         >
             {/* Grid */}
             <div className="flex-1 overflow-auto p-3">
-                <div
-                    className="grid gap-3"
-                    style={{
-                        gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
-                    }}
-                >
-                    {thumbnails.map((thumbnail) => (
-                        <div
-                            key={thumbnail.folderKey + "/" + thumbnail.title}
-                            className="bg-[#202020] rounded-md overflow-hidden border border-[#333] hover:border-[#555] cursor-pointer transition"
-                            onClick={() => onSelect?.(thumbnail)}
-                        >
-                            <div
-                                className="bg-[#111]"
-                                style={{ aspectRatio: "16 / 9" }}
-                            >
-                                {/* Thumbnail */}
-                                {thumbnail.url ? (
-                                    <img src={thumbnail.url} alt={thumbnail.title} className="w-full h-full object-cover " />
-                                ) : (
-                                    <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
-                                        thumbnail
-                                    </div>
-                                )}
-                            </div>
-                            {/* Meta */}
-                            {(!hideTitle || !hideFolder) && (
-                                <div className="p-2">
-                                    {!hideTitle && (
-                                        <div className="text-xs truncate">{thumbnail.title}</div>
-                                    )}
-                                    {!hideFolder && (
-                                        <div className="text-xs text-[#777] truncate">{thumbnail.folderKey}</div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                <div className="grid gap-3" style={{
+                    gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
+                }}>
+                    {videos.map(video => (
+                        <ThumbnailCell
+                            key={video.id}
+                            video={video}
+                            hideTitle={hideTitle}
+                            hideFolder={hideFolder}
+                            onSelect={onSelect}
+                            containerRef={containerRef}
+                            cache={thumbnailsCache}
+                        />
                     ))}
                 </div>
             </div>
@@ -167,6 +90,86 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
                 />
             </div>
             <Separator className="bg-[#333]" />
+        </div>
+    );
+}
+
+function ThumbnailCell({
+    video,
+    hideTitle,
+    hideFolder,
+    onSelect,
+    containerRef,
+    cache,
+}: {
+    video: Video;
+    hideTitle: boolean;
+    hideFolder: boolean;
+    onSelect?: (data: ThumbnailData) => void;
+    containerRef: React.RefObject<HTMLDivElement | null>;
+    cache: React.RefObject<Map<string, ThumbnailData>>;
+}) {
+    const ref = useRef<HTMLDivElement | null>(null);
+    const key = `thumbnails/${video.id}/thumb.png`;
+    const cached = cache.current.get(key);
+
+    useEffect(() => {
+        if (!ref.current || cached?.url) return;
+
+        const observer = new IntersectionObserver(
+            entries => {
+                entries.forEach(e => {
+                    if (!e.isIntersecting) return;
+
+                    fetchMediaUrl(key).then(ret => {
+                        cache.current.set(key, {
+                            id: video.id,
+                            title: video.title,
+                            folderKey: video.folderKey,
+                            url: ret.ok ? ret.data : undefined,
+                        });
+                        observer.disconnect();
+                    });
+                });
+            },
+            {
+                root: containerRef.current,
+                rootMargin: "200px",
+            }
+        );
+
+        observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, [key, cached]);
+
+    return (
+        <div
+            ref={ref}
+            className="bg-[#202020] rounded-md overflow-hidden border border-[#333] hover:border-[#555] cursor-pointer transition"
+            onClick={() => cached && onSelect?.(cached)}
+        >
+            <div className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
+                {cached?.url ? (
+                    <img src={cached.url} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
+                        thumbnail
+                    </div>
+                )}
+            </div>
+
+            {(!hideTitle || !hideFolder) && (
+                <div className="p-2">
+                    {!hideTitle && (
+                        <div className="text-xs truncate">{video.title}</div>
+                    )}
+                    {!hideFolder && (
+                        <div className="text-xs text-[#777] truncate">
+                            {video.folderKey}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
