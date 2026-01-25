@@ -12,8 +12,8 @@ type SecretKey = {
 };
 
 export const Secrets = {
-    JWT: { dbKey: "JWT_SECRET", envKey: env.VIDEO_REVIEW_API_TOKEN },
-    API: { dbKey: "API_TOKEN", envKey: env.JWT_SECRET_deprecated },
+    JWT: { dbKey: "JWT_SECRET", envKey: env.JWT_SECRET_deprecated },
+    API: { dbKey: "API_TOKEN", envKey: env.VIDEO_REVIEW_API_TOKEN },
 } as const;
 
 const cache = new Map<string, string>();
