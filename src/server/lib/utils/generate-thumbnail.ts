@@ -43,11 +43,10 @@ function execFFmpeg({
     });
 }
 
-export async function generateThumbnail(session: UploadSession, tempMoviePath: string): Promise<void> {
-    const hashKey = hash("sha256", session.folderKey + ":" + session.title) + ".png";
+export async function generateThumbnail(videoId: string, tempMoviePath: string): Promise<void> {
     const storageKey = path.join(
         "thumbnails",
-        hashKey,
+        videoId,
         "thumb.png"
     ).replace(/\\/g, "/");
 

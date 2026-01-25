@@ -6,6 +6,7 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 import { receiveMultipart } from "@/server/lib/utils/receive-multipart";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { generateThumbnail } from "@/server/lib/utils/generate-thumbnail";
+import { prisma } from "@/server/lib/db";
 
 export const transferRouter = new Hono();
 
@@ -53,8 +54,10 @@ transferRouter.openapi({
         return c.json({ error: "missing session" }, { status: 400 });
     }
 
+    const video = await prisma.video.findFirst({ where: { title: session.title, folderKey: session.folderKey } });
+
     return receiveMultipart(c.req.raw, async (tmpFilePath) => {
-        await generateThumbnail(session, tmpFilePath);
+        if(video) await generateThumbnail(video.id, tmpFilePath);
         await VideoReviewStorage.directUploadFromFile(session.storageKey, tmpFilePath);
     });
 });

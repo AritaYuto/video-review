@@ -19,12 +19,7 @@ import CalendarDateRadio from "@/ui/calendar-date-radio";
 import { Separator } from "../ui/separator";
 
 export default function VideoListPanelHeader(
-    { ref, onSearchDialogShow, onUploadDialogShow }
-        : {
-            ref: React.RefObject<HTMLDivElement | null>;
-            onSearchDialogShow: () => void;
-            onUploadDialogShow: () => void;
-        }) {
+{ onSearchDialogShow, onUploadDialogShow }: { onSearchDialogShow: () => void; onUploadDialogShow: () => void;}) {
     const t = useTranslations("video-list-panel");
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
@@ -41,7 +36,6 @@ export default function VideoListPanelHeader(
 
     return (
         <SidebarHeader
-            ref={ref}
             style={{ color: "#ff8800" }}
             className="border-b p-3 font-semibold text-sm bg-[#181818] border-[#333]"
         >
