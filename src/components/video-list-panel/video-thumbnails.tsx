@@ -6,20 +6,15 @@ import { Video } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { ZoomInIcon } from "lucide-react";
+import { Spinner } from "@/ui/spinner";
+import { set } from "zod";
 
 type Props = {
     videos: Video[];
-    onSelect?: (data: ThumbnailData) => void;
+    onSelectVideo?: (videoId: string) => void;
 };
 
-type ThumbnailData = {
-    id: string;
-    title: string;
-    folderKey: string;
-    url?: string;
-};
-
-export default function VideoThumbnails({ videos, onSelect }: Props) {
+export default function VideoThumbnails({ videos, onSelectVideo }: Props) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [thumbSize, setThumbSize] = useState(160);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -33,7 +28,7 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
 
     const hideTitle = useMemo(() => currentColumns >= 3, [currentColumns]);
     const hideFolder = useMemo(() => currentColumns >= 2, [currentColumns]);
-    const thumbnailsCache = useRef<Map<string, ThumbnailData>>(new Map());
+    const [thumbnailsCache, setThumbnailsCache] = useState<Map<string, string | undefined>>(() => new Map());
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -64,7 +59,14 @@ export default function VideoThumbnails({ videos, onSelect }: Props) {
                             video={video}
                             hideTitle={hideTitle}
                             hideFolder={hideFolder}
-                            onSelect={onSelect}
+                            onSelectVideo={onSelectVideo}
+                            onResolve={(key, url) => {
+                                setThumbnailsCache(prev => {
+                                    const next = new Map(prev);
+                                    next.set(key, url);
+                                    return next;
+                                });
+                            }}
                             containerRef={containerRef}
                             cache={thumbnailsCache}
                         />
@@ -98,38 +100,42 @@ function ThumbnailCell({
     video,
     hideTitle,
     hideFolder,
-    onSelect,
     containerRef,
     cache,
+    onSelectVideo,
+    onResolve,
 }: {
     video: Video;
     hideTitle: boolean;
     hideFolder: boolean;
-    onSelect?: (data: ThumbnailData) => void;
     containerRef: React.RefObject<HTMLDivElement | null>;
-    cache: React.RefObject<Map<string, ThumbnailData>>;
+    cache: Map<string, string | undefined>;
+    onSelectVideo?: (videoId: string) => void;
+    onResolve?: (key: string, resolveURL: string | undefined) => void;
 }) {
     const ref = useRef<HTMLDivElement | null>(null);
-    const key = `thumbnails/${video.id}/thumb.png`;
-    const cached = cache.current.get(key);
+    const id = video.id;
+    const key = `thumbnails/${id}/thumb.png`;
+    const cached = cache.get(key);
+    const [isResolving, setIsResolving] = useState(false);
 
     useEffect(() => {
-        if (!ref.current || cached?.url) return;
+        if (!ref.current || cached !== undefined) return;
 
         const observer = new IntersectionObserver(
             entries => {
                 entries.forEach(e => {
                     if (!e.isIntersecting) return;
 
+                    setIsResolving(true);
+
                     fetchMediaUrl(key).then(ret => {
-                        cache.current.set(key, {
-                            id: video.id,
-                            title: video.title,
-                            folderKey: video.folderKey,
-                            url: ret.ok ? ret.data : undefined,
-                        });
+                        onResolve?.(key, ret.ok ? ret.data : undefined);
+                    }).finally(() => {
+                        setIsResolving(false);
                         observer.disconnect();
                     });
+
                 });
             },
             {
@@ -146,11 +152,15 @@ function ThumbnailCell({
         <div
             ref={ref}
             className="bg-[#202020] rounded-md overflow-hidden border border-[#333] hover:border-[#555] cursor-pointer transition"
-            onClick={() => cached && onSelect?.(cached)}
+            onClick={() => onSelectVideo?.(id)}
         >
             <div className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
-                {cached?.url ? (
-                    <img src={cached.url} className="w-full h-full object-cover" />
+                {cached ? (
+                    <img src={cached} className="w-full h-full object-cover" />
+                ) : isResolving ? (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <Spinner />
+                    </div>
                 ) : (
                     <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
                         thumbnail
