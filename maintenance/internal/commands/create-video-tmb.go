@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -113,4 +114,36 @@ func RunVideoThumbnail(cmd string, args []string) {
 	}
 
 	fmt.Println("thumbnail uploaded successfully")
+}
+
+func RunCreateVideoThumbnailAll(cmd string, args []string) {
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
+	fs.Parse(args)
+
+	var videos []Video
+	{
+		b, err := FetchRaw(FetchOptions{
+			Method: GET,
+			Path:   "/api/v1/videos",
+		})
+		if err != nil {
+			fmt.Println("failed to fetch videos:", err)
+			return
+		}
+		err = json.Unmarshal(b, &videos)
+		if err != nil {
+			fmt.Println("failed to unmarshal videos:", err)
+			return
+		}
+	}
+
+	fmt.Printf("found %d videos\n", len(videos))
+
+	for _, v := range videos {
+		fmt.Println("▶ create thumbnail:", v.ID)
+		RunVideoThumbnail(
+			"create-video-tmb",
+			[]string{"--video_id", v.ID},
+		)
+	}
 }

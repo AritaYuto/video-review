@@ -36,3 +36,12 @@ type UploadStatus struct {
 	Status     string `json:"status"`
 	RevisionId string `json:"revisionId"`
 }
+
+type Video struct {
+	ID              string    `json:"id"`
+	Title           string    `json:"title"`
+	FolderKey       string    `json:"folderKey"`
+	ScenePath       string    `json:"scenePath"`
+	LatestUpdatedAt time.Time `json:"latestUpdatedAt"`
+	Deleted         bool      `json:"deleted"`
+}

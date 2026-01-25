@@ -47,6 +47,10 @@ var commands = map[string]Command{
 		Run:  RunVideoThumbnail,
 		Desc: "create video thumbnail",
 	},
+	"create-video-tmb-all": {
+		Run:  RunCreateVideoThumbnailAll,
+		Desc: "create video thumbnails for all videos",
+	},
 }
 
 func main() {

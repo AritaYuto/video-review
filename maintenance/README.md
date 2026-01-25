@@ -60,3 +60,4 @@ Set the API token generated from the web UI
 
 ##### create thumbnail
 > go run . create-video-tmb --video_id {uuid}
+> go run . create-video-tmb-all

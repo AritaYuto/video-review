@@ -55,3 +55,7 @@ VideoReview にて発行した API トークンを設定
 
 ##### 動画をアップロードします
 > go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"
+
+##### サムネイル作成をします
+> go run . create-video-tmb --video_id {uuid}
+> go run . create-video-tmb-all
