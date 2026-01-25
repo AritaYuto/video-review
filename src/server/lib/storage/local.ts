@@ -122,6 +122,10 @@ export class LocalStorage implements FileStorage {
     }
 
     async fallbackURL(storageKey: string): Promise<string> {
+        const abs = this.resolveStoragePath(storageKey);
+        if (!abs || !fs.existsSync(abs)) {
+            return Promise.reject(undefined);
+        }
         if (storageKey.includes("api/uploads/")) {
             return await Promise.resolve(`/${storageKey.replace("api/uploads/", "api/v1/media/local/")}`);
         } else {

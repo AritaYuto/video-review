@@ -37,15 +37,18 @@ downloadRouter.openapi({
     }
 
     const { searchParams } = new URL(c.req.url);
-    const id = searchParams.get("videoRevId");
+    const videoRevId = searchParams.get("videoRevId");
     const videoId = searchParams.get("videoId");
 
-    if (!id || !videoId) {
+    if (!videoId) {
         return c.json({ error: "Missing parameters" }, { status: 400 });
     }
 
     const videoRev = await prisma.videoRevision.findFirst({
-        where: { id, videoId },
+        where: { 
+            ...(videoRevId ? { id: videoRevId } : {}), 
+            videoId 
+        },
         include: {
             video: {
                 select: { title: true },

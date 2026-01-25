@@ -55,12 +55,15 @@ initRouter.openapi({
         return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
+    console.log("[upload.init] called");
+
     return new Promise<Response>((resolve) => {
         const contentType = c.req.header("content-type") || "";
         const busboy = Busboy({ headers: { "content-type": contentType } });
         const fields: { [key: string]: string } = {};
 
         const fail = (err: any) => {
+            console.error("[upload.init] failed", err);
             return c.json({ error: "Upload failed" }, { status: 500 });
         };
 
@@ -72,6 +75,7 @@ initRouter.openapi({
             const title = fields["title"];
             const folderKey = fields["folderKey"];
             const scenePath = fields["scenePath"];
+            console.log("[upload.init] fields", { title, folderKey, scenePath });
 
             if (!title || !folderKey) {
                 return c.json({ error: "missing parameter" }, { status: 400 });
@@ -79,13 +83,38 @@ initRouter.openapi({
 
             let nextRev = 1;
             let video = await prisma.video.findFirst({ where: { title, folderKey } });
-            if (video) {
+            if (!video) {
+                console.log("[upload.init] create video (draft)", { title, folderKey });
+                await prisma.video.create({
+                    data: {
+                        title,
+                        folderKey,
+                        scenePath,
+                        /**
+                         * NOTE:
+                         * deleted = true means this video is NOT yet published.
+                         * This record is created at upload initialization time
+                         * to obtain a stable video.id for:
+                         * - thumbnail generation
+                         * - storage key resolution
+                         *
+                         * The flag will be set to false on upload finish.
+                         */
+                        deleted: true,
+                    },
+                });
+            } else {
                 nextRev = await prisma.$transaction(async (tx) => {
                     const latest = await tx.videoRevision.findFirst({
                         where: { videoId: video.id },
                         orderBy: { revision: "desc" },
                     });
                     return (latest?.revision ?? 0) + 1;
+                });
+
+                console.log("[upload.init] existing video", {
+                    videoId: video.id,
+                    nextRev,
                 });
             }
 
@@ -107,7 +136,14 @@ initRouter.openapi({
                 storage: type as UploadStorageType,
             });
 
+            console.log("[upload.init] session created", {
+                sessionId: session.id,
+                storageKey,
+                storage: type,
+            });
+
             const url = await VideoReviewStorage.uploadURL(session.id, storageKey, "video/mp4");
+            console.log("[upload.init] upload url issued");
             resolve(c.json({ url, session }));
         });
 

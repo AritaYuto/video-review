@@ -6,7 +6,7 @@ COPY package*.json ./
 COPY . .
 
 RUN apt-get update \
- && apt-get update -y && apt-get install -y openssl \
+ && apt-get update -y && apt-get install -y openssl ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
 RUN npm run build

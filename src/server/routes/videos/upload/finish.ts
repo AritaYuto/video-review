@@ -63,25 +63,22 @@ finishRouter.openapi({
 
     const revision = await prisma.$transaction(async (tx) => {
         let video = await prisma.video.findFirst({ where: { title, folderKey } });
-        if (!video) {
-            video = await prisma.video.create({ data: { title, folderKey, scenePath } });
-        } else {
+        if (video) {
             await prisma.video.update({
                 where: { id: video.id },
-                data: { latestUpdatedAt: new Date(), deleted: false },
+                data: { scenePath: scenePath, latestUpdatedAt: new Date(), deleted: false },
+            });
+
+            return await prisma.videoRevision.create({
+                data: {
+                    id: session_id,
+                    videoId: video.id,
+                    revision: nextRev,
+                    filePath: storageKey,
+                },
             });
         }
-
-        return await prisma.videoRevision.create({
-            data: {
-                id: session.id,
-                videoId: video.id,
-                revision: nextRev,
-                filePath: storageKey,
-            },
-        });
     });
-
 
     await deleteSession(session_id);
     return c.json(revision);

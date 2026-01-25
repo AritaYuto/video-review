@@ -123,6 +123,8 @@ export default function VideoReview() {
                 commentDrawingCache.current.set(path, img);
             }
         })();
+
+        return () => { canceled = true; };
     }, [comments]);
 
     useEffect(() => {
