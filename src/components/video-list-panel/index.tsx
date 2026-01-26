@@ -17,7 +17,7 @@ import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";
 export default function VideoListPanel() {
     const router = useRouter();
     const { userId } = useAuthStore();
-    const { videos, fetchVideos, selectedVideo } = useVideoStore();
+    const { videos, fetchVideos, selectedVideo, selectedRevision } = useVideoStore();
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [unReadVideoIds, setUnReadVideoIds] = useState<string[]>([]);
@@ -75,7 +75,7 @@ export default function VideoListPanel() {
                     </ResizablePanel>
                     <ResizableHandle className="bg-[#333]" />
                     <ResizablePanel minSize={40} defaultSize={40}>
-                        <VideoThumbnails videos={videos} onSelectVideo={(id) => {
+                        <VideoThumbnails videos={videos} videoRevision={selectedRevision?.revision} selectedVideoId={selectedVideo?.id} onSelectVideo={(id) => {
                             router.replace(`/video-review/review/${id}`);
                         }} />
                     </ResizablePanel>
