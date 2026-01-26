@@ -59,5 +59,5 @@ Set the API token generated from the web UI
 > go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"
 
 ##### create thumbnail
-> go run . create-video-tmb --video_id {uuid}
+> go run . create-video-tmb --video_id {uuid}  
 > go run . create-video-tmb-all
