@@ -85,7 +85,7 @@ export function ThumbnailLazyLoader({ video, videoRevision, containerRef, cache,
     }, [cached, key]);
 
     return (
-        <div className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
+        <div ref={ref} className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
             <Tooltip>
                 <TooltipTrigger asChild>
                     {cached ? (
