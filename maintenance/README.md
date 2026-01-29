@@ -32,6 +32,9 @@ VideoReview API Token
 Set the API token generated from the web UI
 > VIDEO_REVIEW_API_TOKEN
 
+It can also be specified directly in the command.
+> --server xxx.xxx.xxx.xxx -token xxxxxx
+
 ### Command List
 
 ##### bootstrap
@@ -58,6 +61,9 @@ Set the API token generated from the web UI
 ##### Upload a video
 > go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"
 
-##### create thumbnail
+##### Create thumbnail
 > go run . create-video-tmb --video_id {uuid}  
 > go run . create-video-tmb-all
+
+##### Cet comments
+> go run . get-comments --video_id {uuid}  

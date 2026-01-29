@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -51,41 +52,61 @@ var commands = map[string]Command{
 		Run:  RunCreateVideoThumbnailAll,
 		Desc: "create video thumbnails for all videos",
 	},
+	"get-comments": {
+		Run:  RunGetComments,
+		Desc: "Get comments",
+	},
 }
 
 func main() {
-	apiToken := os.Getenv("VIDEO_REVIEW_API_TOKEN")
-	if apiToken == "" {
-		apiToken = os.Getenv("ADMIN_MAINTENANCE_TOKEN")
-	}
-
-	GlobalConfig = Config{
-		BaseURL:  os.Getenv("VIDEO_REVIEW_SERVER_URL"),
-		APIToken: apiToken,
-	}
-
-	if GlobalConfig.BaseURL == "" {
-		panic("VIDEO_REVIEW_SERVER_URL is not set")
-	}
-	if GlobalConfig.APIToken == "" {
-		panic("VIDEO_REVIEW_API_TOKEN is not set")
-	}
-
 	if len(os.Args) < 2 {
 		printUsage()
 		os.Exit(1)
 	}
 
-	GlobalConfig.BaseURL = strings.TrimRight(GlobalConfig.BaseURL, "/")
 	cmd := os.Args[1]
+
+	fs := flag.NewFlagSet("global", flag.ContinueOnError)
+	server := fs.String("server", "", "VideoReview server URL")
+	token := fs.String("token", "", "API token")
+
+	if err := fs.Parse(os.Args[2:]); err != nil {
+		os.Exit(1)
+	}
+
+	baseURL := *server
+	if baseURL == "" {
+		baseURL = os.Getenv("VIDEO_REVIEW_SERVER_URL")
+	}
+
+	apiToken := *token
+	if apiToken == "" {
+		apiToken := os.Getenv("VIDEO_REVIEW_API_TOKEN")
+		if apiToken == "" {
+			apiToken = os.Getenv("ADMIN_MAINTENANCE_TOKEN")
+		}
+	}
+
+	if baseURL == "" {
+		panic("VIDEO_REVIEW_SERVER_URL is not set")
+	}
+
+	if apiToken == "" {
+		panic("VIDEO_REVIEW_API_TOKEN is not set")
+	}
+
+	GlobalConfig = Config{
+		BaseURL:  strings.TrimRight(baseURL, "/"),
+		APIToken: apiToken,
+	}
+
 	c, ok := commands[cmd]
 	if !ok {
 		fmt.Fprintln(os.Stderr, "unknown command:", cmd)
 		printUsage()
 		os.Exit(1)
 	}
-
-	c.Run(cmd, os.Args[2:])
+	c.Run(cmd, fs.Args())
 }
 
 func printUsage() {

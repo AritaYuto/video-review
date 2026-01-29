@@ -30,6 +30,9 @@ VideoReviewを動作させているサーバーURL
 VideoReview にて発行した API トークンを設定
 > VIDEO_REVIEW_API_TOKEN
 
+コマンドに直接指定することも可能です
+> --server xxx.xxx.xxx.xxx -token xxxxxx
+
 ### コマンド一覧
 
 ##### 管理者を作成します
@@ -57,5 +60,8 @@ VideoReview にて発行した API トークンを設定
 > go run . upload-video --title "title" --folder_key "folder_key" --scene_path "scene_path" --video_path "/path/to/video.mp4"
 
 ##### サムネイル作成をします
-> go run . create-video-tmb --video_id {uuid}
+> go run . create-video-tmb --video_id {uuid}  
 > go run . create-video-tmb-all
+
+##### コメントを取得します
+> go run . get-comments --video_id {uuid}  
