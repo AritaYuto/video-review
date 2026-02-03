@@ -13,6 +13,7 @@ services:
       VIDEO_REVIEW_LOCAL_ROOTDIR: /app/uploads
     volumes:
       - .:/app
+      - videoreview-storage:/app/uploads
       # If you want to specify Local Storage
       # - /mnt/d/data/videoreview:/storage
     depends_on:
@@ -29,6 +30,25 @@ services:
       POSTGRES_DB: videoreview
     volumes:
       - videoreview-db:/var/lib/postgresql/data
+
+  video-analysis:
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./docker/video-analysis/Dockerfile
+    container_name: videoreview-video-analysis
+    environment:
+      DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
+      VIDEO_REVIEW_LOCAL_ROOTDIR: /app/uploads
+      ANALYSIS_POLL_INTERVAL_SECONDS: "10"
+    volumes:
+      - .:/app
+      - videoreview-storage:/app/uploads
+      # If you want to specify Local Storage
+      # - /mnt/d/data/videoreview:/storage
+    depends_on:
+      - db
 
   localstack:
       env_file:
@@ -89,5 +109,6 @@ services:
 
 volumes:
   videoreview-db:
+  videoreview-storage:
   nextcloud-db:
   nextcloud-data:
