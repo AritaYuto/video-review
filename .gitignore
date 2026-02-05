@@ -57,3 +57,5 @@ public/img/login-bg/*
 public/swagger.json
 prisma/schemas/**
 src/schema/**
+
+models/

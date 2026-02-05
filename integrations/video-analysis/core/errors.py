@@ -23,3 +23,7 @@ class TranscriptionError(ServiceError):
 class ModelLoadError(ServiceError):
     """Error loading ML model."""
     pass
+
+class DataNormalizationError(ServiceError):
+    """Error during data normalization of analysis results."""
+    pass

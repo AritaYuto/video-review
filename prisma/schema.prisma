@@ -72,6 +72,12 @@ model VideoRevision {
   @@unique([videoId, revision])
 }
 
+model PromptTemplate {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  prompt    String
+}
+
 model VideoAnalysisJob {
   id              String              @id @default(uuid())
   videoRevisionId String              @unique

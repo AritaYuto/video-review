@@ -8,8 +8,7 @@ from core.config import AnalysisConfig
 from core.errors import AnalysisError
 from services.base_service import BaseProcessingService
 from services.analysis.processor import FrameProcessor
-from services.analysis.frame_plugin_manager import FramePluginManager
-from services.analysis.post_plugin_manager import PostPluginManager
+from services.analysis.plugins import PluginManager
 from services.analysis.result import VideoAnalysisResult, ResultBuilder
 from monitoring.metrics import PerformanceMetrics, StageTimer
 from services.logger import get_logger
@@ -29,8 +28,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         )
 
         self.frame_processor = FrameProcessor(self.config)
-        self.frame_plugin_manager = FramePluginManager(self.config)
-        self.post_plugin_manager = PostPluginManager()
+        self.plugin_manager = PluginManager(self.config)
         self.performance_metrics: List[PerformanceMetrics] = []
 
     def _process_sync(
@@ -44,7 +42,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         try:
             # Setup plugins
             with StageTimer("plugin_setup") as timer:
-                self.frame_plugin_manager.setup_plugins(
+                self.plugin_manager.setup_plugins(
                     request.video_path, request.job_id)
             self._record_stage_metric(timer)
 
@@ -58,14 +56,14 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             result = ResultBuilder.build_success_result(
                 video_path=request.video_path,
                 frame_analyses=frame_analyses,
-                plugin_metrics=self.frame_plugin_manager.get_metrics(),
+                plugin_metrics=self.plugin_manager.get_metrics(),
                 performance_metrics=self.performance_metrics,
                 memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {},
                 processing_time=time.time() - start_time
             )
             
             # Rest plugin metrics after each video has been processed
-            self.frame_plugin_manager.reset_metrics()
+            self.plugin_manager.reset_metrics()
 
             return result
 
@@ -146,7 +144,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                     )
 
         self._record_stage_metric(timer, frames_processed=len(frame_analyses))
-        self.frame_plugin_manager.cleanup_plugins()
+        self.plugin_manager.cleanup_plugins()
         logger.info(
             f"Completed analysis: {len(frame_analyses)} frames processed")
         return frame_analyses
@@ -167,7 +165,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             }
 
             # Run plugins
-            analysis = self.frame_plugin_manager.process_frame(
+            analysis = self.plugin_manager.process_frame(
                 frame_data['frame'],
                 analysis,
                 frame_data['frame_idx'],
@@ -253,12 +251,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)
 
             logger.info(f"Results saved to: {output_path}")
-            post_outputs = self.post_plugin_manager.run_and_save(
-                result.to_dict(),
-                output_file
-            )
-            for path in post_outputs:
-                logger.info(f"Post JSON saved to: {path}")
         except Exception as e:
             logger.error(f"Failed to save results: {e}")
             raise AnalysisError(f"Failed to save results: {e}")

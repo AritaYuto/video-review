@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Union, Optional, List
 from collections.abc import Iterable
-from core.config import AnalysisConfig, TranscriptionConfig
+from core.config import AnalysisConfig, DataNormalizationConfig, TranscriptionConfig
 
 def format_duration(seconds: float) -> str:
     hours = int(seconds // 3600)
@@ -70,3 +70,6 @@ def build_transcription_config(
         model_name=model_name,
         cache_dir=cache_dir,
     )
+
+def build_data_normalization_config() -> DataNormalizationConfig:
+    return DataNormalizationConfig()

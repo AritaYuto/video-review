@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3Client } from "@/server/lib/storage/integrations/s3";
+import { s3Client } from "@/server/lib/integration-clients/s3";
 import { UploadStorageType } from '@/lib/db-types';
 import { FileStorage } from "@/server/lib/storage";
 import { lookup } from "mime-types";

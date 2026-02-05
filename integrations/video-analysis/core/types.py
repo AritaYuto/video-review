@@ -1,5 +1,5 @@
 """Core type definitions and protocols."""
-from typing import Protocol, TypedDict, Callable, Awaitable, Union, Dict, List, Optional
+from typing import Protocol, TypedDict, Callable, Awaitable, Union, Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
@@ -46,3 +46,8 @@ class AnalysisRequest(JobRequest):
 class TranscriptionRequest(JobRequest):
     """Transcription job request."""
     pass
+
+@dataclass(frozen=True)
+class DataNormalizationRequest(JobRequest):
+    """Data normalization job request."""
+    video_analysis_result: Any

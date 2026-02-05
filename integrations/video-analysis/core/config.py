@@ -88,6 +88,13 @@ class TranscriptionConfig:
         """Determine compute type based on device."""
         return "int8" if self.device == "cpu" else "int8_float16"
 
+@dataclass
+class DataNormalizationConfig:
+    """DataNormalization service configuration."""
+
+    def __post_init__(self) -> None:
+        """Post-initialization adjustments."""
+        pass
 
 @dataclass
 class ServerConfig:
