@@ -29,6 +29,8 @@ class PluginManager(PluginManagerBase):
     def _load_frame_plugins(self) -> None:
         config_dict = asdict(self.config)
         config_dict["device"] = self.config.device
+        config_dict["caption_context"] = self.config.caption_context
+        config_dict["ocr_languages"] = self.config.ocr_languages
 
         def predicate(cls, plugin_name: str) -> bool:
             return (

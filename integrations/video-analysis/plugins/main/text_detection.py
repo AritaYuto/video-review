@@ -16,14 +16,16 @@ class TextDetectionPlugin(AnalyzerPlugin):
     def __init__(self, config: AnalysisConfig):
         super().__init__(config)
         self.reader: Optional[easyocr.Reader] = None
-        self.text_scale = 0.5
-        self.min_confidence: float = 0.3
+        self.text_scale = 1.0
+        self.text_threshold: float = 0.6
+        self.low_text: float = 0.4
+
         self.use_gpu = self.config.get("device") != 'cpu'
 
     def setup(self, video_path, job_id) -> None:
         """Initialize the EasyOCR reader."""
         try:
-            languages = self.config.get("ocr_languages", ["en"])
+            languages = self.config.get("ocr_languages", ["jp", "en"])
             self.error_keywords = self.config.get("error_keywords", [])
             self.reader = easyocr.Reader(
                 languages,
@@ -87,8 +89,8 @@ class TextDetectionPlugin(AnalyzerPlugin):
             detail=1,
             paragraph=False,
             min_size=10,
-            text_threshold=self.min_confidence,
-            low_text=self.min_confidence,
+            text_threshold=self.text_threshold,
+            low_text=self.low_text,
             link_threshold=0.4,
             canvas_size=2560,
             mag_ratio=1.0
@@ -103,7 +105,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
         scale_inverse = 1.0 / self.text_scale
 
         for (bbox, text, prob) in results:
-            if prob < self.min_confidence:
+            if prob < self.text_threshold:
                 continue
 
             scaled_bbox = [

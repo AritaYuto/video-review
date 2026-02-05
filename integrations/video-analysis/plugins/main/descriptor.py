@@ -6,7 +6,7 @@ from PIL import Image
 import torch
 from transformers import BlipProcessor, BlipForConditionalGeneration
 from services.logger import get_logger
-from core.config import AnalysisConfig
+from core.config import AnalysisConfig, huggingface_dir
 
 logger = get_logger(__name__)
 
@@ -20,23 +20,24 @@ class DescriptorPlugin(AnalyzerPlugin):
         self.model: Optional[BlipForConditionalGeneration] = None
         self.descriptions = []
         self.device = config.get("device", "cpu")
+        self.prompt = config.get("caption_context", "")
 
     def setup(self, video_path, job_id) -> None:
         """Load BLIP captioning model."""
         # Set up cache directory for Hugging Face models
-        cache_dir = os.environ.get('HF_HOME', '/ml-models/huggingface')
-        os.makedirs(cache_dir, exist_ok=True)
+        cache_dir = huggingface_dir()
+        cache_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"Loading BLIP model to cache directory: {cache_dir}")
         
         self.processor = BlipProcessor.from_pretrained(
             "Salesforce/blip-image-captioning-base",
             use_fast=True,
-            cache_dir=cache_dir
+            cache_dir=str(cache_dir)
         )
         self.model = BlipForConditionalGeneration.from_pretrained(
             "Salesforce/blip-image-captioning-base",
-            cache_dir=cache_dir,
+            cache_dir=str(cache_dir),
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
         )
         
@@ -52,8 +53,11 @@ class DescriptorPlugin(AnalyzerPlugin):
             return frame_analysis
 
         image = Image.fromarray(frame)
-
-        inputs = self.processor(image, return_tensors="pt")
+        inputs = self.processor(
+            image,
+            text=self.prompt,
+            return_tensors="pt"
+        )
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
         
         with torch.no_grad():

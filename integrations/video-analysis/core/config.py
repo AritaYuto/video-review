@@ -1,12 +1,50 @@
 """Configuration management."""
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, Optional, List
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+def face_dir():
+    dir = Path.home() / ".videoreview" / "face"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
+
+
+def model_dir():
+    dir = Path.home() / ".videoreview" / "ml-models"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
+
+
+def whisper_dir():
+    dir = model_dir() / "whisper"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
+
+
+def ultralytics_dir():
+    dir = model_dir() / "ultralytics"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
+
+
+def huggingface_dir():
+    dir = model_dir() / "huggingface"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
 
 @dataclass
 class AnalysisConfig:
     """Video analysis configuration."""
+    caption_context: str = ""
     sample_interval_seconds: float = 2.5
     max_workers: int = 2
     enable_streaming: bool = True
@@ -62,7 +100,7 @@ class AnalysisConfig:
 class TranscriptionConfig:
     """Transcription service configuration."""
     model_name: str = "medium"
-    cache_dir: str = "ml-models/.whisper"
+    cache_dir: str = str(whisper_dir())
     beam_size: int = 1
     vad_filter: bool = True
     vad_threshold: float = 0.5
@@ -71,8 +109,7 @@ class TranscriptionConfig:
 
     def __post_init__(self) -> None:
         """Post-initialization adjustments."""
-        self.cache_dir = os.getenv(
-            'TRANSCRIPTION_MODEL_CACHE', 'ml-models/.whisper')
+        pass
 
     @property
     def device(self) -> str:

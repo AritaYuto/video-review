@@ -27,7 +27,6 @@ ANALYSIS_TARGET_RESOLUTION = env_int("ANALYSIS_TARGET_RESOLUTION", 720)
 ANALYSIS_OCR_LANGUAGES = env("ANALYSIS_OCR_LANGUAGES", "en,ja")
 ANALYSIS_DEVICE = env("ANALYSIS_DEVICE", "auto")
 TRANSCRIPTION_MODEL = env("TRANSCRIPTION_MODEL", "medium")
-TRANSCRIPTION_MODEL_CACHE = env("TRANSCRIPTION_MODEL_CACHE", "ml-models/.whisper")
 
 
 STATUS_PENDING = "pending"
@@ -36,18 +35,16 @@ STATUS_SUCCEEDED = "succeeded"
 STATUS_FAILED = "failed"
 
 
-def build_config() -> tuple[AnalysisConfig, TranscriptionConfig, DataNormalizationConfig]:
+def build_config(conn: psycopg2.extensions.connection) -> tuple[AnalysisConfig, TranscriptionConfig, DataNormalizationConfig]:
     return (
         build_analysis_config(
             sample_interval_seconds=ANALYSIS_SAMPLE_INTERVAL,
             target_resolution_height=ANALYSIS_TARGET_RESOLUTION,
             ocr_languages=ANALYSIS_OCR_LANGUAGES,
+            caption_context=get_caption_context(conn),
             device=ANALYSIS_DEVICE,
         ),
-        build_transcription_config(
-            model_name=TRANSCRIPTION_MODEL,
-            cache_dir=TRANSCRIPTION_MODEL_CACHE,
-        ),
+        build_transcription_config(model_name=TRANSCRIPTION_MODEL),
         build_data_normalization_config(),
     )
 
@@ -57,6 +54,24 @@ def open_db() -> psycopg2.extensions.connection:
     conn = psycopg2.connect(db_url)
     conn.autocommit = True
     return conn
+
+
+def get_caption_context(conn: psycopg2.extensions.connection) -> Optional[str]:
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(
+            """
+            SELECT pt."prompt"
+            FROM "PromptTemplate" pt
+            WHERE pt."key" = 'caption_context'
+            LIMIT 1
+            """
+        )
+        row = cur.fetchone()
+
+    if not row:
+        return None
+
+    return row["prompt"]
 
 
 def claim_next_revision(conn: psycopg2.extensions.connection) -> Optional[Dict[str, Any]]:
@@ -132,7 +147,7 @@ async def process_revision(
     data_normalization_output_path = output_root
     transcription_output = output_root / f"{row['id']}.transcription.json"
 
-    analysis_config, transcription_config, data_normalization_config = build_config()
+    analysis_config, transcription_config, data_normalization_config = build_config(conn)
     analysis_service = AnalysisService(analysis_config)
     data_normalization_service = DataNormalizationService(data_normalization_config)
     transcription_service = TranscriptionService(transcription_config)

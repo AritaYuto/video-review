@@ -1,12 +1,7 @@
 videoreview-launcher*
-video-analysis/yolov8s.pt
-video-analysis/.faces
-video-analysis/ml-models
 
+.venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-.venv/
-

@@ -65,10 +65,8 @@ def parse_args() -> argparse.Namespace:
         help="Whisper model to use (default: medium)"
     )
     parser.add_argument(
-        "--model-cache-dir",
-        type=str,
-        default="ml-models/.whisper",
-        help="Model cache directory (default: ml-models/.whisper)"
+        "--caption_context",
+        help="Prompt information required for video frame analysis"
     )
     return parser.parse_args()
 
@@ -85,12 +83,10 @@ def build_config(args: argparse.Namespace) -> tuple[AnalysisConfig, Transcriptio
             sample_interval_seconds=args.sample_interval,
             target_resolution_height=args.target_resolution,
             ocr_languages=args.ocr_languages,
+            caption_context=args.caption_context,
             device=args.device,
         ),
-        build_transcription_config(
-            model_name=args.whisper_model,
-            cache_dir=args.model_cache_dir
-        ),
+        build_transcription_config(model_name=args.whisper_model),
         build_data_normalization_config()
     )   
 

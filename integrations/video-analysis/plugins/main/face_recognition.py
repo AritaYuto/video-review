@@ -12,7 +12,7 @@ import numpy as np
 from services.analysis.face_recognizer import FaceRecognizer
 from plugins.main.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from utils.helpers import format_duration
-from core.config import AnalysisConfig
+from core.config import AnalysisConfig, face_dir
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self.current_job_id = job_id
         self.face_recognizer.reset_unknown_registry()
 
-        self.unknown_faces_dir = Path(".faces", "unknown")
+        self.unknown_faces_dir = Path(face_dir(), "unknown")
         self.unknown_faces_dir.mkdir(parents=True, exist_ok=True)
 
         self._cleanup_previous_run()

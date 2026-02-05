@@ -5,6 +5,7 @@ from typing import Union, Optional, List
 from collections.abc import Iterable
 from core.config import AnalysisConfig, DataNormalizationConfig, TranscriptionConfig
 
+
 def format_duration(seconds: float) -> str:
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
@@ -20,7 +21,10 @@ def ensure_directory(path: Union[str, Path]) -> Path:
     dir_path.mkdir(parents=True, exist_ok=True)
     return dir_path
 
+
 def env(name: str, default: str = None) -> str:
+    r = os.getenv(name,  default=default)
+    print(f"Env: {name}={r}")
     return os.getenv(name,  default=default)
 
 
@@ -45,6 +49,7 @@ def build_analysis_config(
     sample_interval_seconds: float,
     target_resolution_height: int,
     ocr_languages: Union[str, Iterable[str], None],
+    caption_context: str,
     device: Optional[str],
 ) -> AnalysisConfig:
     def __normalize_ocr_languages__(value: Union[str, Iterable[str], None]) -> List[str]:
@@ -55,6 +60,7 @@ def build_analysis_config(
     config = AnalysisConfig(
         sample_interval_seconds=sample_interval_seconds,
         target_resolution_height=target_resolution_height,
+        caption_context=caption_context
     )
     config.ocr_languages = __normalize_ocr_languages__(ocr_languages)
     if device and device != "auto":
@@ -64,12 +70,12 @@ def build_analysis_config(
 
 def build_transcription_config(
     model_name: str,
-    cache_dir: str,
 ) -> TranscriptionConfig:
     return TranscriptionConfig(
         model_name=model_name,
-        cache_dir=cache_dir,
     )
+
 
 def build_data_normalization_config() -> DataNormalizationConfig:
     return DataNormalizationConfig()
+

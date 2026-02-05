@@ -3,13 +3,12 @@ from services.logger import get_logger
 from deepface import DeepFace
 import numpy as np
 from typing import List, Dict, Optional, Tuple
-from dotenv import load_dotenv
 import cv2
 import os
 from scipy.spatial.distance import cosine
 from pathlib import Path
+from core.config import face_dir
 
-load_dotenv()
 logger = get_logger(__name__)
 
 
@@ -98,7 +97,7 @@ class FaceRecognizer:
         self.unknown_clustering_threshold = unknown_clustering_threshold
         self.unknown_face_counter = 0
         self.unknown_faces_registry: Dict[str, Dict] = {}
-        self.known_faces_folder = os.getenv("FACES_DIR", '.faces')
+        self.known_faces_folder = str(face_dir())
 
         logger.info(
             f"FaceRecognizer initialized: model={model}, tolerance={tolerance}, "
