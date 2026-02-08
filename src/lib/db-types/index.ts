@@ -6,6 +6,7 @@ export type {
     UserVideoReadStatus,
     Identity,
     VideoComment,
+    PromptTemplate,
 } from "@prisma/client";
 
 export { UploadStorageType } from "@prisma/client";

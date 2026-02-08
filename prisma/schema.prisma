@@ -76,6 +76,7 @@ model PromptTemplate {
   id        String   @id @default(uuid())
   key       String   @unique
   prompt    String
+  kinds     String[] @default([])
 }
 
 model VideoAnalysisJob {

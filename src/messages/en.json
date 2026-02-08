@@ -9,7 +9,11 @@
         "noSelection": "No video selected",
         "revisionInfo": "Revision: {revision} ({uploadedAt})",
         "noRevision": "No revision info",
-        "revisionOption": "rev_{revision} ({date})"
+        "revisionOption": "rev_{revision} ({date})",
+        "tagsLabel": "Tags",
+        "noTags": "None",
+        "summaryLabel": "Summary",
+        "noSummary": "None"
     },
     "video-upload": {
         "title": "Upload Video",
@@ -67,6 +71,10 @@
         "helperText": "Copy and share using Ctrl+C.",
         "close": "Close"
     },
+    "prompt-edit": {
+        "title": "Prompt Editor",
+        "save": "Save"
+    },
     "comment-search": {
         "title": "Comment Search",
         "searchFilter": "Filter text",
@@ -95,7 +103,8 @@
         "languageOptionEn": "English",
         "languageOptionJa": "Japanese",
         "logout": "Logout",
-        "editProfile": "Edit Profile"
+        "editProfile": "Edit Profile",
+        "editPrompt": "Edit Prompt"
     },
     "calendar-date-radio": {
         "today": "Today",

@@ -7,24 +7,30 @@ import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { createLlamaSession, LlamaDataJson, OutputFormatPrompt } from "@/server/lib/integration-clients/llama-client";
 import { VideoReviewStorage } from "@/server/lib/storage";
+import { Readable } from "stream";
 
-export const annotateRouter = new Hono();
+export const metaDataRouter = new Hono();
 
-const body = z.object({
+const annotateBody = z.object({
     promptKey: z.string(),
-    videoRevId: z.string().optional(),
 });
 
-annotateRouter.openapi({
+
+const uploadBody = z.object({
+    kind: z.string(),
+});
+
+
+metaDataRouter.openapi({
     method: "post",
     summary: "",
     description: "",
-    path: "/",
+    path: "/annotate",
     request: {
         body: {
             content: {
                 "application/json": {
-                    schema: body,
+                    schema: annotateBody,
                 },
             },
         },
@@ -45,14 +51,15 @@ annotateRouter.openapi({
         return c.json({ error: "unauthorized" }, { status: 401 });
     }
 
+    const id = c.req.param("id");
     const body = c.req.valid("json");
-    const { promptKey, videoRevId } = body;
+    const { promptKey } = body;
 
     let whereVideoRevision: PrismaTypes.VideoRevisionWhereInput = {deleted: false};
-    if(videoRevId) {
-        whereVideoRevision.id = { equals: videoRevId };
-    } else {
+    if(id === "all") {
         whereVideoRevision.summary = { equals: null };
+    } else {
+        whereVideoRevision.id = { equals: id };
     }
 
     const videoRevs = await prisma.videoRevision.findMany({
@@ -108,4 +115,50 @@ annotateRouter.openapi({
         }
     }
     return c.json({ successCount, failureCount });
+});
+
+
+metaDataRouter.openapi({
+    method: "post",
+    summary: "",
+    description: "",
+    path: "/upload",
+    request: {
+        body: {
+            content: {
+                "multipart/form-data": {
+                    schema: uploadBody,
+                },
+            },
+        },
+    },
+    responses: {
+        200: { description: "" },
+        401: { description: "Unauthorized" },
+        403: { description: "Forbidden" },
+        400: { description: "Missing parameters" }
+    },
+}, async (c) => {
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof ServerError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const id = c.req.param("id");
+    const body = await c.req.parseBody();
+    const kind = body.kind;
+    const file = body.file;
+
+    if (typeof kind !== "string" || !(file instanceof File)) {
+        return c.json({ error: "kind and file are required" }, 400);
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const storageKey = `video-analysis/${id}.${kind}.json`;
+    await VideoReviewStorage.directUploadFromBuffer(storageKey, Readable.from(buffer), "application/json")
+    return c.json({ ok: true });
 });

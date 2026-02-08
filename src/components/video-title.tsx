@@ -4,6 +4,7 @@ import { useVideoStore } from "@/stores/video-store";
 import { useTranslations } from "next-intl";
 import { SidebarTrigger } from "@/ui/sidebar";
 import { Separator } from "@/ui/separator";
+import { Badge } from "@/ui/badge";
 
 export default function VideoTitle() {
     const t = useTranslations("video-title");
@@ -16,14 +17,14 @@ export default function VideoTitle() {
     } = useVideoStore();
     return (
         <div className="px-2 mb-2 flex items-center justify-between">
-            <div>
+            <div className="min-w-0">
                 <h2 className="flex items-center gap-1 px-2 text-lg font-semibold text-[#ff8800] tracking-wide">
                     <SidebarTrigger className="-ml-1" />
                     <Separator
                         orientation="vertical"
                         className="mr-2 data-[orientation=vertical]:h-4"
                     />
-                    {selectedVideo?.title ?? t("noSelection")}
+                    <span className="truncate">{selectedVideo?.title ?? t("noSelection")}</span>
                 </h2>
                 <p className="text-xs text-[#999] mt-1">
                     {selectedRevision
@@ -34,6 +35,45 @@ export default function VideoTitle() {
                         })
                         : t("noRevision")}
                 </p>
+
+                {selectedRevision && (
+                    <div className="px-2 mt-2 space-y-1">
+                        <div className="flex flex-wrap items-center gap-1">
+                            <span className="text-[11px] text-[#888]">
+                                {t("tagsLabel")}:
+                            </span>
+                            {(selectedRevision.tags?.length ?? 0) > 0 ? (
+                                selectedRevision.tags.map((tag) => (
+                                    <Badge
+                                        key={tag}
+                                        variant="outline"
+                                        className="border-[#333] bg-[#202020] text-[#eee]"
+                                        title={tag}
+                                    >
+                                        {tag}
+                                    </Badge>
+                                ))
+                            ) : (
+                                <span className="text-[11px] text-[#666]">
+                                    {t("noTags")}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="text-xs text-[#ccc] leading-relaxed break-words">
+                            <span className="text-[11px] text-[#888] mr-1">
+                                {t("summaryLabel")}:
+                            </span>
+                            {selectedRevision.summary?.trim() ? (
+                                <span>{selectedRevision.summary.trim()}</span>
+                            ) : (
+                                <span className="text-[11px] text-[#666]">
+                                    {t("noSummary")}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {revisions.length > 1 && (
