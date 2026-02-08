@@ -119,7 +119,7 @@ metaDataRouter.openapi({
 
 
 metaDataRouter.openapi({
-    method: "post",
+    method: "put",
     summary: "",
     description: "",
     path: "/upload",

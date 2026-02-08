@@ -60,6 +60,10 @@ var commands = map[string]Command{
 		Run:  RunAnnotateVideoRev,
 		Desc: "Annotate video revision",
 	},
+	"upload-llm-meta": {
+		Run:  RunUploadLLMMeta,
+		Desc: "Upload LLM meta json",
+	},
 }
 
 func main() {

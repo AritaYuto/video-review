@@ -73,3 +73,7 @@ It can also be specified directly in the command.
 > go run . annotate-video-rev
 * Tags and a summary are assigned to the specified video revision.
 > go run . annotate-video-rev --video_id {uuid}　
+
+
+##### Upload LLM meta json
+> go run . annotate-video-rev --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
