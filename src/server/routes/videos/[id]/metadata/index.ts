@@ -69,7 +69,7 @@ metaDataRouter.openapi({
 
     const promptTemplate = await prisma.promptTemplate.findUnique({
         where: { key : promptKey }, 
-        select: {prompt: true}
+        select: {prompt: true, kinds: true}
     })
 
     if (!promptTemplate) {
@@ -85,21 +85,30 @@ metaDataRouter.openapi({
             throw new ServerError("Failed to create Llama session", 500);
         }
 
-        const storageKey = `video-analysis/${rev.id}.scenes.json`;
-        const stream = await VideoReviewStorage.download(storageKey);
+        let prompt = promptTemplate.prompt;
+        for (const kind of promptTemplate.kinds) {
+            const storageKey = `video-analysis/${rev.id}.${kind}.json`;
+            const stream = await VideoReviewStorage.download(storageKey);
 
-        if (!stream) {
-            console.warn(`No analysis found for videoRev ${rev.id}`);
-            continue;
+            if (!stream) {
+                console.warn(`No analysis found for videoRev ${rev.id}`);
+                continue;
+            }
+
+            const data = await stream.text();
+            const sceneAnalysis = JSON.parse(data) as LlamaDataJson;
+            const kindText = sceneAnalysis.content.join("\n\n");
+
+            prompt += `\n# Input ${kind} Info\n`
+            prompt += kindText + "\n"
         }
 
-        const data = await stream.text();
-        const sceneAnalysis = JSON.parse(data) as LlamaDataJson;
-        const sceneText = sceneAnalysis.content.slice(0, 20).join("\n\n");
-        const prompt = promptTemplate.prompt.replace("${sceneText}", sceneText) + "\n" + OutputFormatPrompt
-        
         try {
-            const resultJson = JSON.parse(await session.prompt(prompt));
+            console.log(prompt)
+            const resultText = await session.prompt(prompt);
+            console.log(resultText)
+
+            const resultJson = JSON.parse(resultText);
             await prisma.videoRevision.update({
                 where: { id: rev.id },
                 data: {

@@ -15,7 +15,6 @@ export default function PromptEditDialog({ open, onClose }: { open: boolean; onC
     const t = useTranslations("prompt-edit");
 
     const [loading, setLoading] = useState(false);
-    const [keys, setKeys] = useState<string[]>([]);
     const [kinds, setKinds] = useState<string[]>([]);
     const [data, setData] = useState<PromptTemplate[]>([]);
 
@@ -49,7 +48,6 @@ export default function PromptEditDialog({ open, onClose }: { open: boolean; onC
                 });
 
                 setData(editablePrompts);
-                setKeys(keysRes.data);
             } finally {
                 setLoading(false);
             }
