@@ -16,7 +16,7 @@ namespace VideoReview.Editor.API
             string serverUrl,
             string apiToken,
             int timeoutMs,
-            string cliRootOverride = string.Empty)
+            string cliRootOverride = null)
         {
             var executablePath = ResolveExecutablePath(cliRootOverride);
             EnsureExecutablePermissionIfNeeded(executablePath);
@@ -78,7 +78,7 @@ namespace VideoReview.Editor.API
             };
         }
 
-        private static string ResolveExecutablePath(string cliRootOverride = string.Empty)
+        private static string ResolveExecutablePath(string cliRootOverride = null)
         {
             var root = !string.IsNullOrEmpty(cliRootOverride)
                 ? cliRootOverride
