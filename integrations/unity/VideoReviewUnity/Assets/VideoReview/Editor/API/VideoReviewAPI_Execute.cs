@@ -15,9 +15,10 @@ namespace VideoReview.Editor.API
             string[] args,
             string serverUrl,
             string apiToken,
-            int timeoutMs)
+            int timeoutMs,
+            string cliRootOverride = string.Empty)
         {
-            var executablePath = ResolveExecutablePath();
+            var executablePath = ResolveExecutablePath(cliRootOverride);
             EnsureExecutablePermissionIfNeeded(executablePath);
 
             var allArgs = BuildArguments(command, args, serverUrl, apiToken);
@@ -77,16 +78,13 @@ namespace VideoReview.Editor.API
             };
         }
 
-        private static string ResolveExecutablePath()
+        private static string ResolveExecutablePath(string cliRootOverride = string.Empty)
         {
-            var platformDir = Path.Combine(
-                Application.dataPath,
-                "VideoReview",
-                "Editor",
-                "API",
-                "bin",
-                GetPlatformDirectoryName());
-
+            var root = !string.IsNullOrEmpty(cliRootOverride)
+                ? cliRootOverride
+                : Path.Combine(Application.dataPath, "VideoReview", "Editor", "API");
+            
+            var platformDir = Path.Combine(root, "bin", GetPlatformDirectoryName());
             if (!Directory.Exists(platformDir))
             {
                 throw new FileNotFoundException($"VideoReview CLI directory not found: {platformDir}");

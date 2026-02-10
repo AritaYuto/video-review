@@ -6,6 +6,7 @@ namespace VideoReview.Editor.API
 {
     public static class VideoReviewAPI
     {
+        public static string CliRootOverride = null;
         public static string ServerUrl { get; set; } = Environment.GetEnvironmentVariable("VIDEO_REVIEW_SERVER_URL") ?? string.Empty;
         public static string ApiToken { get; set; } =
             Environment.GetEnvironmentVariable("VIDEO_REVIEW_API_TOKEN")
@@ -199,7 +200,8 @@ namespace VideoReview.Editor.API
                     args,
                     ServerUrl,
                     ApiToken,
-                    TimeoutMs
+                    TimeoutMs,
+                    CliRootOverride
                 );
 
                 if (!result.success)
