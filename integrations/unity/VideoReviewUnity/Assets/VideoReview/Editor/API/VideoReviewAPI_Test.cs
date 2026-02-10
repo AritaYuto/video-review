@@ -142,7 +142,7 @@ namespace VideoReview.Editor.API
             if (GUILayout.Button("Run GetVideos"))
             {
                 ApplyGlobalSettings();
-                var response = VideoReviewAPI.GetVideos(_includeRevisions);
+                var response = VideoReviewAPI.GetVideos(includeRevisions: _includeRevisions);
                 SetResult("GetVideos", response);
             }
 

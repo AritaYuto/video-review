@@ -40,12 +40,15 @@ namespace VideoReview.Editor.API
             );
         }
 
-        public static VideoReviewResponse<VideoReviewVideo[]> GetVideos(bool includeRevisions = false)
+        public static VideoReviewResponse<VideoReviewVideo[]> GetVideos(string filterTree = null, bool includeRevisions = false)
         {
-            return ExecuteArray<VideoReviewVideo>(
-                "get-videos",
-                "--include_revisions", includeRevisions ? "true" : "false"
-            );
+            var args = new List<string>
+            {
+                "--include_revisions",  includeRevisions ? "true" : "false",
+                "--filter_tree", filterTree,
+            };
+
+            return ExecuteArray<VideoReviewVideo>("get-videos", args.ToArray());
         }
 
         public static VideoReviewResponse<VideoReviewVideoRevision[]> GetVideosRev(string videoID)

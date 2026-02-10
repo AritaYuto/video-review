@@ -59,6 +59,18 @@ namespace VideoReview.Editor.API
         public string scenePath;
         public int nextRev;
         public string createdAt;
+        
+        public DateTime? CreatedAt
+        {
+            get
+            {
+                if (DateTime.TryParse(createdAt, out var dt))
+                {
+                    return dt;
+                }
+                return null;
+            }
+        }
     }
 
     [Serializable]
@@ -90,6 +102,18 @@ namespace VideoReview.Editor.API
         public string latestUpdatedAt;
         public bool deleted;
         public VideoReviewVideoRevision[] revisions;
+        
+        public DateTime? LatestUpdatedAt
+        {
+            get
+            {
+                if (DateTime.TryParse(latestUpdatedAt, out var dt))
+                {
+                    return dt;
+                }
+                return null;
+            }
+        }
     }
 
     [Serializable]
@@ -103,6 +127,18 @@ namespace VideoReview.Editor.API
         public bool deleted;
         public string[] tags;
         public string summary;
+        
+        public DateTime? UploadedAt
+        {
+            get
+            {
+                if (DateTime.TryParse(uploadedAt, out var dt))
+                {
+                    return dt;
+                }
+                return null;
+            }
+        }
     }
 
     [Serializable]
@@ -122,6 +158,30 @@ namespace VideoReview.Editor.API
         public string updatedAt;
         public bool deleted;
         public int thumbsUp;
+        
+        public DateTime? CreatedAt
+        {
+            get
+            {
+                if (DateTime.TryParse(createdAt, out var dt))
+                {
+                    return dt;
+                }
+                return null;
+            }
+        }
+        
+        public DateTime? UpdatedAt
+        {
+            get
+            {
+                if (DateTime.TryParse(updatedAt, out var dt))
+                {
+                    return dt;
+                }
+                return null;
+            }
+        }
     }
 
     internal static class VideoReviewJson

@@ -28,7 +28,7 @@ promptRouter.openapi({
         }
     },
 }, async (c) => {
-    const items = [ "description", "objects", "faces", "detected_text", "dominant_color", "transcription" ]
+    const items = [ "description", "objects", "faces", "detected_text", "dominant_color", "transcription", "subtitle" ]
     return c.json({ items });
 });
 
