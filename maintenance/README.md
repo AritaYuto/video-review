@@ -72,8 +72,8 @@ It can also be specified directly in the command.
 * All video revisions will be tagged and summarized.
 > go run . annotate-video-rev
 * Tags and a summary are assigned to the specified video revision.
-> go run . annotate-video-rev --video_id {uuid}　
+> go run . annotate-video-rev --video_rev_id {uuid}　
 
 
 ##### Upload LLM meta json
-> go run . annotate-video-rev --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
+> go run . upload-llm-meta --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
