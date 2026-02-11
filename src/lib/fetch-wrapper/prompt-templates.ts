@@ -49,9 +49,9 @@ export async function updatePrompt(data: {
         body: JSON.stringify(data)
     });
 
-    if (!res.ok) {
-        return ApiError(res);
+    if (res.ok) {
+        return { ok: true, data: await res.json() };
     }
-    return { ok: true, data: await res.json() };
+    return ApiError(res);
 }
 
