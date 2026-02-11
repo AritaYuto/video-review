@@ -1,5 +1,6 @@
 import { Video, VideoRevision } from'@/lib/db-types';
 import { DateRange } from 'react-day-picker';
+import { ApiError, ApiResult } from "@/lib/utils/api-result";
 
 export async function fetchVideos(data: {
     user?: string,
@@ -10,6 +11,7 @@ export async function fetchVideos(data: {
     hasIssue?: boolean,
     hasDrawing?: boolean,
     hasComment?: boolean,
+    tags?: string[],
 }) {
     const params = new URLSearchParams();
     if (data.videoDateRange?.from) params.set("videoFrom", data.videoDateRange?.from.getTime().toString());
@@ -22,6 +24,7 @@ export async function fetchVideos(data: {
     if (data.hasIssue) params.set("hasIssue", data.hasIssue ? "true" : "false");
     if (data.hasDrawing) params.set("hasDrawing", data.hasDrawing ? "true" : "false");
     if (data.hasComment) params.set("hasComment", data.hasComment ? "true" : "false");
+    if (data.tags) params.set("tags", data.tags.join(","));
 
     const res = await fetch(`/api/v1/videos?${params.toString()}`);
     if (!res.ok) throw new Error("Failed to fetch video");
@@ -54,4 +57,15 @@ export async function fetchLatestRevision(
     const res = await fetch(`/api/v1/videos/${videoId}/latest`);
     if (!res.ok) throw new Error("Failed to fetch latest revision");
     return res.json();
+}
+
+export async function fetchAllVideoTags(): Promise<ApiResult<string[]>> {
+    const res = await fetch(`/api/v1/videos/tags`);
+
+    if(res.ok) {
+        const data = await res.json();
+        return { ok: true, data: data.tags }
+    }
+
+    return ApiError(res);
 }
