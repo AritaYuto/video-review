@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app/integrations/video-analysis
 
 COPY integrations/video-analysis/requirements_cpu.txt /tmp/requirements_cpu.txt
-COPY integrations/video-analysis/requirements_worker.txt /tmp/requirements_worker.txt
 
 RUN pip install --upgrade pip \
     && pip install -r /tmp/requirements_cpu.txt \

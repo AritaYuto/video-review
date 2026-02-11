@@ -32,6 +32,9 @@ tensorflow==2.15.0; platform_machine == "aarch64"
 deepface>=0.0.96
 tf-keras
 
+# DB connection
+psycopg2-binary>=2.9.9
+
 ultralytics>=8.0.0
 transformers>=4.35.0
 --index-url https://pypi.org/simple
