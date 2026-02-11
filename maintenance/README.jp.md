@@ -72,5 +72,5 @@ VideoReview にて発行した API トークンを設定
 * ビデオのリビジョンを指定し、タグと要約をつけます
 > go run . annotate-video-rev --video_id {uuid}　
 
-##### LLMに与える情報をアップロードします
-> go run . upload-llm-meta --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
+##### プロンプトに与える情報をアップロードします
+> go run . upload-prompt-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"

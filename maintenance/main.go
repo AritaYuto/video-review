@@ -60,9 +60,9 @@ var commands = map[string]Command{
 		Run:  RunAnnotateVideoRev,
 		Desc: "Annotate video revision",
 	},
-	"upload-llm-meta": {
-		Run:  RunUploadLLMMeta,
-		Desc: "Upload LLM meta json",
+	"upload-prompt-context": {
+		Run:  RunUploadPromptContext,
+		Desc: "Upload prompt context definitions",
 	},
 }
 

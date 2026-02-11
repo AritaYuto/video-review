@@ -75,5 +75,5 @@ It can also be specified directly in the command.
 > go run . annotate-video-rev --video_rev_id {uuid}　
 
 
-##### Upload LLM meta json
-> go run . upload-llm-meta --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
+##### Upload prompt context definitions
+> go run . upload-prompt-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"

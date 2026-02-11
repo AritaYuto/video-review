@@ -30,8 +30,8 @@ namespace VideoReview.Editor.API
         private string _uploadVideoPath = string.Empty;
 
         private string _videoRevId = string.Empty;
-        private string _llmKind = "log";
-        private string _llmJsonPath = string.Empty;
+        private string _promptContextKind = "log"; //upload-prompt-context
+        private string _promptContextJsonPath = string.Empty;
 
         private string _lastResult = string.Empty;
 
@@ -53,7 +53,7 @@ namespace VideoReview.Editor.API
             _createUserName = EditorPrefs.GetString(PrefPrefix + "CreateUserName", _createUserName);
             _createUserEmail = EditorPrefs.GetString(PrefPrefix + "CreateUserEmail", _createUserEmail);
             _uploadVideoPath = EditorPrefs.GetString(PrefPrefix + "UploadVideoPath", _uploadVideoPath);
-            _llmJsonPath = EditorPrefs.GetString(PrefPrefix + "LlmJsonPath", _llmJsonPath);
+            _promptContextJsonPath = EditorPrefs.GetString(PrefPrefix + "PromptContextJsonPath", _promptContextJsonPath);
         }
 
         private void OnDisable()
@@ -66,7 +66,7 @@ namespace VideoReview.Editor.API
             EditorPrefs.SetString(PrefPrefix + "CreateUserName", _createUserName ?? string.Empty);
             EditorPrefs.SetString(PrefPrefix + "CreateUserEmail", _createUserEmail ?? string.Empty);
             EditorPrefs.SetString(PrefPrefix + "UploadVideoPath", _uploadVideoPath ?? string.Empty);
-            EditorPrefs.SetString(PrefPrefix + "LlmJsonPath", _llmJsonPath ?? string.Empty);
+            EditorPrefs.SetString(PrefPrefix + "PromptContextJsonPath", _promptContextJsonPath ?? string.Empty);
         }
 
         private void OnGUI()
@@ -227,24 +227,24 @@ namespace VideoReview.Editor.API
                 SetResult("AnnotateVideoRev", response);
             }
 
-            _llmKind = EditorGUILayout.TextField("LLM Kind", _llmKind);
+            _promptContextKind = EditorGUILayout.TextField("Prompt Context Kind", _promptContextKind);
             EditorGUILayout.BeginHorizontal();
-            _llmJsonPath = EditorGUILayout.TextField("LLM JSON Path", _llmJsonPath);
+            _promptContextJsonPath = EditorGUILayout.TextField("Prompt Context Json Path", _promptContextJsonPath);
             if (GUILayout.Button("Select", GUILayout.Width(80f)))
             {
                 var selected = EditorUtility.OpenFilePanel("Select json file", "", "json");
                 if (!string.IsNullOrWhiteSpace(selected))
                 {
-                    _llmJsonPath = selected;
+                    _promptContextJsonPath = selected;
                 }
             }
             EditorGUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Run UploadLLMMeta"))
+            if (GUILayout.Button("Run UploadPromptContext"))
             {
                 ApplyGlobalSettings();
-                var response = VideoReviewAPI.UploadLLMMeta(_videoRevId, _llmKind, _llmJsonPath);
-                SetResult("UploadLLMMeta", response);
+                var response = VideoReviewAPI.UploadPromptContext(_videoRevId, _promptContextKind, _promptContextJsonPath);
+                SetResult("UploadPromptContext", response);
             }
         }
 
