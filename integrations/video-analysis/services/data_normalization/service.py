@@ -58,20 +58,23 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
             raise DataNormalizationError(f"Data normalization failed: {e}")
 
 
-    def save_result(self, result: DataNormalizationResult, output_path: str) -> None:
-        """Save data normalization result to JSON files."""
+    def save_result(self, result: DataNormalizationResult, output_path: str) -> list[str]:
+        """Save data normalization result to JSON files and return saved output names."""
         try:
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
         
             id = result.id
             outputs = result.to_dict()
+            saved_names: list[str] = []
 
             for name, payload in outputs.items():
                 target = output_file / Path(id + f".{name}.json")
                 with target.open("w", encoding="utf-8") as handle:
                     json.dump(payload, handle, ensure_ascii=False, indent=2)
+                saved_names.append(name)
                 logger.info(f"Results saved to: {target}")
+            return saved_names
                 
         except Exception as e:
             logger.error(f"Failed to save results: {e}")
