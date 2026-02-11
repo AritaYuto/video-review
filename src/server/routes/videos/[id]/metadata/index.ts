@@ -166,6 +166,11 @@ metaDataRouter.openapi({
         return c.json({ error: "kind and file are required" }, 400);
     }
 
+    const find = await prisma.promptContextKinds.findUnique({where: { label: kind }});
+    if(!find){
+        await prisma.promptContextKinds.create({data: { label: kind }});
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const storageKey = `video-analysis/${id}.${kind}.json`;
     await VideoReviewStorage.directUploadFromBuffer(storageKey, Readable.from(buffer), "application/json")

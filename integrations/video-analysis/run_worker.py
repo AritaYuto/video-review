@@ -74,6 +74,21 @@ def get_caption_context(conn: psycopg2.extensions.connection) -> Optional[str]:
     return row["prompt"]
 
 
+def ensure_prompt_context_kind(
+    conn: psycopg2.extensions.connection,
+    label: str,
+) -> None:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO "PromptContextKinds" ("label")
+            VALUES (%s)
+            ON CONFLICT ("label") DO NOTHING
+            """,
+            (label,),
+        )
+
+
 def claim_next_revision(conn: psycopg2.extensions.connection) -> Optional[Dict[str, Any]]:
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(
@@ -211,7 +226,12 @@ async def process_revision(
             data_normalization_request,
             data_normalization_progress_callback
         )
-        data_normalization_service.save_result(data_normalization_result, str(data_normalization_output_path))
+        output_names = data_normalization_service.save_result(
+            data_normalization_result,
+            str(data_normalization_output_path),
+        )
+        for name in output_names:
+            ensure_prompt_context_kind(conn, name)
         logger.info(f"[{job_id}] DataNormalization complete")
 
         update_job_status(

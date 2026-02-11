@@ -72,6 +72,11 @@ model VideoRevision {
   @@unique([videoId, revision])
 }
 
+model PromptContextKinds {
+  id        String   @id @default(uuid())
+  label     String   @unique
+}
+
 model PromptTemplate {
   id        String   @id @default(uuid())
   key       String   @unique

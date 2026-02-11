@@ -28,8 +28,8 @@ promptRouter.openapi({
         }
     },
 }, async (c) => {
-    const items = [ "description", "objects", "faces", "detected_text", "dominant_color", "transcription", "subtitle" ]
-    return c.json({ items });
+    const items = await prisma.promptContextKinds.findMany({select : { label: true }})
+    return c.json({ items: items.map(x => x.label) });
 });
 
 
