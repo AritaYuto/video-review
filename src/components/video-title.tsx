@@ -16,16 +16,37 @@ export default function VideoTitle() {
         selectVideoRevision,
     } = useVideoStore();
     return (
-        <div className="px-2 mb-2 flex items-center justify-between">
+        <div className="py-1 px-2 mb-2 flex items-center justify-between">
             <div className="min-w-0">
-                <h2 className="flex items-center gap-1 px-2 text-lg font-semibold text-[#ff8800] tracking-wide">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator
-                        orientation="vertical"
-                        className="mr-2 data-[orientation=vertical]:h-4"
-                    />
-                    <span className="truncate">{selectedVideo?.title ?? t("noSelection")}</span>
-                </h2>
+                <div className="flex items-center justify-between">
+                    <h2 className="flex items-center gap-1 px-2 text-lg font-semibold text-[#ff8800] tracking-wide">
+                        <SidebarTrigger className="-ml-1" />
+                        <Separator
+                            orientation="vertical"
+                            className="mr-2 data-[orientation=vertical]:h-4"
+                        />
+                        <span className="truncate">{selectedVideo?.title ?? t("noSelection")}</span>
+                    </h2>
+                    {revisions.length > 1 && (
+                        <select
+                            className="bg-[#202020] border border-[#333] text-sm rounded px-2 py-1 text-[#eee] hover:border-[#ff8800] transition"
+                            value={selectedRevision?.id ?? ""}
+                            onChange={(e) => {
+                                const rev = revisions.find((r) => r.id === e.target.value);
+                                if (rev) selectVideoRevision(rev);
+                            }}
+                        >
+                            {revisions.map((r) => (
+                                <option key={r.id} value={r.id}>
+                                    {t("revisionOption", {
+                                        revision: r.revision,
+                                        date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
+                                    })}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </div>
                 <p className="text-xs text-[#999] mt-1">
                     {selectedRevision
                         ? t("revisionInfo", {
@@ -75,26 +96,6 @@ export default function VideoTitle() {
                     </div>
                 )}
             </div>
-
-            {revisions.length > 1 && (
-                <select
-                    className="bg-[#202020] border border-[#333] text-sm rounded px-2 py-1 text-[#eee] hover:border-[#ff8800] transition"
-                    value={selectedRevision?.id ?? ""}
-                    onChange={(e) => {
-                        const rev = revisions.find((r) => r.id === e.target.value);
-                        if (rev) selectVideoRevision(rev);
-                    }}
-                >
-                    {revisions.map((r) => (
-                        <option key={r.id} value={r.id}>
-                            {t("revisionOption", {
-                                revision: r.revision,
-                                date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
-                            })}
-                        </option>
-                    ))}
-                </select>
-            )}
         </div>
     );
 }

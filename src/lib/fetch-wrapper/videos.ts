@@ -63,8 +63,7 @@ export async function fetchAllVideoTags(): Promise<ApiResult<string[]>> {
     const res = await fetch(`/api/v1/videos/tags`);
 
     if(res.ok) {
-        const data = await res.json();
-        return { ok: true, data: data.tags }
+        return { ok: true, data: await res.json() }
     }
 
     return ApiError(res);
