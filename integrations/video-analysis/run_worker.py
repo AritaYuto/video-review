@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from typing import Optional, Dict, Any
 from uuid import uuid4
+import uuid
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -81,11 +82,11 @@ def ensure_prompt_context_kind(
     with conn.cursor() as cur:
         cur.execute(
             """
-            INSERT INTO "PromptContextKinds" ("label")
-            VALUES (%s)
+            INSERT INTO "PromptContextKinds" ("id", "label")
+            VALUES (%s, %s)
             ON CONFLICT ("label") DO NOTHING
             """,
-            (label,),
+            (str(uuid.uuid4()), label),
         )
 
 

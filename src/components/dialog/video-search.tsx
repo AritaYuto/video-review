@@ -178,7 +178,7 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                             <div className="mx-2 w-full">
                                 <MultiComboBox
                                     placeholder="Select tags..."
-                                    options={allVideoTags}
+                                    options={allVideoTags ?? []}
                                     value={tags}
                                     setValue={setTags}
                                 />
