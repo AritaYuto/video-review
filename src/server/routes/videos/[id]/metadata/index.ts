@@ -86,6 +86,8 @@ metaDataRouter.openapi({
         }
 
         let prompt = promptTemplate.prompt;
+        let hasInput = false; 
+
         for (const kind of promptTemplate.kinds) {
             const storageKey = `video-analysis/${rev.id}.${kind}.json`;
             const stream = await VideoReviewStorage.download(storageKey);
@@ -101,13 +103,17 @@ metaDataRouter.openapi({
 
             prompt += `\n# Input ${kind} Info\n`
             prompt += kindText + "\n"
+
+            hasInput = true;
+        }
+
+        if (!hasInput) {
+            console.log(`Skip videoRev ${rev.id}: no analysis inputs.`);
+            continue;
         }
 
         try {
-            console.log(prompt)
             const resultText = await session.prompt(prompt);
-            console.log(resultText)
-
             const resultJson = JSON.parse(resultText);
             await prisma.videoRevision.update({
                 where: { id: rev.id },
