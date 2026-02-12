@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { createLlamaSession, LlamaDataJson, OutputFormatPrompt } from "@/server/lib/integration-clients/llama-client";
+import { createLlamaSession, LlamaDataJson } from "@/server/lib/integration-clients/llama-client";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { Readable } from "stream";
 

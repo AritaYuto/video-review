@@ -58,10 +58,3 @@ export type LlamaDataJson = {
     format: string,
     content: string[],
 }
-
-export const OutputFormatPrompt = `
-Output format:
-{
-  "summary": "...",
-  "tags": ["...", "..."]
-}`;
