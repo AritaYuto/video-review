@@ -33,7 +33,7 @@ Set the API token generated from the web UI
 > VIDEO_REVIEW_API_TOKEN
 
 It can also be specified directly in the command.
-> --server xxx.xxx.xxx.xxx -token xxxxxx
+> go run . --server xxx.xxx.xxx.xxx --token xxxxxx command --video_id xxx
 
 ### Command List
 
@@ -67,3 +67,13 @@ It can also be specified directly in the command.
 
 ##### Cet comments
 > go run . get-comments --video_id {uuid}  
+
+##### Annotate video revision
+* All video revisions will be tagged and summarized.
+> go run . annotate-video-rev
+* Tags and a summary are assigned to the specified video revision.
+> go run . annotate-video-rev --video_rev_id {uuid}　
+
+
+##### Upload prompt context definitions
+> go run . upload-prompt-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"

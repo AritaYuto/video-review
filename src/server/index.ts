@@ -24,6 +24,7 @@ import { avatarRouter } from "@/routes/avatar";
 import { userRouter } from "@/routes/user";
 import { chatRouter } from "@/routes/chat";
 import { thumbnailRouter } from "@/routes/thumbnail";
+import { promptRouter } from "@/routes/prompt-templates";
 
 export const app = new Hono().basePath("/api");
 
@@ -41,6 +42,8 @@ app.route("/v1/avatar", avatarRouter);
 app.route("/v1/user", userRouter);
 app.route("/v1/chat", chatRouter);
 app.route("/v1/thumbnail", thumbnailRouter);
+app.route("/v1/prompt-templates", promptRouter);
+
 
 // deprecate API
 app.route("/uploads", localRouter);

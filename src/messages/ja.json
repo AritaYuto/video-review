@@ -9,7 +9,11 @@
         "noSelection": "未選択",
         "revisionInfo": "Rev: {revision} ({uploadedAt})",
         "noRevision": "リビジョン情報なし",
-        "revisionOption": "rev_{revision} ({date})"
+        "revisionOption": "rev_{revision} ({date})",
+        "tagsLabel": "タグ",
+        "noTags": "なし",
+        "summaryLabel": "要約",
+        "noSummary": "なし"
     },
     "video-upload": {
         "title": "動画アップロード",
@@ -67,6 +71,10 @@
         "helperText": "Ctrl+Cでコピーして共有してね",
         "close": "閉じる"
     },
+    "prompt-edit": {
+        "title": "プロンプト編集",
+        "save": "更新"
+    },
     "comment-search": {
         "title": "コメント検索",
         "searchFilter": "テキストフィルター",
@@ -95,7 +103,8 @@
         "languageOptionEn": "英語 (English)",
         "languageOptionJa": "日本語 (Japanese)",
         "logout": "ログアウト",
-        "editProfile": "プロフィール編集"
+        "editProfile": "プロフィール編集",
+        "editPrompt": "プロンプト編集"
     },
     "calendar-date-radio": {
         "today": "今日",

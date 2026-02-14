@@ -1,5 +1,5 @@
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { nextCloudClient } from "@/server/lib/storage/integrations/nextcloud";
+import { nextCloudClient } from "@/server/lib/integration-clients/nextcloud";
 
 export const nextCloudRouter = new Hono();
 

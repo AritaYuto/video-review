@@ -31,6 +31,13 @@ const QuerySchema = z.object({
         .string()
         .transform(v => v === "true")
         .optional(),
+    tags: z
+        .string()
+        .transform((v) => v
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
+        ).optional(),
 });
 
 listRouter.openapi({
@@ -65,6 +72,7 @@ listRouter.openapi({
         hasComment,
         user,
         includeRevisions,
+        tags,
     } = query;
 
     const videoDateRange = toDateRange(new Date(Number(videoFrom)), new Date(Number(videoTo)));
@@ -104,6 +112,15 @@ listRouter.openapi({
         ];
     }
 
+    if (tags && tags.length > 0) {
+        whereVideo.revisions = {
+            some: {
+                deleted: false,
+                tags: { hasSome: tags },
+            },
+        };
+    }
+
     try {
         const videos = await prisma.video.findMany({
             where: whereVideo,
@@ -134,5 +151,45 @@ listRouter.openapi({
         return c.json(videos);
     } catch (err) {
         return c.json({ error: "Failed to fetch videos" }, { status: 500 });
+    }
+});
+
+listRouter.openapi({
+    method: "get",
+    summary: "Get all video revision tags",
+    description: "Returns a deduplicated list of tags from all non-deleted video revisions.",
+    path: "/tags",
+    responses: {
+        200: {
+            description: "List of tags",
+            content: {
+                "application/json": {
+                    schema: z.array(z.string()),
+                },
+            },
+        },
+        500: {
+            description: "Internal Server Error",
+        },
+    },
+}, async (c) => {
+    try {
+        const revisions = await prisma.videoRevision.findMany({
+            where: { deleted: false },
+            select: { tags: true },
+        });
+
+        const tags = Array.from(
+            new Set(
+                revisions
+                    .flatMap((revision) => revision.tags)
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag.length > 0)
+            )
+        ).sort((a, b) => a.localeCompare(b));
+
+        return c.json(tags);
+    } catch {
+        return c.json({ error: "Failed to fetch video tags" }, { status: 500 });
     }
 });

@@ -56,6 +56,14 @@ var commands = map[string]Command{
 		Run:  RunGetComments,
 		Desc: "Get comments",
 	},
+	"annotate-video-rev": {
+		Run:  RunAnnotateVideoRev,
+		Desc: "Annotate video revision",
+	},
+	"upload-prompt-context": {
+		Run:  RunUploadPromptContext,
+		Desc: "Upload prompt context definitions",
+	},
 }
 
 func main() {
@@ -64,13 +72,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd := os.Args[1]
-
 	fs := flag.NewFlagSet("global", flag.ContinueOnError)
 	server := fs.String("server", "", "VideoReview server URL")
 	token := fs.String("token", "", "API token")
 
-	if err := fs.Parse(os.Args[2:]); err != nil {
+	if err := fs.Parse(os.Args[1:]); err != nil {
 		os.Exit(1)
 	}
 
@@ -78,7 +84,6 @@ func main() {
 	if baseURL == "" {
 		baseURL = os.Getenv("VIDEO_REVIEW_SERVER_URL")
 	}
-
 	apiToken := *token
 	if apiToken == "" {
 		apiToken := os.Getenv("VIDEO_REVIEW_API_TOKEN")
@@ -95,6 +100,9 @@ func main() {
 		panic("VIDEO_REVIEW_API_TOKEN is not set")
 	}
 
+	args := fs.Args()
+	cmd := args[0]
+
 	GlobalConfig = Config{
 		BaseURL:  strings.TrimRight(baseURL, "/"),
 		APIToken: apiToken,
@@ -106,7 +114,7 @@ func main() {
 		printUsage()
 		os.Exit(1)
 	}
-	c.Run(cmd, fs.Args())
+	c.Run(cmd, args[1:])
 }
 
 func printUsage() {

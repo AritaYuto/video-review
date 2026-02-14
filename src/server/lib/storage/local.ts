@@ -137,7 +137,7 @@ export class LocalStorage implements FileStorage {
     async download(storageKey: string): Promise<NextResponse> {
         const abs = this.resolveStoragePath(storageKey);
         if (!abs || !fs.existsSync(abs)) {
-            return NextResponse.json({ error: "Video file is missing on server : " + abs }, { status: 500 });
+            return NextResponse.json({ error: "file is missing on server : " + abs }, { status: 500 });
         }
         const stream = fs.createReadStream(abs);
         return new NextResponse(stream as any, {

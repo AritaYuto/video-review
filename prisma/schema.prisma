@@ -64,8 +64,35 @@ model VideoRevision {
   filePath    String
   uploadedAt  DateTime @default(now())
   deleted     Boolean  @default(false)
+  tags        String[] @default([])
+  summary     String?
+
+  analysisJob VideoAnalysisJob?
 
   @@unique([videoId, revision])
+}
+
+model PromptContextKinds {
+  id        String   @id @default(uuid())
+  label     String   @unique
+}
+
+model PromptTemplate {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  prompt    String
+  kinds     String[] @default([])
+}
+
+model VideoAnalysisJob {
+  id              String              @id @default(uuid())
+  videoRevisionId String              @unique
+  status          VideoAnalysisStatus @default(pending)
+  createdAt       DateTime            @default(now())
+
+  videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
+
+  @@index([status])
 }
 
 model VideoComment {
@@ -132,4 +159,11 @@ enum UploadStorageType {
   local
   s3
   nextCloud
+}
+
+enum VideoAnalysisStatus {
+  pending
+  running
+  succeeded
+  failed
 }

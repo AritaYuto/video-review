@@ -5,6 +5,7 @@ import * as api from '@/lib/fetch-wrapper';
 
 interface VideoState {
     videos: Video[];
+    allVideoTags: string[],
     selectedVideo: Video | null;
     revisions: VideoRevision[],
     selectedRevision: VideoRevision | null;
@@ -18,6 +19,7 @@ interface VideoState {
 
 export const useVideoStore = create<VideoState>((set, get) => ({
     videos: [],
+    allVideoTags: [],
     selectedVideo: null,
     revisions: [],
     selectedRevision: null,
@@ -35,8 +37,10 @@ export const useVideoStore = create<VideoState>((set, get) => ({
             hasIssue: s.hasIssue,
             hasDrawing: s.hasDrawing,
             hasComment: s.hasComment,
+            tags: s.tags
         });
-        set({ videos: data, loading: false });
+        const tags = await api.fetchAllVideoTags();
+        set({ videos: data, loading: false, allVideoTags: tags.ok ? tags.data : [] });
     },
 
     async selectVideo(video) {

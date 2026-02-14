@@ -1,7 +1,7 @@
 import { UploadStorageType } from'@/lib/db-types';
 import { NextResponse } from "next/server";
 import { FileStorage } from "@/server/lib/storage";
-import { nextCloudClient } from "@/server/lib/storage/integrations/nextcloud";
+import { nextCloudClient } from "@/server/lib/integration-clients/nextcloud";
 import fs, { createReadStream } from "fs";
 import Stream from 'stream';
 import { lookup } from "mime-types";
