@@ -46,7 +46,7 @@ class PluginManager(PluginManagerBase):
             plugin_definitions=[
                 ("ObjectDetectionPlugin", "object_detection"),
                 ("FaceRecognitionPlugin", "face_recognition"),
-                ("ShotTypePlugin", "shot_type"),
+                ("ShotSemanticPlugin", "shot_type"),
                 ("DominantColorPlugin", "dominant_color"),
                 ("DescriptorPlugin", "descriptor"),
                 ("TextDetectionPlugin", "text_detection"),

@@ -52,12 +52,13 @@ class AnalysisConfig:
     frame_buffer_limit: int = 2
     memory_cleanup_interval: int = 50
     target_resolution_height: int = 720
-    ocr_languages: List[str] = field(default_factory=lambda: ["en", "ja"])
-    error_keywords: List[str] = field(default_factory=lambda: ["error", "exception", "warning", "エラー", "例外", "警告"])
+    ocr_languages: List[str] = field(default_factory=lambda: ["ja"])
+    tilt_threshold: float = 5.0
+    error_keywords: List[str] = field(default_factory=lambda: ["error", "exception", "warning"])
     plugin_skip_interval: Dict[str, int] = field(default_factory=lambda: {
         'DominantColorPlugin': 1,
         'TextDetectionPlugin': 1,
-        'ShotTypePlugin': 1,
+        'ShotSemanticPlugin': 1,
         "DescriptorPlugin": 1
     })
     force_device: Optional[str] = None

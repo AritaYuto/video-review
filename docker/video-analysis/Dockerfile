@@ -19,8 +19,7 @@ WORKDIR /app/integrations/video-analysis
 COPY integrations/video-analysis/requirements_cpu.txt /tmp/requirements_cpu.txt
 
 RUN pip install --upgrade pip \
-    && pip install -r /tmp/requirements_cpu.txt \
-    && pip install -r /tmp/requirements_worker.txt
+    && pip install -r /tmp/requirements_cpu.txt
 
 COPY integrations/video-analysis /app/integrations/video-analysis
 
