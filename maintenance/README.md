@@ -69,10 +69,14 @@ It can also be specified directly in the command.
 > go run . get-comments --video_id {uuid}  
 
 ##### Annotate video revision
+`Run manually`
+> go run . annotate-video-rev --video_rev_id {uuid} --tags "A,B,C" --summary "summary text"
+
+`Run automatically`
 * All video revisions will be tagged and summarized.
-> go run . annotate-video-rev
+> go run . auto-annotate-video-rev
 * Tags and a summary are assigned to the specified video revision.
-> go run . annotate-video-rev --video_rev_id {uuid}　
+> go run . auto-annotate-video-rev --video_rev_id {uuid}　
 
 
 ##### Upload prompt context definitions

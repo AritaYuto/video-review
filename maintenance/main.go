@@ -56,6 +56,10 @@ var commands = map[string]Command{
 		Run:  RunGetComments,
 		Desc: "Get comments",
 	},
+	"auto-annotate-video-rev": {
+		Run:  RunAutoAnnotateVideoRev,
+		Desc: "Auto annotate video revision",
+	},
 	"annotate-video-rev": {
 		Run:  RunAnnotateVideoRev,
 		Desc: "Annotate video revision",

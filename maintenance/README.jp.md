@@ -66,11 +66,15 @@ VideoReview にて発行した API トークンを設定
 ##### コメントを取得します
 > go run . get-comments --video_id {uuid}  
 
-##### タグ、要約を自動でつけます
+##### タグ、要約をつけます
+`手動`
+> go run . annotate-video-rev --video_rev_id {uuid} --tags "A,B,C" --summary "summary text"
+
+`自動（ローカルLLMを利用します）`
 * 全ての動画のリビジョンにタグと要約をつけます
-> go run . annotate-video-rev
+> go run . auto-annotate-video-rev
 * ビデオのリビジョンを指定し、タグと要約をつけます
-> go run . annotate-video-rev --video_id {uuid}　
+> go run . auto-annotate-video-rev --video_id {uuid}　
 
 ##### プロンプトに与える情報をアップロードします
 > go run . upload-prompt-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
