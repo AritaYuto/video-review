@@ -28,13 +28,6 @@ def whisper_dir():
     return dir
 
 
-def ultralytics_dir():
-    dir = model_dir() / "ultralytics"
-    if not dir.exists():
-        dir.mkdir(parents=True, exist_ok=True)
-    return dir
-
-
 def huggingface_dir():
     dir = model_dir() / "huggingface"
     if not dir.exists():
@@ -52,14 +45,16 @@ class AnalysisConfig:
     frame_buffer_limit: int = 2
     memory_cleanup_interval: int = 50
     target_resolution_height: int = 720
-    ocr_languages: List[str] = field(default_factory=lambda: ["ja"])
+    ocr_languages: List[str] = field(default_factory=lambda: [])
+    subtitle_ratio: float = 0.33
     tilt_threshold: float = 5.0
-    error_keywords: List[str] = field(default_factory=lambda: ["error", "exception", "warning"])
+    close_up_threshold: float = 0.3
+    medium_shot_threshold: float = 0.1
+    error_keywords: List[str] = field(default_factory=lambda: [])
+    dummy_keywords: List[str] = field(default_factory=lambda: [])
     plugin_skip_interval: Dict[str, int] = field(default_factory=lambda: {
-        'DominantColorPlugin': 1,
         'TextDetectionPlugin': 1,
         'ShotSemanticPlugin': 1,
-        "DescriptorPlugin": 1
     })
     force_device: Optional[str] = None
 
@@ -100,13 +95,15 @@ class AnalysisConfig:
 @dataclass
 class TranscriptionConfig:
     """Transcription service configuration."""
-    model_name: str = "medium"
+    model_name: str = "large-v3"
     cache_dir: str = str(whisper_dir())
-    beam_size: int = 1
+    beam_size: int = 5
+    no_speech_threshold: float = 0.1
     vad_filter: bool = True
     vad_threshold: float = 0.5
-    min_speech_duration_ms: int = 250
+    min_speech_duration_ms: int = 500
     min_silence_duration_ms: int = 2000
+    voice_language: str = ""
 
     def __post_init__(self) -> None:
         """Post-initialization adjustments."""

@@ -26,9 +26,11 @@ ANALYSIS_POLL_INTERVAL_SECONDS = env_float("VIDEO_ANALYSIS_POLL_INTERVAL_SECONDS
 ANALYSIS_SAMPLE_INTERVAL = env_float("VIDEO_ANALYSIS_SAMPLE_INTERVAL", 2.5)
 ANALYSIS_TARGET_RESOLUTION = env_int("VIDEO_ANALYSIS_TARGET_RESOLUTION", 720)
 ANALYSIS_OCR_LANGUAGES = env("VIDEO_ANALYSIS_OCR_LANGUAGES", "en,ja")
+ANALYSIS_VOICE_LANGUAGES = env("VIDEO_ANALYSIS_VOICE_LANGUAGES", "ja")
+ANALYSIS_ERROR_KEYWORDS = env("VIDEO_ANALYSIS_ERROR_KEYWORDS", "error,exception,warning")
+ANALYSIS_DUMMY_KEYWORDS = env("VIDEO_ANALYSIS_DUMMY_KEYWORDS", "temp,dummy,placeholer")
 ANALYSIS_DEVICE = env("VIDEO_ANALYSIS_DEVICE", "auto")
-TRANSCRIPTION_MODEL = env("VIDEO_TRANSCRIPTION_MODEL", "medium")
-
+TRANSCRIPTION_MODEL = env("VIDEO_TRANSCRIPTION_MODEL", "large-v3")
 
 STATUS_PENDING = "pending"
 STATUS_RUNNING = "running"
@@ -42,10 +44,14 @@ def build_config(conn: psycopg2.extensions.connection) -> tuple[AnalysisConfig, 
             sample_interval_seconds=ANALYSIS_SAMPLE_INTERVAL,
             target_resolution_height=ANALYSIS_TARGET_RESOLUTION,
             ocr_languages=ANALYSIS_OCR_LANGUAGES,
+            error_keywords=ANALYSIS_ERROR_KEYWORDS.split(","),
+            dummy_keywords=ANALYSIS_DUMMY_KEYWORDS.split(","),
             caption_context=get_caption_context(conn),
             device=ANALYSIS_DEVICE,
         ),
-        build_transcription_config(model_name=TRANSCRIPTION_MODEL),
+        build_transcription_config(
+            model_name=TRANSCRIPTION_MODEL, 
+            voice_language=ANALYSIS_VOICE_LANGUAGES),
         build_data_normalization_config(),
     )
 

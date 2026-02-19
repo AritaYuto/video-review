@@ -13,4 +13,4 @@ class DetectedTextExportPlugin(BaseFrameExportPlugin):
             item.get("text") for item in frame.get("detected_text", [])
             if item.get("text")
         ]
-        return ', '.join(texts) if texts else '-'
+        return ', '.join(texts) if texts else ''

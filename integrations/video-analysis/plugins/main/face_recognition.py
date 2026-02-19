@@ -30,7 +30,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self.current_job_id: str = ""
 
     def setup(self, video_path: str, job_id: str) -> None:
-        self.face_recognizer = FaceRecognizer()
+        self.face_recognizer = FaceRecognizer(detector_backend="yolov8n")
         self.current_video_path = video_path
         self.current_job_id = job_id
         self.face_recognizer.reset_unknown_registry()

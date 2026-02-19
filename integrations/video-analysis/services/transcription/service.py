@@ -80,7 +80,8 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                     "threshold": self.config.vad_threshold,
                     "min_speech_duration_ms": self.config.min_speech_duration_ms,
                     "min_silence_duration_ms": self.config.min_silence_duration_ms
-                }
+                },
+                language=self.config.voice_language
             )
 
             # Process segments

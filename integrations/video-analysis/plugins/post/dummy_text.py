@@ -3,19 +3,19 @@ from typing import Dict, Any, List
 from plugins.post.base import BaseFrameExportPlugin
 
 
-class ErrorTextExportPlugin(BaseFrameExportPlugin):
+class DummyTextExportPlugin(BaseFrameExportPlugin):
     """
-    Export detected error texts as a comma-separated string
+    Export detected dummy texts as a comma-separated string
     suitable for LLM input or plain-text export.
     """
 
-    name = "error_text"
+    name = "dummy_text"
 
     def _get_parameter(self, frame: Dict[str, Any]) -> str:
-        error_items: List[Dict[str, Any]] = frame.get("error_text") or []
+        dummy_items: List[Dict[str, Any]] = frame.get("dummy_text") or []
 
         texts: List[str] = []
-        for item in error_items:
+        for item in dummy_items:
             if not isinstance(item, dict):
                 continue
 
