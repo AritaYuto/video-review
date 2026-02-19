@@ -69,6 +69,9 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
             saved_names: list[str] = []
 
             for name, payload in outputs.items():
+                if not payload:
+                    continue
+
                 target = output_file / Path(id + f".{name}.json")
                 with target.open("w", encoding="utf-8") as handle:
                     json.dump(payload, handle, ensure_ascii=False, indent=2)

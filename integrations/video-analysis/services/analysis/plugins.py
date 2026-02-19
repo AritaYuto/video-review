@@ -44,10 +44,8 @@ class PluginManager(PluginManagerBase):
 
         self._load_plugins(
             plugin_definitions=[
-                ("ObjectDetectionPlugin", "object_detection"),
                 ("FaceRecognitionPlugin", "face_recognition"),
-                ("ShotSemanticPlugin", "shot_type"),
-                ("DominantColorPlugin", "dominant_color"),
+                ("ShotSemanticPlugin", "shot_semantic"),
                 ("DescriptorPlugin", "descriptor"),
                 ("TextDetectionPlugin", "text_detection"),
             ],

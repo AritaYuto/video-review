@@ -9,5 +9,10 @@ class AngleTypeExportPlugin(BaseFrameExportPlugin):
     name = "angle_type"
 
     def _get_parameter(self, frame: Dict[str, Any]) -> str:
-        return frame.get('angle_type') or '-'
-    
+        shot = frame.get("shot_type")
+        tilt = frame.get("angle_type")
+
+        if tilt == "dutch" and shot in ["close-up", "medium-shot"]:
+            return "dutch"
+        
+        return "neutral"

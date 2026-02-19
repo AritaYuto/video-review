@@ -17,16 +17,15 @@ class TextDetectionPlugin(AnalyzerPlugin):
         super().__init__(config)
         self.reader: Optional[easyocr.Reader] = None
         self.text_scale = 1.0
-        self.text_threshold: float = 0.6
-        self.low_text: float = 0.4
+        self.text_threshold: float = 0.4
+        self.low_text: float = 0.3
 
         self.use_gpu = self.config.get("device") != 'cpu'
 
     def setup(self, video_path, job_id) -> None:
         """Initialize the EasyOCR reader."""
         try:
-            languages = self.config.get("ocr_languages", ["jp", "en"])
-            self.error_keywords = self.config.get("error_keywords", [])
+            languages = self.config.get("ocr_languages")
             self.reader = easyocr.Reader(
                 languages,
                 gpu=self.use_gpu,
@@ -52,7 +51,8 @@ class TextDetectionPlugin(AnalyzerPlugin):
             detected_texts = self._normalize_detections(results, scale_factor)
 
             frame_analysis['detected_text'] = detected_texts
-            frame_analysis['error_texts'] = self._detect_error_texts(detected_texts)
+            frame_analysis['error_text'] = self._detect_pickup_texts(detected_texts, self.config.get("error_keywords"))
+            frame_analysis['dummy_text'] = self._detect_pickup_texts(detected_texts, self.config.get("dummy_keywords"))
 
         except Exception as e:
             logger.error(f"Error during text detection: {e}")
@@ -93,7 +93,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
             low_text=self.low_text,
             link_threshold=0.4,
             canvas_size=2560,
-            mag_ratio=1.0
+            mag_ratio=1.2
         )
 
     def _normalize_detections(
@@ -136,14 +136,15 @@ class TextDetectionPlugin(AnalyzerPlugin):
 
         return detected_texts
 
-    def _detect_error_texts(
+    def _detect_pickup_texts(
         self,
-        detected_texts: List[Dict[str, Union[str, float, Dict[str, int]]]]
+        detected_texts: List[Dict[str, Union[str, float, Dict[str, int]]]],
+        pickup_keywords: List[str]
     ) -> List[Dict[str, Union[str, float, Dict[str, int]]]]:
-        if not self.error_keywords:
+        if not pickup_keywords:
             return []
 
-        keywords = [k.lower() for k in self.error_keywords]
+        keywords = [k.lower() for k in pickup_keywords]
         matches: List[Dict[str, Union[str, float, Dict[str, int]]]] = []
 
         for item in detected_texts:

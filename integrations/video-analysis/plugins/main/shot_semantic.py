@@ -1,22 +1,27 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
+from services.logger import get_logger
 import numpy as np
 from collections import deque
 from plugins.main.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from core.config import AnalysisConfig
 import cv2
+from collections import Counter
+
+logger = get_logger(__name__)
 
 class ShotSemanticPlugin(AnalyzerPlugin):
     """Video shot type classification based on face coverage."""
 
     def __init__(self, config: AnalysisConfig):
         super().__init__(config)
-        self.close_up_threshold = 0.3
-        self.medium_shot_threshold = 0.1
-        self.tilt_threshold = 5.0
         self.ratio_window: deque = deque(maxlen=5)
+        self.tilt_history = deque(maxlen=10)
+
 
     def setup(self, video_path: str, job_id: str) -> None:
         self.ratio_window.clear()
+        self.tilt_history.clear()
+
 
     def analyze_frame(
         self,
@@ -31,35 +36,34 @@ class ShotSemanticPlugin(AnalyzerPlugin):
         shot_type = self._classify_shot(width, height, faces)
         frame_analysis["shot_type"] = shot_type
         frame_analysis["angle_type"] = angle_type
-
         return frame_analysis
 
 
-    def _classify_tilt(self, frame: np.ndarray) -> float:
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 50, 150)
+    def _classify_tilt(self, frame: np.ndarray) -> str:
+        lines = self._detect_lines(frame)
 
-        lines = cv2.HoughLines(edges, 1, np.pi / 180, 150)
+        if lines is None or len(lines) < 3:
+            current_result = "neutral"
+        else:
+            angles = []
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
+                dev = abs(abs(angle) - 90)
+                if dev < 30: angles.append(dev)
 
-        if lines is None:
-            return 0.0
+            if not angles:
+                current_result = "neutral"
+            else:
+                if np.std(angles) > 5.0:
+                    current_result = "neutral" 
+                else:
+                    tilt_val = np.median(angles)
+                    threshold = self.config.get("tilt_threshold")
+                    current_result = "dutch" if tilt_val > threshold else "neutral"
 
-        angles = []
-
-        # Hough theta is normal vector angle.
-        # 90 degrees corresponds to horizontal lines in image space.
-        for rho, theta in lines[:50]:
-            degree = theta * 180 / np.pi
-            angles.append(degree)
-
-        # Compute deviation from horizontal baseline (90°).
-        # Larger deviation indicates stronger camera roll (Dutch angle).
-        horizontal_deviation = [
-            abs(angle - 90) for angle in angles
-        ]
-
-        tilt_degree = np.median(horizontal_deviation)
-        return "dutch" if tilt_degree > getattr(self.config, "tilt_threshold", 0.5) else "neutral"
+        self.tilt_history.append(current_result)
+        return Counter(self.tilt_history).most_common(1)[0][0]
 
 
     def _classify_shot(
@@ -68,25 +72,66 @@ class ShotSemanticPlugin(AnalyzerPlugin):
         frame_height: int,
         faces: List[Dict],
     ) -> str:
-
         if frame_width == 0 or frame_height == 0:
+            logger.info("Shot classify: invalid frame size")
             return "unknown"
 
         # --- Active Area (Excluding Subtitles) ---
-        effective_height = frame_height
-        if getattr(self.config, "ignore_subtitle_area", True):
-            subtitle_ratio = getattr(self.config, "subtitle_ratio", 0.33)
-            effective_height = int(frame_height * (1.0 - subtitle_ratio))
+        subtitle_ratio = self.config.get("subtitle_ratio")
+        effective_height = int(frame_height * (1.0 - subtitle_ratio))
 
         effective_area = frame_width * effective_height
         if effective_area == 0:
+            logger.info("Shot classify: effective area is zero")
             return "unknown"
 
-        # --- Faceless (characters) are handled separately ---
         if not faces:
+            logger.info("Shot classify: no faces detected")
             return "no-face"
 
-        total_area = 0.0
+        max_area = self._face_area_rate(faces, effective_height)
+        ratio = float(min(1.0, max(0.0, max_area / effective_area)))
+
+        self.ratio_window.append(ratio)
+        smoothed_ratio = float(np.mean(self.ratio_window))
+
+        close_th = self.config.get("close_up_threshold")
+        medium_th = self.config.get("medium_shot_threshold")
+
+        logger.info(
+            f"Shot classify: faces={len(faces)}, "
+            f"ratio={ratio:.4f}, "
+            f"used_ratio={ratio:.4f}, "
+            f"smoothed_ratio={smoothed_ratio:.4f}, "
+            f"close_th={close_th}, medium_th={medium_th}"
+        )
+
+        if smoothed_ratio >= close_th:
+            return "close-up"
+        elif smoothed_ratio >= medium_th:
+            return "medium-shot"
+        else:
+            return "wide-shot"
+
+    def _detect_lines(self, frame: np.ndarray):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 100, 200)
+
+        h, _ = frame.shape[:2]
+        lines = cv2.HoughLinesP(
+            edges,
+            1,
+            np.pi / 180,
+            threshold=100,
+            minLineLength=int(h * 0.25),
+            maxLineGap=10,
+        )
+
+        if lines is None or len(lines) < 3:
+            return None
+        return lines
+
+    def _face_area_rate(self, faces: List[Dict], effective_height: float) -> float:
         max_area = 0.0
 
         for face in faces:
@@ -96,8 +141,6 @@ class ShotSemanticPlugin(AnalyzerPlugin):
 
             top, right, bottom, left = location
 
-            # Clip face bounding boxes to effective ROI
-            # (subtitle / UI area excluded from analysis)
             top = max(0, top)
             bottom = min(effective_height, bottom)
 
@@ -105,43 +148,18 @@ class ShotSemanticPlugin(AnalyzerPlugin):
             height = max(0, bottom - top)
 
             area = width * height
-
-            total_area += area
             max_area = max(max_area, area)
 
-        if total_area == 0:
-            return "no-face"
-
-        use_largest = getattr(self.config, "use_largest_face_only", True)
-
-        # Optionally classify shot size based on the dominant (largest) face
-        # instead of total face coverage to better represent main subject framing.
-        if use_largest:
-            ratio = max_area / effective_area
-        else:
-            ratio = total_area / effective_area
-
-        ratio = float(min(1.0, max(0.0, ratio)))
-
-        self.ratio_window.append(ratio)
-        smoothed_ratio = np.mean(self.ratio_window)
-
-        close_th = getattr(self.config, "close_up_threshold", 0.35)
-        medium_th = getattr(self.config, "medium_shot_threshold", 0.15)
-
-        if smoothed_ratio >= close_th:
-            return "close-up"
-        elif smoothed_ratio >= medium_th:
-            return "medium-shot"
-        else:
-            return "wide-shot"
+        return max_area
 
 
     def get_results(self) -> PluginResult:
         return None
 
+
     def get_summary(self) -> PluginResult:
         return None
+
 
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""

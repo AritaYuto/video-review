@@ -10,4 +10,4 @@ class ShotTypeExportPlugin(BaseFrameExportPlugin):
     name = "shot_type"
 
     def _get_parameter(self, frame: Dict[str, Any]) -> str:
-        return frame.get('shot_type') or '-'
+        return frame.get('shot_type') or ''

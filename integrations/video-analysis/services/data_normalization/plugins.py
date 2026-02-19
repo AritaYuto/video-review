@@ -23,14 +23,11 @@ class PluginManager(PluginManagerBase):
 
         self._load_plugins(
             plugin_definitions=[
-                ("DescriptionExportPlugin", "description"),
-                ("ObjectsExportPlugin", "objects"),
-                ("FacesExportPlugin", "faces"),
                 ("DetectedTextExportPlugin", "detected_text"),
-                ("DominantColorExportPlugin", "dominant_color"),
                 ("AngleTypeExportPlugin", "angle_type"),
                 ("ShotTypeExportPlugin", "shot_type"),
-                ("ErrorTextsExportPlugin", "error_texts"),
+                ("ErrorTextExportPlugin", "error_text"),
+                ("DummyTextExportPlugin", "dummy_text")
             ],
             module_prefix="plugins.post",
             predicate=predicate,
