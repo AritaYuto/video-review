@@ -19,9 +19,9 @@ python-dotenv>=1.2.1
 
 # ML/AI frameworks
 --extra-index-url https://download.pytorch.org/whl/cu121
-torch==2.7.1+cpu
-torchvision==0.17.2+cu121
-torchaudio==2.2.2+cu121
+torch==2.8.0
+torchvision==0.23.0
+torchaudio==2.8.0
 
 # Face recognition 
 deepface>=0.0.96

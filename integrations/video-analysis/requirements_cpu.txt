@@ -21,8 +21,8 @@ python-dotenv>=1.2.1
 
 # ML/AI frameworks (CPU ONLY)
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch>=2.6.0
-torchvision>=0.16.0
+torch==2.8.0
+torchvision==0.23.0
 
 # If x86 (AMD64), use the tiny CPU-only version
 tensorflow-cpu==2.15.0; platform_machine == "x86_64"
