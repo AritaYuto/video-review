@@ -34,6 +34,17 @@ async function buildAndCopy(outDir: string) {
     cpSync(".next", path.join(outDir, ".next"), { recursive: true });
     cpSync("node_modules", path.join(outDir, "node_modules"), { recursive: true });
     cpSync("public", path.join(outDir, "public"), { recursive: true });
+    cpSync("integrations/video-analysis",
+        path.join(outDir, "integrations/video-analysis"),
+        {
+            recursive: true,
+            filter: (src) => {
+                if (src.includes(".venv")) return false;
+                if (src.includes("__pycache__")) return false;
+                return true;
+            }
+        }
+    );
 }
 
 const main = async () => {

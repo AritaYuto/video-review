@@ -16,7 +16,7 @@ services:
       DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
 
     volumes:
-      - videoreview-storage:/storage
+      - ${DOCKER_HOST_STORAGE:-videoreview-storage}:/storage
 
     depends_on:
       - db

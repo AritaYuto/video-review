@@ -16,18 +16,10 @@ export const createLlama = async (): Promise<Llama | undefined> => {
     };
 
     try {
-        console.log(`Initializing LLM backend: ${env.LLAMA_BACKEND}`);
-        _llama = await getLlama({
-            gpu:
-                env.LLAMA_BACKEND === "cuda" ? "cuda" :
-                    env.LLAMA_BACKEND === "metal" ? "metal" :
-                        false,
-        });
+        console.log(`Initializing LLM backend: ${env.LOCAL_LLM_DEVICE}`);
+        _llama = await getLlama({ gpu: env.LOCAL_LLM_DEVICE });
     } catch (e) {
-        console.warn(
-            `Failed to initialize LLM backend (${env.LLAMA_BACKEND}), falling back to CPU.`,
-            e
-        );
+        console.warn(`Failed to initialize LLM backend (${env.LOCAL_LLM_DEVICE}), falling back to CPU.`, e);
         _llama = await getLlama({ gpu: false });
     }
 

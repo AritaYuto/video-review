@@ -9,6 +9,8 @@
         "dev": "next dev --turbopack -p 3489",
         "build": "npx tsx build.ts",
         "start": "next start -p 3489",
+        "video-analysis:setup": "cd integrations/video-analysis && npx tsx run_python.ts setup",
+        "video-analysis:run": "cd integrations/video-analysis && npx tsx run_python.ts run",
         "prisma:deploy": "npx prisma migrate deploy",
         "prisma:generate": "npx prisma generate",
         "prisma:migration": "npx prisma migrate dev --name",

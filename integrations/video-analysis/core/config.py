@@ -83,9 +83,7 @@ class AnalysisConfig:
             return self.force_device
         try:
             import torch
-            if torch.backends.mps.is_available():
-                return 'mps'
-            elif torch.cuda.is_available():
+            if torch.cuda.is_available():
                 return 'cuda'
         except ImportError:
             pass

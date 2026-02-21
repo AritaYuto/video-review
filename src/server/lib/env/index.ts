@@ -1,8 +1,7 @@
 import { UploadStorageType } from "@prisma/client";
 import { booleanEnv, resolveEnv, typeEnv } from "@/lib/env";
 import "server-only"
-
-export type LlamaBackendType = "cuda" | "metal" | "cpu";
+import { LlamaGpuType } from "node-llama-cpp";
 
 export const env = {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -33,5 +32,5 @@ export const env = {
     VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated: process.env.ADMIN_MAINTENANCE_TOKEN,
     JWT_SECRET_deprecated: process.env.JWT_SECRET,
     USE_AI_SUPPORT: booleanEnv(process.env.VIDEO_REVIEW_USE_AI_SUPPORT),
-    LLAMA_BACKEND: typeEnv<LlamaBackendType>(process.env.VIDEO_REVIEW_LLAMA_BACKEND, "cpu"),
+    LOCAL_LLM_DEVICE: typeEnv<LlamaGpuType>(process.env.VIDEO_REVIEW_LOCAL_LLM_DEVICE, "auto"),
 } as const;

@@ -36,9 +36,6 @@ yarn-error.log*
 .env*
 .env.demo*
 
-# prod compose files
-compose.prod.yml
-
 # vercel
 .vercel
 
