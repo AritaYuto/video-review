@@ -1,4 +1,5 @@
 import { getLlama, LlamaModel, LlamaChatSession, LlamaJsonSchemaGrammar, Llama } from "node-llama-cpp";
+import { env as frontEnv } from "@/lib/env";
 import { env } from "@/server/lib/env";
 import path from "path";
 
@@ -6,7 +7,7 @@ let _llama: Llama | undefined = undefined
 let _model: LlamaModel | undefined = undefined;
 
 export const createLlama = async (): Promise<Llama | undefined> => {
-    if (!env.USE_AI_SUPPORT) {
+    if (!frontEnv.USE_AI_SUPPORT) {
         console.warn("AI support is disabled");
         return undefined;
     }
@@ -27,7 +28,7 @@ export const createLlama = async (): Promise<Llama | undefined> => {
 }
 
 const createModel = async (llama: Llama): Promise<LlamaModel | undefined> => {
-    if (!env.USE_AI_SUPPORT) {
+    if (!frontEnv.USE_AI_SUPPORT) {
         console.warn("AI support is disabled");
         return undefined;
     }
@@ -68,9 +69,12 @@ export async function createLlamaSession(): Promise<LlamaChatSession | undefined
     return session;
 }
 
-export type PromptContextDataJson = {
-    video_file: string,
-    summary: string,
-    format: string,
-    content: string[],
+export type VideoEvent = {
+    start_ms: number,
+    end_ms: number,
+    data: string,
+}
+
+export type VideoEventContext = {
+    events: VideoEvent[],
 }

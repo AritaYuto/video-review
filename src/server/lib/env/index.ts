@@ -31,6 +31,5 @@ export const env = {
     NEXTCLOUD_ROOTDIR: process.env.VIDEO_REVIEW_NEXTCLOUD_ROOTDIR,
     VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated: process.env.ADMIN_MAINTENANCE_TOKEN,
     JWT_SECRET_deprecated: process.env.JWT_SECRET,
-    USE_AI_SUPPORT: booleanEnv(process.env.VIDEO_REVIEW_USE_AI_SUPPORT),
     LOCAL_LLM_DEVICE: typeEnv<LlamaGpuType>(process.env.VIDEO_REVIEW_LOCAL_LLM_DEVICE, "auto"),
 } as const;

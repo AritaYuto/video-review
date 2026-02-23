@@ -2,14 +2,12 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 
+from plugins.post.base import EventContents
+
 
 @dataclass
 class DataNormalizationResult:
     """Complete data normalization result."""
     id: str
-    result: Dict[str, Any]
-    
-    def to_dict(self) -> Dict:
-        """Convert to JSON-serializable dictionary."""
-        return self.result
+    data: Dict[str, EventContents]
     

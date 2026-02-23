@@ -29,7 +29,6 @@ class PluginManager(PluginManagerBase):
     def _load_frame_plugins(self) -> None:
         config_dict = asdict(self.config)
         config_dict["device"] = self.config.device
-        config_dict["caption_context"] = self.config.caption_context
         config_dict["ocr_languages"] = self.config.ocr_languages
 
         def predicate(cls, plugin_name: str) -> bool:
@@ -44,9 +43,9 @@ class PluginManager(PluginManagerBase):
 
         self._load_plugins(
             plugin_definitions=[
+                ("ObjectDetectionPlugin", "object_detection"),
                 ("FaceRecognitionPlugin", "face_recognition"),
                 ("ShotSemanticPlugin", "shot_semantic"),
-                ("DescriptorPlugin", "descriptor"),
                 ("TextDetectionPlugin", "text_detection"),
             ],
             module_prefix="plugins.main",

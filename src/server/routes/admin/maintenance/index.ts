@@ -188,12 +188,18 @@ maintenanceRouter.openapi({
         }
     },
 }, async (c) => {
-    const hasAdmin = await prisma.user.count({ where: { role: "admin" } }) > 0;
-    const hasJwt = await getJwtSecret() !== undefined
-
-    return c.json({
-        hasAdmin,
-        hasJwt,
-        initialized: hasAdmin && hasJwt,
-    });
+    try {
+        const hasAdmin = await prisma.user.count({ where: { role: "admin" } }) > 0;
+        const hasJwt = await getJwtSecret() !== undefined
+        return c.json({
+            hasAdmin,
+            hasJwt,
+            initialized: hasAdmin && hasJwt,
+        });
+    } catch (e) {
+        if (e instanceof ServerError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unknown error" }, { status: 500 });
+    }
 });

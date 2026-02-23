@@ -1,9 +1,9 @@
 """LLM-friendly JSON export."""
 from typing import Dict, Any, List
-from plugins.post.base import BaseFrameExportPlugin
+from plugins.post.base import BaseDataNormalizationPlugin
 
 
-class ErrorTextExportPlugin(BaseFrameExportPlugin):
+class ErrorTextExportPlugin(BaseDataNormalizationPlugin):
     """
     Export detected error texts as a comma-separated string
     suitable for LLM input or plain-text export.
@@ -11,7 +11,7 @@ class ErrorTextExportPlugin(BaseFrameExportPlugin):
 
     name = "error_text"
 
-    def _get_parameter(self, frame: Dict[str, Any]) -> str:
+    def _get_parameter(self, frame: Dict[str, Any]) -> List[str]:
         error_items: List[Dict[str, Any]] = frame.get("error_text") or []
 
         texts: List[str] = []
@@ -23,4 +23,4 @@ class ErrorTextExportPlugin(BaseFrameExportPlugin):
             if text:
                 texts.append(str(text).strip())
 
-        return ", ".join(texts) if texts else ""
+        return texts

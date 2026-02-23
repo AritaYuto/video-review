@@ -1,18 +1,18 @@
 """LLM-friendly JSON export."""
-from typing import Dict, Any
-from plugins.post.base import BaseFrameExportPlugin
+from typing import Dict, List, Any
+from plugins.post.base import BaseDataNormalizationPlugin
 
 
-class AngleTypeExportPlugin(BaseFrameExportPlugin):
+class AngleTypeExportPlugin(BaseDataNormalizationPlugin):
     """Export scenes as LLM-friendly text blocks with JSON metadata."""
     
     name = "angle_type"
 
-    def _get_parameter(self, frame: Dict[str, Any]) -> str:
+    def _get_parameter(self, frame: Dict[str, Any]) -> List[str]:
         shot = frame.get("shot_type")
         tilt = frame.get("angle_type")
 
         if tilt == "dutch" and shot in ["close-up", "medium-shot"]:
-            return "dutch"
+            return [ "dutch" ]
         
-        return "neutral"
+        return [ "neutral" ]

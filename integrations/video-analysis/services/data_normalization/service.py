@@ -1,4 +1,5 @@
 """Video data normalization service."""
+from dataclasses import asdict
 from typing import Optional, Callable
 from pathlib import Path
 import time
@@ -41,7 +42,7 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
 
             result = DataNormalizationResult(
                 id=request.job_id,
-                result=output
+                data=output
             )
 
             # Final progress update
@@ -65,18 +66,24 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
             output_file.parent.mkdir(parents=True, exist_ok=True)
         
             id = result.id
-            outputs = result.to_dict()
+            outputs = result.data
             saved_names: list[str] = []
 
             for name, payload in outputs.items():
-                if not payload:
+                if not payload or payload.is_empty():
                     continue
 
                 target = output_file / Path(id + f".{name}.json")
                 with target.open("w", encoding="utf-8") as handle:
-                    json.dump(payload, handle, ensure_ascii=False, indent=2)
+                    json.dump(
+                        {"events": [asdict(b) for b in payload.blocks]},
+                        handle,
+                        ensure_ascii=False,
+                        indent=2
+                    )
                 saved_names.append(name)
                 logger.info(f"Results saved to: {target}")
+
             return saved_names
                 
         except Exception as e:

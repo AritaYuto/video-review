@@ -72,7 +72,7 @@ model VideoRevision {
   @@unique([videoId, revision])
 }
 
-model PromptContextKinds {
+model VideoEventKind {
   id        String   @id @default(uuid())
   label     String   @unique
 }

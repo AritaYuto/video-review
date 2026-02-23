@@ -17,22 +17,6 @@ const UpdateQuerySchema = z.object({
     prompt: z.string().optional(),
 });
 
-
-promptRouter.openapi({
-    method: "get",
-    summary: "",
-    path: "/kinds",
-    responses: {
-        200: {
-            description: "",
-        }
-    },
-}, async (c) => {
-    const items = await prisma.promptContextKinds.findMany({select : { label: true }})
-    return c.json({ items: items.map(x => x.label) });
-});
-
-
 promptRouter.openapi({
     method: "get",
     summary: "",
@@ -43,7 +27,7 @@ promptRouter.openapi({
         }
     },
 }, async (c) => {
-    const items = [ "caption_context", "annotation" ]
+    const items = [ "annotation" ]
     return c.json({ items });
 });
 

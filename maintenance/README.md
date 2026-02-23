@@ -69,15 +69,31 @@ It can also be specified directly in the command.
 > go run . get-comments --video_id {uuid}  
 
 ##### Annotate video revision
-`Run manually`
+`Manual Annotation`
+
+Set tags and/or summary manually.
+
 > go run . annotate-video-rev --video_rev_id {uuid} --tags "A,B,C" --summary "summary text"
 
-`Run automatically`
-* All video revisions will be tagged and summarized.
-> go run . auto-annotate-video-rev
-* Tags and a summary are assigned to the specified video revision.
-> go run . auto-annotate-video-rev --video_rev_id {uuid}　
+`Automatic Annotation (LLM)`
 
+Generate tags and/or summary using LLM.
+> go run . auto-ai-annotate-video-rev
 
-##### Upload prompt context definitions
-> go run . upload-prompt-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"
+> go run . auto-ai-annotate-video-rev --video_rev_id {uuid}　
+
+Generate for a specific revision.
+* --gen_tags
+* --gen_summary
+
+`Automatic Annotation (Deterministic)`
+
+Generate tags using predefined rules from video event context.
+> go run . auto-deterministic-annotate-video-rev
+
+> go run . auto-deterministic-annotate-video-rev --video_rev_id {uuid}　
+
+##### Upload Video Event Context
+Upload normalized event JSON for a video.
+
+> go run . upload-video-event-context --video_id {uuid}　--kind {log|subtitle|etc} --jsonPath "json_path"

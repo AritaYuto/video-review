@@ -46,7 +46,6 @@ def build_config(conn: psycopg2.extensions.connection) -> tuple[AnalysisConfig, 
             ocr_languages=ANALYSIS_OCR_LANGUAGES,
             error_keywords=ANALYSIS_ERROR_KEYWORDS.split(","),
             dummy_keywords=ANALYSIS_DUMMY_KEYWORDS.split(","),
-            caption_context=get_caption_context(conn),
             device=ANALYSIS_DEVICE,
         ),
         build_transcription_config(
@@ -62,33 +61,14 @@ def open_db() -> psycopg2.extensions.connection:
     conn.autocommit = True
     return conn
 
-
-def get_caption_context(conn: psycopg2.extensions.connection) -> Optional[str]:
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute(
-            """
-            SELECT pt."prompt"
-            FROM "PromptTemplate" pt
-            WHERE pt."key" = 'caption_context'
-            LIMIT 1
-            """
-        )
-        row = cur.fetchone()
-
-    if not row:
-        return None
-
-    return row["prompt"]
-
-
-def ensure_prompt_context_kind(
+def ensure_video_event_kind(
     conn: psycopg2.extensions.connection,
     label: str,
 ) -> None:
     with conn.cursor() as cur:
         cur.execute(
             """
-            INSERT INTO "PromptContextKinds" ("id", "label")
+            INSERT INTO "VideoEventKind" ("id", "label")
             VALUES (%s, %s)
             ON CONFLICT ("label") DO NOTHING
             """,
@@ -238,7 +218,7 @@ async def process_revision(
             str(data_normalization_output_path),
         )
         for name in output_names:
-            ensure_prompt_context_kind(conn, name)
+            ensure_video_event_kind(conn, name)
         logger.info(f"[{job_id}] DataNormalization complete")
 
         update_job_status(

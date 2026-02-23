@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { createLlamaSession, createLlama, PromptContextDataJson } from "@/server/lib/integration-clients/llama-client";
+import { createLlamaSession, createLlama, VideoEventContext } from "@/server/lib/integration-clients/llama-client";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { Readable } from "stream";
 
@@ -19,6 +19,8 @@ const annotateBody = z.object({
 
 const llmAutoAnnotateBody = z.object({
     promptKey: z.string(),
+    generateTags: z.string().transform(x => x === "true").optional(),
+    generateSummary: z.string().transform(x => x === "true").optional(),
 });
 
 
@@ -80,6 +82,114 @@ metaDataRouter.openapi({
     return c.json({ videoRevision: updatedVideoRev });
 });
 
+
+metaDataRouter.openapi({
+    method: "post",
+    summary: "",
+    description: "",
+    path: "/deterministic-auto-tagging",
+    responses: {
+        200: { description: "" },
+        401: { description: "Unauthorized" },
+        403: { description: "Forbidden" },
+        500: { description: "" }
+    },
+}, async (c) => {
+    try {
+        await authorize(c.req.raw, ["admin"]);
+    } catch (e) {
+        if (e instanceof ServerError) {
+            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        }
+        return c.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const id = c.req.param("id");
+
+
+    let whereVideoRevision: PrismaTypes.VideoRevisionWhereInput = { deleted: false };
+    if (id === "all") {
+        whereVideoRevision.summary = { equals: null };
+    } else {
+        whereVideoRevision.id = { equals: id };
+    }
+
+    const videoRevs = await prisma.videoRevision.findMany({
+        where: whereVideoRevision,
+        select: { id: true, videoId: true, tags: true },
+    });
+
+    type ExistsRule = { type: "exists"; tag: string; };
+    type FromDataRule = { type: "fromData"; };
+    type TagRule = ExistsRule | FromDataRule;
+
+    const tagRules: Record<string, TagRule> = {
+        angle: { type: "fromData" },
+        shot: { type: "fromData" },
+        error: { type: "exists", tag: "Error" },
+        dummy: { type: "exists", tag: "Dummy" },
+    };
+
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (const rev of videoRevs) {
+
+        const tags: string[] = []
+        for (const [kind, rule] of Object.entries(tagRules)) {
+
+            const storageKey = `video-analysis/${rev.id}.${kind}.json`;
+            const stream = await VideoReviewStorage.download(storageKey);
+
+            if (!stream) {
+                continue;
+            }
+
+            const eventJson = await stream.text();
+            const eventAnalysis = JSON.parse(eventJson) as VideoEventContext;
+
+            if (!eventAnalysis || eventAnalysis.events.length === 0) {
+                continue;
+            }
+
+            switch (rule.type) {
+                case "exists":
+                    {
+                        const tag = rule.tag as string;
+                        tags.push(tag);
+                    }
+                    break;
+
+                case "fromData":
+                    {
+                        for (const e of eventAnalysis.events) {
+                            for (const value of e.data) {
+                                if (typeof value === "string" && value.length > 0){
+                                    tags.push(value);
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+
+        try {
+            let data: PrismaTypes.VideoRevisionUpdateInput = {
+                tags: [...new Set([...rev.tags, ...tags])]
+            }
+            await prisma.videoRevision.update({ where: { id: rev.id }, data });
+            successCount++;
+            console.log(`Processed videoRev ${rev.id} successfully.`);
+        } catch (e) {
+            console.error(`Failed to process videoRev ${rev.id}:`, e);
+            failureCount++;
+        }
+    }
+    return c.json({ successCount, failureCount });
+});
+
+
 metaDataRouter.openapi({
     method: "post",
     summary: "",
@@ -112,7 +222,11 @@ metaDataRouter.openapi({
 
     const id = c.req.param("id");
     const body = c.req.valid("json");
-    const { promptKey } = body;
+    const { promptKey, generateTags, generateSummary } = body;
+
+    if (!generateSummary && !generateTags) {
+        return c.json({ successCount: 0, failureCount: 0 });
+    }
 
     let whereVideoRevision: PrismaTypes.VideoRevisionWhereInput = { deleted: false };
     if (id === "all") {
@@ -181,12 +295,11 @@ metaDataRouter.openapi({
                 continue;
             }
 
-            const data = await stream.text();
-            const sceneAnalysis = JSON.parse(data) as PromptContextDataJson;
-            const kindText = sceneAnalysis.content.join("\n\n");
-
+            const eventJson = await stream.text();
+            const eventAnalysis = JSON.parse(eventJson) as VideoEventContext;
+            const kindText = eventAnalysis.events.map(e => `[${e.start_ms}-${e.end_ms}]\n${e.data}\n`)
             prompt += `\n# Input ${kind} Info\n`
-            prompt += kindText + "\n"
+            prompt += kindText.join("\n") + "\n"
 
             hasInput = true;
         }
@@ -200,13 +313,14 @@ metaDataRouter.openapi({
         try {
             const resultText = await session.prompt(prompt, { grammar: annotationGrammar });
             const resultJson = JSON.parse(resultText);
-            await prisma.videoRevision.update({
-                where: { id: rev.id },
-                data: {
-                    summary: resultJson.summary,
-                    tags: resultJson.tags
-                }
-            });
+            let data: PrismaTypes.VideoRevisionUpdateInput = {}
+            if (generateSummary) {
+                data.summary = resultJson.summary
+            }
+            if (generateTags) {
+                data.tags = resultJson.tags
+            }
+            await prisma.videoRevision.update({ where: { id: rev.id }, data });
             successCount++;
             console.log(`Processed videoRev ${rev.id} successfully.`);
         } catch (e) {
@@ -257,9 +371,9 @@ metaDataRouter.openapi({
         return c.json({ error: "kind and file are required" }, 400);
     }
 
-    const find = await prisma.promptContextKinds.findUnique({ where: { label: kind } });
+    const find = await prisma.videoEventKind.findUnique({ where: { label: kind } });
     if (!find) {
-        await prisma.promptContextKinds.create({ data: { label: kind } });
+        await prisma.videoEventKind.create({ data: { label: kind } });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

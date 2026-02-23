@@ -1,6 +1,7 @@
 """Data normalization plugin manager."""
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
+from plugins.post.base import DataNormalizationPlugin, EventContents
 from services.logger import get_logger
 from services.plugin_manager_base import PluginManagerBase
 
@@ -33,14 +34,17 @@ class PluginManager(PluginManagerBase):
             predicate=predicate,
             factory=factory,
         )
-
         logger.info(f"Loaded {len(self.plugins)} data normalization plugins")
 
-    def run(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
-        outputs: Dict[str, Any] = {}
+
+    def run(self, analysis: Dict[str, Any]) -> Dict[str, EventContents]:
+        result = {}
+
         for plugin in self.plugins:
-            try:
-                outputs[plugin.name] = plugin.process(analysis)
-            except Exception as exc:
-                logger.error(f"Data normalization plugin {plugin.name} failed: {exc}")
-        return outputs
+            name, events = self._process_data_normazation(analysis, plugin)
+            result[name] = events
+        return result
+
+
+    def _process_data_normazation(self, analysis: Dict[str, Any], plugin: DataNormalizationPlugin) -> Tuple[str, EventContents]:
+        return plugin.name, plugin.process(analysis)

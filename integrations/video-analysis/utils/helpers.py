@@ -51,7 +51,6 @@ def build_analysis_config(
     ocr_languages: Union[str, Iterable[str], None],
     error_keywords: List[str],
     dummy_keywords: List[str],
-    caption_context: str,
     device: Optional[str],
 ) -> AnalysisConfig:
     def __normalize_ocr_languages__(value: Union[str, Iterable[str], None]) -> List[str]:
@@ -62,7 +61,6 @@ def build_analysis_config(
     config = AnalysisConfig(
         sample_interval_seconds=sample_interval_seconds,
         target_resolution_height=target_resolution_height,
-        caption_context=caption_context,
         error_keywords=error_keywords,
         dummy_keywords=dummy_keywords
     )

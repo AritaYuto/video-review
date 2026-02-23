@@ -193,3 +193,17 @@ listRouter.openapi({
         return c.json({ error: "Failed to fetch video tags" }, { status: 500 });
     }
 });
+
+listRouter.openapi({
+    method: "get",
+    summary: "",
+    path: "/event-kinds",
+    responses: {
+        200: {
+            description: "",
+        }
+    },
+}, async (c) => {
+    const items = await prisma.videoEventKind.findMany({select : { label: true }})
+    return c.json({ items: items.map(x => x.label) });
+});

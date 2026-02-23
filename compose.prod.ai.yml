@@ -1,7 +1,7 @@
 services:
   videoreview:
     environment:
-      VIDEO_REVIEW_USE_AI_SUPPORT: "true"
+      NEXT_PUBLIC_VIDEO_REVIEW_USE_AI_SUPPORT: "true"
 
   video-analysis:
     env_file:

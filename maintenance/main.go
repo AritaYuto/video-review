@@ -56,17 +56,21 @@ var commands = map[string]Command{
 		Run:  RunGetComments,
 		Desc: "Get comments",
 	},
-	"auto-annotate-video-rev": {
-		Run:  RunAutoAnnotateVideoRev,
-		Desc: "Auto annotate video revision",
+	"auto-ai-annotate-video-rev": {
+		Run:  RunAiAutoAnnotateVideoRev,
+		Desc: "Generate tags and/or summary using LLM",
+	},
+	"auto-deterministic-annotate-video-rev": {
+		Run:  RunDeterministicAutoAnnotateVideoRev,
+		Desc: "Generate tags from deterministic video event rules",
 	},
 	"annotate-video-rev": {
 		Run:  RunAnnotateVideoRev,
-		Desc: "Annotate video revision",
+		Desc: "Manually set tags and/or summary for a video revision",
 	},
-	"upload-prompt-context": {
-		Run:  RunUploadPromptContext,
-		Desc: "Upload prompt context definitions",
+	"upload-video-event-context": {
+		Run:  RunUploadVideoEventContext,
+		Desc: "Upload normalized video event context JSON files",
 	},
 }
 

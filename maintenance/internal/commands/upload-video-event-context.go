@@ -12,7 +12,7 @@ import (
 	. "videoreview-maintenance/internal/lib"
 )
 
-func RunUploadPromptContext(cmd string, args []string) {
+func RunUploadVideoEventContext(cmd string, args []string) {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	videoId := fs.String("video_rev_id", "", "video revision id")
 	kind := fs.String("kind", "", "kind type")

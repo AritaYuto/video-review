@@ -3,7 +3,7 @@ import { ApiError, ApiResult } from "@/lib/utils/api-result";
 import { PromptTemplate } from "@/lib/db-types";
 
 export async function getPromptKinds(): Promise<ApiResult<string[]>> {
-    const res = await fetch(`/api/v1/prompt-templates/kinds`, { method: "GET" });
+    const res = await fetch(`/api/v1/videos/event-kinds`, { method: "GET" });
     if (res.ok) {
         const json = await res.json();
         return { ok: true, data: json.items ?? [] };

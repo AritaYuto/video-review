@@ -11,7 +11,7 @@ services:
     environment:
       DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
       VIDEO_REVIEW_LOCAL_ROOTDIR: /app/uploads
-      VIDEO_REVIEW_USE_AI_SUPPORT: "true"
+      NEXT_PUBLIC_VIDEO_REVIEW_USE_AI_SUPPORT: "true"
     volumes:
       - .:/app
       - videoreview-storage:/app/uploads

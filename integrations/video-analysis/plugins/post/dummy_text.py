@@ -1,9 +1,9 @@
 """LLM-friendly JSON export."""
 from typing import Dict, Any, List
-from plugins.post.base import BaseFrameExportPlugin
+from plugins.post.base import BaseDataNormalizationPlugin
 
 
-class DummyTextExportPlugin(BaseFrameExportPlugin):
+class DummyTextExportPlugin(BaseDataNormalizationPlugin):
     """
     Export detected dummy texts as a comma-separated string
     suitable for LLM input or plain-text export.
@@ -11,7 +11,7 @@ class DummyTextExportPlugin(BaseFrameExportPlugin):
 
     name = "dummy_text"
 
-    def _get_parameter(self, frame: Dict[str, Any]) -> str:
+    def _get_parameter(self, frame: Dict[str, Any]) -> List[str]:
         dummy_items: List[Dict[str, Any]] = frame.get("dummy_text") or []
 
         texts: List[str] = []
@@ -23,4 +23,4 @@ class DummyTextExportPlugin(BaseFrameExportPlugin):
             if text:
                 texts.append(str(text).strip())
 
-        return ", ".join(texts) if texts else ""
+        return texts

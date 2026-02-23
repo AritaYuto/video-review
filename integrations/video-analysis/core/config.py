@@ -27,6 +27,11 @@ def whisper_dir():
         dir.mkdir(parents=True, exist_ok=True)
     return dir
 
+def ultralytics_dir():
+    dir = model_dir() / "ultralytics"
+    if not dir.exists():
+        dir.mkdir(parents=True, exist_ok=True)
+    return dir
 
 def huggingface_dir():
     dir = model_dir() / "huggingface"
@@ -37,7 +42,6 @@ def huggingface_dir():
 @dataclass
 class AnalysisConfig:
     """Video analysis configuration."""
-    caption_context: str = ""
     sample_interval_seconds: float = 2.5
     max_workers: int = 2
     enable_streaming: bool = True

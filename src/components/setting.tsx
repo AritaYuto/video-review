@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
 import PromptEditDialog from "@/components/dialog/prompt-edit";
 import { Separator } from "@/ui/separator";
+import { env } from "@/lib/env";
 
 export function SettingPopover() {
     const t = useTranslations("setting");
@@ -70,7 +71,7 @@ export function SettingPopover() {
                                 <FontAwesomeIcon icon={faTerminal} />
                             </Button>
                         );
-                    }, !isLogged)}
+                    }, !isLogged && env.USE_AI_SUPPORT)}
 
                     {/* Edit profile */}
                     {ControlRow(t("editProfile"), () => {

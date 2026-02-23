@@ -6,14 +6,32 @@ import (
 	. "videoreview-maintenance/internal/lib"
 )
 
-func RunAutoAnnotateVideoRev(cmd string, args []string) {
+func RunAiAutoAnnotateVideoRev(cmd string, args []string) {
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
+	videoId := fs.String("video_rev_id", "all", "video revision id")
+	generateSummary := fs.String("gen_summary", "true", "")
+	generateTags := fs.String("gen_tags", "false", "")
+	fs.Parse(args)
+
+	Fetch(FetchOptions{
+		Method: POST,
+		Path:   fmt.Sprintf("/api/v1/videos/%s/metadata/llm-auto-annotate", *videoId),
+		Json: map[string]interface{}{
+			"promptKey":       "annotation",
+			"generateSummary": *generateSummary,
+			"generateTags":    *generateTags,
+		},
+	})
+}
+
+func RunDeterministicAutoAnnotateVideoRev(cmd string, args []string) {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	videoId := fs.String("video_rev_id", "all", "video revision id")
 	fs.Parse(args)
 
 	Fetch(FetchOptions{
 		Method: POST,
-		Path:   fmt.Sprintf("/api/v1/videos/%s/metadata/llm-auto-annotate", *videoId),
+		Path:   fmt.Sprintf("/api/v1/videos/%s/metadata/deterministic-auto-tagging", *videoId),
 		Json:   map[string]interface{}{"promptKey": "annotation"},
 	})
 }
