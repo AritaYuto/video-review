@@ -16,7 +16,7 @@ from services.data_normalization.service import DataNormalizationService
 
 from services.transcription.service import TranscriptionService
 from services.logger import get_logger
-from utils.helpers import env, env_float, env_int, build_analysis_config, build_transcription_config, build_data_normalization_config
+from utils.helpers import env, env_bool, env_float, env_int, build_analysis_config, build_transcription_config, build_data_normalization_config
 
 logger = get_logger(__name__)
 
@@ -30,7 +30,8 @@ ANALYSIS_VOICE_LANGUAGES = env("VIDEO_ANALYSIS_VOICE_LANGUAGES", "ja")
 ANALYSIS_ERROR_KEYWORDS = env("VIDEO_ANALYSIS_ERROR_KEYWORDS", "error,exception,warning")
 ANALYSIS_DUMMY_KEYWORDS = env("VIDEO_ANALYSIS_DUMMY_KEYWORDS", "temp,dummy,placeholer")
 ANALYSIS_DEVICE = env("VIDEO_ANALYSIS_DEVICE", "auto")
-TRANSCRIPTION_MODEL = env("VIDEO_TRANSCRIPTION_MODEL", "large-v3")
+TRANSCRIPTION_ENABLED = env_bool("VIDEO_ANALYSIS_TRANSCRIPTION_ENABLED", False)
+TRANSCRIPTION_MODEL = env("VIDEO_ANALYSIS_TRANSCRIPTION_MODEL", "large-v3")
 
 STATUS_PENDING = "pending"
 STATUS_RUNNING = "running"
@@ -152,7 +153,8 @@ async def process_revision(
     analysis_config, transcription_config, data_normalization_config = build_config(conn)
     analysis_service = AnalysisService(analysis_config)
     data_normalization_service = DataNormalizationService(data_normalization_config)
-    transcription_service = TranscriptionService(transcription_config)
+    if TRANSCRIPTION_ENABLED:
+        transcription_service = TranscriptionService(transcription_config)
     job_id = row["id"]
     update_job_status(conn, row["id"], STATUS_RUNNING)
 
@@ -191,17 +193,17 @@ async def process_revision(
         analysis_service.save_result(result, str(analysis_output_path))
         logger.info(f"[{job_id}] Analysis complete: {analysis_output_path}")
 
-        transcription_request = TranscriptionRequest(
-            video_path=str(video_path),
-            job_id=job_id,
-            json_file_path=str(transcription_output),
-        )
-        transcription_result = await transcription_service.process_async(
-            transcription_request,
-            transcription_progress_callback
-        )
-        transcription_service.save_result(transcription_result, str(transcription_output))
-        logger.info(f"[{job_id}] Transcription complete: {transcription_output}")
+        if TRANSCRIPTION_ENABLED:
+            transcription_request = TranscriptionRequest(
+                video_path=str(video_path),
+                job_id=job_id,
+                json_file_path=str(transcription_output))
+            transcription_result = await transcription_service.process_async(
+                transcription_request,
+                transcription_progress_callback
+            )
+            transcription_service.save_result(transcription_result, str(transcription_output))
+            logger.info(f"[{job_id}] Transcription complete: {transcription_output}")
 
         data_normalization_request = DataNormalizationRequest(
             video_analysis_result=result,
@@ -232,7 +234,8 @@ async def process_revision(
         logger.exception(f"[{job_id}] Analysis crashed: {exc}")
     finally:
         analysis_service.cleanup()
-        transcription_service.cleanup()
+        if TRANSCRIPTION_ENABLED:
+            transcription_service.cleanup()
         data_normalization_service.cleanup()
 
 
