@@ -50,12 +50,13 @@ class ShotSemanticPlugin(AnalyzerPlugin):
                 x1, y1, x2, y2 = line[0]
                 angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
                 dev = abs(abs(angle) - 90)
-                if dev < 30: angles.append(dev)
+                if dev < 20: 
+                    angles.append(dev)
 
             if not angles:
                 current_result = "neutral"
             else:
-                if np.std(angles) > 5.0:
+                if np.std(angles) > 3.0:
                     current_result = "neutral" 
                 else:
                     tilt_val = np.median(angles)
@@ -127,7 +128,7 @@ class ShotSemanticPlugin(AnalyzerPlugin):
             maxLineGap=10,
         )
 
-        if lines is None or len(lines) < 3:
+        if lines is None or len(lines) < 4:
             return None
         return lines
 

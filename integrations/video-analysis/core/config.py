@@ -51,7 +51,7 @@ class AnalysisConfig:
     target_resolution_height: int = 720
     ocr_languages: List[str] = field(default_factory=lambda: [])
     subtitle_ratio: float = 0.33
-    tilt_threshold: float = 5.0
+    tilt_threshold: float = 7.0
     close_up_threshold: float = 0.3
     medium_shot_threshold: float = 0.1
     error_keywords: List[str] = field(default_factory=lambda: [])
