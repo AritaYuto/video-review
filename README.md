@@ -185,6 +185,7 @@ cp .example.env .env
 
 # 2. Create image
 docker build -t videoreview:latest -f docker/web/Dockerfile.prod .
+docker build -t video-processing:latest -f docker/video-processing/Dockerfile .
 
 # 3. Run only DB
 docker compose -f compose.prod.yml up -d db

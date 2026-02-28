@@ -186,6 +186,7 @@ cp .example.env .env
 
 # 2. イメージの作成
 docker build -t videoreview:latest -f docker/web/Dockerfile.prod .
+docker build -t video-processing:latest -f docker/video-processing/Dockerfile .
 
 # 3. DBを起動
 docker compose -f compose.prod.yml up -d db
@@ -194,7 +195,7 @@ docker compose -f compose.prod.yml up -d db
 docker compose -f compose.prod.yml run --rm videoreview npm run prisma:deploy
 
 # 5. サービス起動
-docker compose -f compose.prod.yml up -d videoreview
+docker compose -f compose.prod.yml up -d videoreview -d video-processing
 
 ```
 
