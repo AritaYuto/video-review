@@ -15,6 +15,13 @@
         "summaryLabel": "Summary",
         "noSummary": "None"
     },
+    "video-download": {
+        "title": "Download Video",
+        "selectRes": "Select resolution",
+        "cancel": "Cancel",
+        "downloading": "Downloading...",
+        "prepare": "Download"
+    },
     "video-upload": {
         "title": "Upload Video",
         "selectFile": "Select a video file",

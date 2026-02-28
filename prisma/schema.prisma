@@ -68,6 +68,7 @@ model VideoRevision {
   summary     String?
 
   analysisJob VideoAnalysisJob?
+  processingJob VideoProcessingJob?
 
   @@unique([videoId, revision])
 }
@@ -87,8 +88,19 @@ model PromptTemplate {
 model VideoAnalysisJob {
   id              String              @id @default(uuid())
   videoRevisionId String              @unique
-  status          VideoAnalysisStatus @default(pending)
+  status          JobStatus @default(pending)
   createdAt       DateTime            @default(now())
+
+  videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model VideoProcessingJob {
+  id              String   @id @default(uuid())
+  videoRevisionId String  @unique
+  status          JobStatus @default(pending)
+  createdAt       DateTime @default(now())
 
   videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
 
@@ -161,7 +173,7 @@ enum UploadStorageType {
   nextCloud
 }
 
-enum VideoAnalysisStatus {
+enum JobStatus {
   pending
   running
   succeeded

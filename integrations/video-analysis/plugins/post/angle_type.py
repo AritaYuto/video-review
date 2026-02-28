@@ -15,4 +15,4 @@ class AngleTypeExportPlugin(BaseDataNormalizationPlugin):
         if tilt == "dutch" and shot in ["close-up", "medium-shot"]:
             return [ "dutch" ]
         
-        return [ "neutral" ]
+        return []

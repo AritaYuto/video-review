@@ -7,6 +7,8 @@ import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import { hash, randomBytes } from "crypto";
+import { env } from "@/lib/env";
+import { formatVideoRes } from "@/server/lib/utils/format-video-res";
 
 export const maintenanceRouter = new Hono();
 
@@ -135,6 +137,11 @@ maintenanceRouter.openapi({
 
     try {
         const ret = await VideoReviewStorage.deleteObject(videoRevision.filePath);
+        for (const res of env.RESOLUTION_PRESETS) {
+            const derivedStorageKey = formatVideoRes(videoRevision.filePath, res);
+            await VideoReviewStorage.deleteObject(derivedStorageKey);
+        }
+
         if (!ret) {
             throw new Error("delete failed");
         }

@@ -51,6 +51,23 @@ services:
     depends_on:
       - db
 
+  video-processing:
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./docker/video-processing/Dockerfile
+    container_name: videoreview-video-processing
+    environment:
+      DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
+      VIDEO_REVIEW_LOCAL_ROOTDIR: /app/uploads
+    volumes:
+      - videoreview-storage:/app/uploads
+      # If you want to specify Local Storage
+      # - /mnt/d/data/videoreview:/storage
+    depends_on:
+      - db
+
   localstack:
       env_file:
         - .env

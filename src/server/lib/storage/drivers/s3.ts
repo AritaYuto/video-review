@@ -1,28 +1,45 @@
-import { NextResponse } from "next/server";
+import { S3Client } from "@aws-sdk/client-s3";
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3Client } from "@/server/lib/integration-clients/s3";
-import { UploadStorageType } from '@/lib/db-types';
-import { FileStorage } from "@/server/lib/storage";
-import { lookup } from "mime-types";
-import { createReadStream } from "fs";
 import { Readable } from "stream";
-import { env } from "@/server/lib/env";
+import { FileDriver } from "@/server/lib/storage/drivers";
+import fs, { createReadStream } from "fs";
+import { lookup } from "mime-types";
 
-import "server-only"
+export class S3Driver implements FileDriver {
+    readonly s3: S3Client | undefined = undefined;
+    readonly bucket: string | undefined = undefined;
+    readonly localStackEndpoint: string | undefined = undefined;
 
-export class S3Storage implements FileStorage {
+    constructor(s3LocalStackEndpoint: string | undefined, region: string | undefined, bucket: string | undefined) {
+        this.bucket = bucket;
+        this.localStackEndpoint = s3LocalStackEndpoint;
+        if (this.localStackEndpoint) {
+            this.s3 = new S3Client({
+                endpoint: this.localStackEndpoint,
+                forcePathStyle: true,
+                region: region,
+                requestChecksumCalculation: "WHEN_SUPPORTED",
+                responseChecksumValidation: "WHEN_SUPPORTED",
+            });
+        } else {
+            this.s3 = new S3Client({
+                region: region,
+            });
+        }
+    }
+
     type(): string {
-        return UploadStorageType.s3;
+        return "s3";
     }
 
     async hasObject(storageKey: string): Promise<boolean> {
-        if (!s3Client) return false;
+        if (!this.s3 || !this.bucket) return false;
 
         try {
-            await s3Client.send(
+            await this.s3.send(
                 new HeadObjectCommand({
-                    Bucket: env.S3_BUCKET,
+                    Bucket: this.bucket,
                     Key: storageKey,
                 })
             );
@@ -37,45 +54,45 @@ export class S3Storage implements FileStorage {
     }
 
     async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string, cacheControl?: string): Promise<void> {
-        if (!s3Client) return Promise.reject(undefined);
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
 
         try {
             const command = new PutObjectCommand({
-                Bucket: env.S3_BUCKET,
+                Bucket: this.bucket,
                 Key: storageKey,
                 Body: src,
                 ContentType: contentType,
                 CacheControl: cacheControl,
-                ...(env.S3_LOCALSTACK_ENDPOINT
+                ...(this.localStackEndpoint
                     ? { ChecksumCRC32: "" }
                     : {}
                 ),
             });
-            await s3Client.send(command);
+            await this.s3.send(command);
         } catch (e) { return; }
     }
 
     async directUploadFromFile(storageKey: string, src: string): Promise<void> {
-        if (!s3Client) return Promise.reject(undefined);
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
 
         try {
             await this.directUploadFromBuffer(
-                storageKey, 
-                createReadStream(src), 
+                storageKey,
+                createReadStream(src),
                 lookup(src) || "application/octet-stream");
         } catch (e) { return; }
     }
 
     async uploadURL(session_id: string, storageKey: string, contentType: string): Promise<string> {
-        if (!s3Client) return Promise.reject(undefined);
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
 
         let url = await getSignedUrl(
-            s3Client,
+            this.s3,
             new PutObjectCommand({
-                Bucket: env.S3_BUCKET,
+                Bucket: this.bucket,
                 Key: storageKey,
                 ContentType: contentType,
-                ...(env.S3_LOCALSTACK_ENDPOINT
+                ...(this.localStackEndpoint
                     ? { ChecksumCRC32: '' }
                     : {}
                 ),
@@ -89,7 +106,7 @@ export class S3Storage implements FileStorage {
     }
 
     async fallbackURL(storageKey: string): Promise<string> {
-        if (!s3Client) return Promise.reject(undefined);
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
 
         const hasObject = await this.hasObject(storageKey);
         if (!hasObject) {
@@ -98,9 +115,9 @@ export class S3Storage implements FileStorage {
 
         try {
             let ret = await getSignedUrl(
-                s3Client,
+                this.s3,
                 new GetObjectCommand({
-                    Bucket: env.S3_BUCKET,
+                    Bucket: this.bucket,
                     Key: storageKey,
                 }),
                 { expiresIn: 60 * 10 }
@@ -116,13 +133,39 @@ export class S3Storage implements FileStorage {
         }
     }
 
-    async download(storageKey: string): Promise<NextResponse> {
-        if (!s3Client) return Promise.reject(undefined);
+    async directReadStream(storageKey: string) {
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
+
+        const obj = await this.s3.send(new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: storageKey,
+        }));
+        return obj.Body as Readable;
+    }
+
+    async deleteObject(storageKey: string): Promise<boolean> {
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
+
+        try {
+            const command = new DeleteObjectCommand({
+                Bucket: this.bucket,
+                Key: storageKey,
+            });
+
+            await this.s3.send(command);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async download(storageKey: string): Promise<Readable | string> {
+        if (!this.s3 || !this.bucket) return Promise.reject(undefined);
 
         let url = await getSignedUrl(
-            s3Client,
+            this.s3,
             new GetObjectCommand({
-                Bucket: env.S3_BUCKET,
+                Bucket: this.bucket,
                 Key: storageKey,
             }),
             { expiresIn: 600 }
@@ -131,22 +174,6 @@ export class S3Storage implements FileStorage {
         if (url.includes("http://localstack")) {
             url = url.replace("http://localstack", "http://localhost");
         }
-        return NextResponse.redirect(url, 302);
-    }
-
-    async deleteObject(storageKey: string): Promise<boolean> {
-        if (!s3Client) return Promise.reject(undefined);
-
-        try {
-            const command = new DeleteObjectCommand({
-                Bucket: env.S3_BUCKET,
-                Key: storageKey,
-            });
-
-            await s3Client.send(command);
-            return true;
-        } catch (e) {
-            return false;
-        }
+        return url;
     }
 }

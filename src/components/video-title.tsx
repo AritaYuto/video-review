@@ -80,19 +80,6 @@ export default function VideoTitle() {
                                 </span>
                             )}
                         </div>
-
-                        <div className="text-xs text-[#ccc] leading-relaxed break-words">
-                            <span className="text-[11px] text-[#888] mr-1">
-                                {t("summaryLabel")}:
-                            </span>
-                            {selectedRevision.summary?.trim() ? (
-                                <span>{selectedRevision.summary.trim()}</span>
-                            ) : (
-                                <span className="text-[11px] text-[#666]">
-                                    {t("noSummary")}
-                                </span>
-                            )}
-                        </div>
                     </div>
                 )}
             </div>

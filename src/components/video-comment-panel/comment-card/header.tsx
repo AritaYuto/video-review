@@ -24,7 +24,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
 import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
-import { ShareLinkDialog } from "@/components/share-link";
+import { ShareLinkDialog } from "@/components/dialog/share-link";
 import { useEffect, useMemo, useState } from "react";
 import { CardHeader } from "@/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";

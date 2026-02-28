@@ -15,6 +15,13 @@
         "summaryLabel": "要約",
         "noSummary": "なし"
     },
+    "video-download": {
+        "title": "動画ダウンロード",
+        "selectRes": "解像度を選択",
+        "cancel": "キャンセル",
+        "downloading": "ダウンロード中...",
+        "prepare": "ダウンロード"
+    },
     "video-upload": {
         "title": "動画アップロード",
         "selectFile": "動画ファイルを選択",

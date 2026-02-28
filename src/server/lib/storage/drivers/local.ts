@@ -1,46 +1,30 @@
-
-
-import { UploadStorageType } from '@/lib/db-types';
-import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
-import { FileStorage } from "@/server/lib/storage";
-import Stream from 'stream';
+import { Readable } from "stream";
 import { pipeline } from "stream/promises";
-import { env } from "@/server/lib/env";
+import { FileDriver } from "@/server/lib/storage/drivers";
+import fs from "fs";
+import path from "path";
 
-import "server-only"
 
-let localBaseDirectory: string | undefined;
-export const LocalBaseDirectory = () => {
-    if (!localBaseDirectory) {
-        const local = env.VIDEO_REVIEW_LOCAL_ROOTDIR;
-        if (local && fs.existsSync(local)) {
-            localBaseDirectory = local
-        } else {
-            console.warn(`
-                [WARN] VIDEO_REVIEW_LOCAL_ROOTDIR is not set or invalid.
-                Falling back to default directory: ./uploads
-                For production use, please configure VIDEO_REVIEW_LOCAL_ROOTDIR explicitly.
-            `);
-            localBaseDirectory = path.join(process.cwd(), "uploads")
-        }
+export class LocalDriver implements FileDriver {
+    readonly localBaseDirectory: string | undefined = undefined;
+
+    constructor(localBaseDirectory: string | undefined) {
+        this.localBaseDirectory = localBaseDirectory;
     }
-    return localBaseDirectory;
-}
-
-export class LocalStorage implements FileStorage {
 
     type(): string {
-        return UploadStorageType.local;
+        return "local";
     }
 
     async hasObject(storageKey: string): Promise<boolean> {
-        const abs = path.join(LocalBaseDirectory(), storageKey);
+        if(!this.localBaseDirectory) {
+             return false;
+        }
+        const abs = path.join(this.localBaseDirectory, storageKey);
         return fs.existsSync(abs);
     }
 
-    async directUploadFromBuffer(storageKey: string, src: Stream.Readable, contentType: string, cacheControl?: string): Promise<void> {
+    async directUploadFromBuffer(storageKey: string, src: Readable, contentType: string, cacheControl?: string): Promise<void> {
         console.log("[directUploadFromBuffer] called");
         console.log("[directUploadFromBuffer] storageKey =", storageKey);
         console.log("[directUploadFromBuffer] contentType =", contentType);
@@ -134,17 +118,13 @@ export class LocalStorage implements FileStorage {
         }
     }
 
-    async download(storageKey: string): Promise<NextResponse> {
+    async directReadStream(storageKey: string) {
         const abs = this.resolveStoragePath(storageKey);
         if (!abs || !fs.existsSync(abs)) {
-            return NextResponse.json({ error: "file is missing on server : " + abs }, { status: 500 });
+            throw new Error("file is missing on server : " + abs);
         }
-        const stream = fs.createReadStream(abs);
-        return new NextResponse(stream as any, {
-            headers: {
-                "Content-Type": "application/octet-stream",
-            },
-        });
+
+        return fs.createReadStream(abs);
     }
 
     async deleteObject(storageKey: string): Promise<boolean> {
@@ -192,6 +172,10 @@ export class LocalStorage implements FileStorage {
         }
     }
 
+    async download(storageKey: string): Promise<Readable | string> {
+        return await this.directReadStream(storageKey)
+    }
+
     /**
      * Resolves a storageKey into an absolute filesystem path under the uploads directory.
      *
@@ -214,13 +198,18 @@ export class LocalStorage implements FileStorage {
      * - Returns undefined if the resolved path escapes the uploads directory.
      */
     resolveStoragePath(storageKey: string): string | undefined {
+        if (!this.localBaseDirectory) {
+            console.warn("[resolveStoragePath] localBaseDirectory is not set");
+            return undefined;
+        }
+
         let key = storageKey;
         if (key.startsWith("/api/uploads/")) {
             key = key.slice("/api/uploads/".length);
         }
 
         key = key.replace(/^[/\\]+/, "");
-        const baseDir = path.join(LocalBaseDirectory());
+        const baseDir = path.join(this.localBaseDirectory);
         const resolved = path.resolve(baseDir, key);
 
         if (!resolved.startsWith(baseDir + path.sep)) {

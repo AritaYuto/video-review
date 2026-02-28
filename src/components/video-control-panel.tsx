@@ -23,10 +23,10 @@ import { formatTime } from "@/lib/utils";
 import { createVideoTimeLink, OpenScene } from "@/lib/url";
 import { EPlayMode, useVideoPlayerStore } from "@/stores/video-player-store";
 import { useVideoStore } from "@/stores/video-store";
-import { ShareLinkDialog } from "@/components/share-link";
-import { downloadVideo } from "@/lib/fetch-wrapper";
 import { useTranslations } from "next-intl";
 import { Slider } from "@/ui/slider";
+import { ShareLinkDialog } from "@/components/dialog/share-link";
+import { VideoDownloadDialog } from "@/components/dialog/video-download";
 
 export default function VideoControlPanel() {
     const t = useTranslations("video-control-panel");
@@ -192,15 +192,17 @@ function DownloadVideo({ videoId, videoRevId }: { videoId: string | null, videoR
     if (!videoId || !videoRevId) {
         return <></>
     }
+    const [open, setOpen] = useState(false);
 
     return (
         <>
             <button
-                onClick={() => downloadVideo(videoId, videoRevId)}
+                onClick={() => setOpen(true)}
                 className="px-3 py-1 bg-[#ff8800] hover:bg-[#ff5500] text-black text-sm font-medium"
             >
                 <FontAwesomeIcon icon={faDownload} />
             </button>
+            <VideoDownloadDialog videoId={videoId} videoRevId={videoRevId} open={open} onClose={() => setOpen(false)} />
         </>
     );
 }
