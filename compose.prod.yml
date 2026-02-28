@@ -26,7 +26,7 @@ services:
       - .env
 
     image: video-processing:latest
-    container_name: videoreview-video-processing
+    container_name: video-processing
     restart: unless-stopped
 
     environment:
