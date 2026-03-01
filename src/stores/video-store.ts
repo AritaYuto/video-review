@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { Video, VideoRevision } from "@/lib/db-types";
+import { Video, VideoRevision, VideoWithRevision } from "@/lib/db-types";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import * as api from '@/lib/fetch-wrapper';
 
 interface VideoState {
-    videos: Video[];
+    videos: VideoWithRevision[];
     allVideoTags: string[],
     selectedVideo: Video | null;
     revisions: VideoRevision[],

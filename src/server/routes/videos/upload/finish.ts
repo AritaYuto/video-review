@@ -62,14 +62,9 @@ finishRouter.openapi({
     const storageKey = session.storageKey;
 
     const revision = await prisma.$transaction(async (tx) => {
-        let video = await prisma.video.findFirst({ where: { title, folderKey } });
+        let video = await tx.video.findFirst({ where: { title, folderKey } });
         if (video) {
-            await prisma.video.update({
-                where: { id: video.id },
-                data: { scenePath: scenePath, latestUpdatedAt: new Date(), deleted: false },
-            });
-
-            return await prisma.videoRevision.create({
+            const newRevision = await tx.videoRevision.create({
                 data: {
                     id: session_id,
                     videoId: video.id,
@@ -77,6 +72,12 @@ finishRouter.openapi({
                     filePath: storageKey,
                 },
             });
+
+            await tx.video.update({
+                where: { id: video.id },
+                data: { scenePath: scenePath, latestRevisionNum: newRevision.revision, deleted: false },
+            });
+            return newRevision;
         }
     });
 

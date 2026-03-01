@@ -1,4 +1,4 @@
-import { Video, VideoRevision } from "@/lib/db-types";
+import { Video, VideoRevision, VideoWithRevision } from "@/lib/db-types";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { cn, formatDate } from "@/lib/utils";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
@@ -38,7 +38,7 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
                         )}
                         {!hideFolder && (
                             <div className="text-xs text-[#777] truncate">
-                                {video.folderKey} {formatDate(video.latestUpdatedAt)} · Rev.{videoRevision}
+                                {video.folderKey} {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
                             </div>
                         )}
                     </div>
@@ -105,7 +105,7 @@ export function ThumbnailLazyLoader({ video, videoRevision, containerRef, cache,
                         {video.title}
                     </div>
                     <div className="mt-1 text-[11px] text-[#aaa]">
-                        {formatDate(video.latestUpdatedAt)} · Rev.{videoRevision}
+                        {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
                     </div>
                 </TooltipContent>
             </Tooltip>

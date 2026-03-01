@@ -99,7 +99,7 @@ namespace VideoReview.Editor.API
         public string title;
         public string folderKey;
         public string scenePath;
-        public string latestUpdatedAt;
+        public int? latestRevisionNum;
         public bool deleted;
         public VideoReviewVideoRevision[] revisions;
         
@@ -107,7 +107,9 @@ namespace VideoReview.Editor.API
         {
             get
             {
-                if (DateTime.TryParse(latestUpdatedAt, out var dt))
+                if(revisions == null || revisions.Length == 0)
+                    return null;
+                if (DateTime.TryParse(revisions[revisions.Length - 1].uploadedAt, out var dt))
                 {
                     return dt;
                 }

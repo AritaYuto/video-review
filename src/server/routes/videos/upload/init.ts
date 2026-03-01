@@ -90,6 +90,7 @@ initRouter.openapi({
                         title,
                         folderKey,
                         scenePath,
+                        latestRevisionNum: null,
                         /**
                          * NOTE:
                          * deleted = true means this video is NOT yet published.

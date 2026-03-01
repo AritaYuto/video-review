@@ -166,9 +166,7 @@ async function createBatch(
                     Math.random() < (opts.sceneRate ?? 0.4)
                         ? `videos/UnitySample/UnityDemo/rev_001.mp4`
                         : null,
-                latestUpdatedAt: daysAgo(
-                    Math.floor(Math.random() * opts.daysAgoMax)
-                ),
+                latestRevisionNum: 1,
                 deleted: Math.random() < (opts.deletedRate ?? 0),
             },
         });

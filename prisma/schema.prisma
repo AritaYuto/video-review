@@ -45,27 +45,31 @@ model Identity {
 }
 
 model Video {
-  id              String            @id @default(uuid())
-  title           String
-  folderKey       String
-  scenePath       String?
-  revisions       VideoRevision[]
-  comments        VideoComment[]
-  latestUpdatedAt DateTime          @default(now())
-  deleted         Boolean           @default(false)
+  id                String            @id @default(uuid())
+  title             String
+  folderKey         String
+  scenePath         String?
+  revisions         VideoRevision[]   @relation("VideoRevisions")
+  latestRevisionNum Int?
+  latestRevision    VideoRevision?    @relation("VideoLatestRevision", fields: [id, latestRevisionNum], references: [videoId, revision])
+  comments          VideoComment[]
+  latestUpdatedAt   DateTime          @default(now())
+  deleted           Boolean           @default(false)
 
+  @@unique([id, latestRevisionNum])
 }
 
 model VideoRevision {
-  id          String   @id @default(uuid())
-  videoId     String
-  video       Video    @relation(fields: [videoId], references: [id])
-  revision    Int
-  filePath    String
-  uploadedAt  DateTime @default(now())
-  deleted     Boolean  @default(false)
-  tags        String[] @default([])
-  summary     String?
+  id            String   @id @default(uuid())
+  videoId        String
+  video          Video    @relation("VideoRevisions", fields: [videoId], references: [id])
+  revision       Int
+  filePath       String
+  uploadedAt     DateTime @default(now())
+  deleted        Boolean  @default(false)
+  tags           String[] @default([])
+  summary        String?
+  latestForVideo Video?   @relation("VideoLatestRevision")
 
   analysisJob VideoAnalysisJob?
   processingJob VideoProcessingJob?
