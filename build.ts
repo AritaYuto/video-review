@@ -15,6 +15,7 @@ async function build() {
     execSync("npm install", { stdio: "inherit" });
     execSync("npm run prisma:generate", { stdio: "inherit" });
     execSync("next build", { stdio: "inherit" });
+    execSync("next run video-processing:build", { stdio: "inherit" });
 }
 
 async function defaultBuild() {
@@ -44,6 +45,9 @@ async function buildAndCopy(outDir: string) {
                 return true;
             }
         }
+    );
+    cpSync("integrations/video-processing/dist",
+        path.join(outDir, "integrations/video-processing/dist"), { recursive: true }
     );
 }
 
