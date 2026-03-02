@@ -42,6 +42,43 @@ function execFFmpeg(args: string[]): Promise<void> {
     });
 }
 
+function getVideoWidth(filePath: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+        const args = [
+            "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=width",
+            "-of", "csv=p=0",
+            filePath,
+        ];
+
+        const proc = spawn("ffprobe", args, {
+            stdio: ["ignore", "pipe", "pipe"],
+        });
+
+        let stdout = "";
+        let stderr = "";
+        proc.stdout.on("data", (data) => (stdout += data.toString()));
+        proc.stderr.on("data", (data) => (stderr += data.toString()));
+
+        proc.on("close", (code) => {
+            if (code !== 0) {
+                reject(new Error(`ffprobe failed: ${stderr}`));
+                return;
+            }
+
+            const width = parseInt(stdout.trim(), 10);
+            if (isNaN(width) || width <= 0) {
+                reject(new Error(`Invalid video width from ffprobe: ${stdout}`));
+                return;
+            }
+            resolve(width);
+        });
+
+        proc.on("error", reject);
+    });
+}
+
 export async function generateThumbnail(videoRevId: string, tempMoviePath: string): Promise<StorageKeyPath> {
     const storageKey = path.join("thumbnails", videoRevId, "thumb.png").replace(/\\/g, "/");
     const tmpPngPath = path.join(os.tmpdir(), "thumb_" + uuidv4() + ".png");
@@ -139,11 +176,16 @@ export async function processVideo(storageKey: string, videoId: string, videoRev
         }
 
         try {
+            const sourceWidth = await getVideoWidth(filePath);
             const presets = process.env.NEXT_PUBLIC_VIDEO_REVIEW_RESOLUTION_PRESETS?.split(",") || [];
             for (const preset of presets) {
                 const width = parseInt(preset.trim());
                 if (isNaN(width)) {
                     throw new Error(`Invalid resolution preset: ${preset}`);
+                }
+                if (width > sourceWidth) {
+                    console.log(`Skip preset ${width}p because source width is ${sourceWidth}px`);
+                    continue;
                 }
                 const scaled = await generateDownScaled(storageKey, filePath, width);
                 results.push(scaled);
