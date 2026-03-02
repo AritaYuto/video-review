@@ -7,6 +7,20 @@
 -- AlterTable
 ALTER TABLE "Video" ADD COLUMN     "latestRevisionNum" INTEGER;
 
+-- Backfill latest revision number for existing videos
+UPDATE "Video" v
+SET "latestRevisionNum" = s."latestRevisionNum"
+FROM (
+  SELECT
+    vr."videoId",
+    MAX(vr."revision") AS "latestRevisionNum"
+  FROM "VideoRevision" vr
+  WHERE vr."deleted" = false
+  GROUP BY vr."videoId"
+) s
+WHERE v."id" = s."videoId"
+  AND v."latestRevisionNum" IS NULL;
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Video_id_latestRevisionNum_key" ON "Video"("id", "latestRevisionNum");
 
