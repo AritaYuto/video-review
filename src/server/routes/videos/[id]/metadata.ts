@@ -7,7 +7,7 @@ import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { createLlamaSession, createLlama, VideoEventContext } from "@/server/lib/integration-clients/llama-client";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { Readable } from "stream";
+import { randomUUID } from "crypto";
 
 export const metaDataRouter = new Hono();
 
@@ -25,7 +25,25 @@ const llmAutoAnnotateBody = z.object({
 
 
 const uploadBody = z.object({
-    kind: z.string(),
+    kind: z.string().min(1),
+    events: z.array(
+        z.object({
+            startMs: z.number().int().nonnegative(),
+            endMs: z.number().int().nonnegative(),
+            data: z.string().trim().min(1),
+            seq: z.number().int().nonnegative().optional(),
+        })
+    ).default([]),
+}).superRefine((value, ctx) => {
+    value.events.forEach((event, idx) => {
+        if (event.endMs < event.startMs) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["events", idx, "endMs"],
+                message: "endMs must be greater than or equal to startMs",
+            });
+        }
+    });
 });
 
 
@@ -116,67 +134,47 @@ metaDataRouter.openapi({
 
     const videoRevs = await prisma.videoRevision.findMany({
         where: whereVideoRevision,
-        select: { id: true, videoId: true, tags: true },
+        include: { events: { select: { kind: true, data: true } } },
     });
+
 
     type ExistsRule = { type: "exists"; tag: string; };
     type FromDataRule = { type: "fromData"; };
     type TagRule = ExistsRule | FromDataRule;
 
     const tagRules: Record<string, TagRule> = {
-        angle: { type: "fromData" },
-        shot: { type: "fromData" },
-        error: { type: "exists", tag: "Error" },
-        dummy: { type: "exists", tag: "Dummy" },
+        angle_type: { type: "fromData" },
+        shot_type: { type: "fromData" },
+        error_text: { type: "exists", tag: "Error" },
+        dummy_text: { type: "exists", tag: "Dummy" },
     };
 
     let successCount = 0;
     let failureCount = 0;
 
     for (const rev of videoRevs) {
-
-        const tags: string[] = []
-        for (const [kind, rule] of Object.entries(tagRules)) {
-
-            const storageKey = `video-analysis/${rev.id}.${kind}.json`;
-            const stream = await VideoReviewStorage.download(storageKey);
-
-            if (!stream) {
-                continue;
-            }
-
-            const eventJson = await stream.text();
-            const eventAnalysis = JSON.parse(eventJson) as VideoEventContext;
-
-            if (!eventAnalysis || eventAnalysis.events.length === 0) {
-                continue;
-            }
-
-            switch (rule.type) {
-                case "exists":
-                    {
-                        const tag = rule.tag as string;
-                        tags.push(tag);
-                    }
-                    break;
-
-                case "fromData":
-                    {
-                        for (const e of eventAnalysis.events) {
-                            for (const value of e.data) {
-                                if (typeof value === "string" && value.length > 0){
-                                    tags.push(value);
-                                }
-                            }
+        const tags = rev.events.flatMap(e => {
+            const rule = tagRules[e.kind.label];
+            if (rule) {
+                switch (rule.type) {
+                    case "exists":
+                        if(e.data.length > 0) {
+                            return [ rule.tag ];
                         }
-                    }
-                    break;
+                        break;
+                    case "fromData":
+                        if (typeof e.data === "string" && e.data.length > 0) {
+                            return [ e.data ];
+                        }
+                        break;
+                }
             }
-        }
+            return [];
+        });
 
         try {
             let data: PrismaTypes.VideoRevisionUpdateInput = {
-                tags: [...new Set([...rev.tags, ...tags])]
+                tags: [...new Set([...rev.tags, ...tags])].filter((tag): tag is string => tag !== undefined)
             }
             await prisma.videoRevision.update({ where: { id: rev.id }, data });
             successCount++;
@@ -340,7 +338,7 @@ metaDataRouter.openapi({
     request: {
         body: {
             content: {
-                "multipart/form-data": {
+                "application/json": {
                     schema: uploadBody,
                 },
             },
@@ -363,21 +361,47 @@ metaDataRouter.openapi({
     }
 
     const id = c.req.param("id");
-    const body = await c.req.parseBody();
-    const kind = body.kind;
-    const file = body.file;
+    const body = c.req.valid("json");
+    const { kind, events } = body;
 
-    if (typeof kind !== "string" || !(file instanceof File)) {
-        return c.json({ error: "kind and file are required" }, 400);
+    const revision = await prisma.videoRevision.findUnique({
+        where: { id },
+        select: { id: true },
+    });
+    if (!revision) {
+        return c.json({ error: "video revision not found" }, 404);
     }
 
-    const find = await prisma.videoEventKind.findUnique({ where: { label: kind } });
-    if (!find) {
-        await prisma.videoEventKind.create({ data: { label: kind } });
-    }
+    const eventKind = await prisma.videoEventKind.upsert({
+        where: { label: kind },
+        update: {},
+        create: { label: kind },
+    });
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const storageKey = `video-analysis/${id}.${kind}.json`;
-    await VideoReviewStorage.directUploadFromBuffer(storageKey, Readable.from(buffer), "application/json")
-    return c.json({ ok: true });
+    await prisma.$transaction(async (tx) => {
+        await tx.videoEvent.deleteMany({
+            where: {
+                videoRevisionId: revision.id,
+                kindId: eventKind.id,
+            },
+        });
+
+        if (events.length === 0) {
+            return;
+        }
+
+        await tx.videoEvent.createMany({
+            data: events.map((event, idx) => ({
+                id: randomUUID(),
+                videoRevisionId: revision.id,
+                kindId: eventKind.id,
+                startMs: event.startMs,
+                endMs: event.endMs,
+                data: event.data,
+                seq: event.seq ?? idx,
+            })),
+        });
+    });
+
+    return c.json({ ok: true, inserted: events.length });
 });

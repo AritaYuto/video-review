@@ -14,7 +14,7 @@ class EventContents:
 
     blocks: List[Block] = field(default_factory=list)
 
-    def append(self, s: int, e: int, d: str):
+    def append(self, s: int, e: int, d: str) -> None:
         if not d:
             return
 
@@ -25,7 +25,7 @@ class EventContents:
         else:
             top.end_ms = e
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return len(self.blocks) == 0
 
 
@@ -51,11 +51,14 @@ class BaseDataNormalizationPlugin(DataNormalizationPlugin):
         for frame in frames:
             start_ms = frame.get("start_time_ms", 0)
             end_ms = frame.get("end_time_ms", 0)
-            param = self._get_parameter(frame)
-            event_contents.append(start_ms, end_ms, param)
+            params = self._get_parameter(frame)
+            for param in params:
+                value = str(param).strip()
+                if value:
+                    event_contents.append(start_ms, end_ms, value)
 
         return event_contents
     
     @abstractmethod
-    def _get_parameter(self, analysis: Dict[str, Any]) -> List[str]:
+    def _get_parameter(self, frame: Dict[str, Any]) -> List[str]:
         pass

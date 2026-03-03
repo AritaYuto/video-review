@@ -92,6 +92,7 @@ model VideoEvent {
   endMs           Int
   data            String
   seq             Int      @default(0)
+  link            String?
   createdAt       DateTime @default(now())
 
   videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
