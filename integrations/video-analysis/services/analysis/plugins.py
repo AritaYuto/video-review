@@ -1,19 +1,64 @@
 """Frame analysis plugin manager."""
 import time
 import traceback
-from dataclasses import asdict
-from typing import Dict, List
+from dataclasses import asdict, dataclass
+from typing import Dict, List, Union
 
 import numpy as np
 
 from core.config import AnalysisConfig
 from core.types import FrameAnalysis
-from monitoring.metrics import PluginMetricsCollector
 from services.logger import get_logger
 from services.plugin_manager_base import PluginManagerBase
-from plugins.main.base import AnalyzerPlugin
+from plugins.analysis.base import AnalyzerPlugin
 
 logger = get_logger(__name__)
+
+@dataclass
+class PluginMetrics:
+    """Plugin-specific performance metrics."""
+
+    plugin_name: str
+    total_duration_seconds: float = 0.0
+    frames_processed: int = 0
+    error_count: int = 0
+
+    def to_dict(self) -> Dict[str, Union[str, int, float]]:
+        return asdict(self)
+
+
+class PluginMetricsCollector:
+    """Collect and aggregate plugin metrics."""
+
+    def __init__(self) -> None:
+        self._totals: Dict[str, float] = {}
+        self._counts: Dict[str, int] = {}
+        self._errors: Dict[str, int] = {}
+
+    def record_execution(self, plugin_name: str, duration_ms: float) -> None:
+        self._totals[plugin_name] = self._totals.get(plugin_name, 0.0) + duration_ms
+        self._counts[plugin_name] = self._counts.get(plugin_name, 0) + 1
+
+    def record_error(self, plugin_name: str) -> None:
+        self._errors[plugin_name] = self._errors.get(plugin_name, 0) + 1
+
+    def get_metrics(self) -> List[PluginMetrics]:
+        metrics: List[PluginMetrics] = []
+        for plugin_name, total_ms in self._totals.items():
+            count = self._counts.get(plugin_name, 0)
+            if count <= 0:
+                continue
+            metrics.append(
+                PluginMetrics(
+                    plugin_name=plugin_name,
+                    total_duration_seconds=total_ms / 1000.0,
+                    frames_processed=count,
+                    error_count=self._errors.get(plugin_name, 0),
+                )
+            )
+
+        metrics.sort(key=lambda x: x.total_duration_seconds, reverse=True)
+        return metrics
 
 
 class PluginManager(PluginManagerBase):
@@ -48,7 +93,7 @@ class PluginManager(PluginManagerBase):
                 ("ShotSemanticPlugin", "shot_semantic"),
                 ("TextDetectionPlugin", "text_detection"),
             ],
-            module_prefix="plugins.main",
+            module_prefix="plugins.analysis",
             predicate=predicate,
             factory=factory,
         )

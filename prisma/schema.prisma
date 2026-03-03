@@ -73,6 +73,7 @@ model VideoRevision {
 
   analysisJob VideoAnalysisJob?
   processingJob VideoProcessingJob?
+  events      VideoEvent[]
 
   @@unique([videoId, revision])
 }
@@ -80,6 +81,25 @@ model VideoRevision {
 model VideoEventKind {
   id        String   @id @default(uuid())
   label     String   @unique
+  events    VideoEvent[]
+}
+
+model VideoEvent {
+  id              String   @id @default(uuid())
+  videoRevisionId String
+  kindId          String
+  startMs         Int
+  endMs           Int
+  data            String
+  seq             Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
+  kind          VideoEventKind @relation(fields: [kindId], references: [id], onDelete: Restrict)
+
+  @@index([videoRevisionId])
+  @@index([kindId])
+  @@index([videoRevisionId, kindId, startMs])
 }
 
 model PromptTemplate {

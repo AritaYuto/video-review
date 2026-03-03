@@ -4,10 +4,11 @@ from pathlib import Path
 from typing import Generic, TypeVar, Optional, Callable
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import gc
+import time
 
 from core.types import JobRequest
 from core.errors import VideoNotFoundError, ServiceError
-from monitoring.memory import MemoryMonitor
 from services.logger import get_logger
 
 logger = get_logger(__name__)
@@ -25,7 +26,9 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
         enable_memory_monitoring: bool = True
     ):
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        self.memory_monitor = MemoryMonitor() if enable_memory_monitoring else None
+        self.enable_memory_monitoring = enable_memory_monitoring
+        self._memory_cleanup_count: int = 0
+        self._last_cleanup_time: float = time.time()
         self._active_jobs: set[str] = set()
 
     def is_processing(self, job_id: str) -> bool:
@@ -77,8 +80,7 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
 
         finally:
             self._active_jobs.discard(request.job_id)
-            if self.memory_monitor:
-                self.memory_monitor.force_cleanup()
+            self.force_cleanup()
 
     def _validate_request(self, request: TRequest) -> None:
         """Validate processing request."""
@@ -108,6 +110,23 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
                 callback(*args, **kwargs)
         except Exception as e:
             logger.warning(f"Callback error: {e}")
+
+    def force_cleanup(self, aggressive: bool = False) -> None:
+        """Force garbage collection with basic throttling."""
+        if not self.enable_memory_monitoring:
+            return
+
+        now = time.time()
+        if not aggressive and (now - self._last_cleanup_time) < 5.0:
+            return
+
+        self._last_cleanup_time = now
+        gc.collect()
+        self._memory_cleanup_count += 1
+
+    def memory_stats(self) -> dict:
+        """Return memory cleanup stats."""
+        return {"cleanup_count": self._memory_cleanup_count}
 
     @abstractmethod
     def _process_sync(

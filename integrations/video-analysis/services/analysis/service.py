@@ -9,8 +9,7 @@ from core.errors import AnalysisError
 from services.base_service import BaseProcessingService
 from services.analysis.processor import FrameProcessor
 from services.analysis.plugins import PluginManager
-from services.analysis.result import VideoAnalysisResult, ResultBuilder
-from monitoring.metrics import PerformanceMetrics, StageTimer
+from services.analysis.result import VideoAnalysisResult
 from services.logger import get_logger
 
 logger = get_logger(__name__)
@@ -29,7 +28,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
 
         self.frame_processor = FrameProcessor(self.config)
         self.plugin_manager = PluginManager(self.config)
-        self.performance_metrics: List[PerformanceMetrics] = []
 
     def _process_sync(
         self,
@@ -37,14 +35,9 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         progress_callback: Optional[Callable] = None
     ) -> VideoAnalysisResult:
         """Synchronous analysis implementation."""
-        start_time = time.time()
-
         try:
             # Setup plugins
-            with StageTimer("plugin_setup") as timer:
-                self.plugin_manager.setup_plugins(
-                    request.video_path, request.job_id)
-            self._record_stage_metric(timer)
+            self.plugin_manager.setup_plugins(request.video_path, request.job_id)
 
             # Analyze frames
             frame_analyses = self._analyze_frames(
@@ -52,27 +45,22 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 progress_callback
             )
 
-            # Build result
-            result = ResultBuilder.build_success_result(
-                video_path=request.video_path,
-                frame_analyses=frame_analyses,
-                plugin_metrics=self.plugin_manager.get_metrics(),
-                performance_metrics=self.performance_metrics,
-                memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {},
-                processing_time=time.time() - start_time
+            result = VideoAnalysisResult(
+                video_file=request.video_path,
+                frame_analysis=frame_analyses,
             )
-            
-            # Rest plugin metrics after each video has been processed
+
+            # Reset plugin metrics after each video has been processed
             self.plugin_manager.reset_metrics()
 
             return result
 
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
-            return ResultBuilder.build_error_result(
-                video_path=request.video_path,
+            return VideoAnalysisResult(
+                video_file=request.video_path,
+                frame_analysis=[],
                 error=str(e),
-                memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {}
             )
 
     def _analyze_frames(
@@ -88,62 +76,55 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         total_frames_estimate = None
         frames_processed = 0
 
-        with StageTimer("frame_analysis") as timer:
-            frame_generator = self.frame_processor.extract_frames_streaming(
-                request.video_path,
-                request.job_id
-            )
+        frame_start_time = time.time()
+        frame_generator = self.frame_processor.extract_frames_streaming(
+            request.video_path,
+            request.job_id
+        )
 
-            for frame_idx, frame_data in enumerate(frame_generator):
-                # Get total frames from first frame
-                if total_frames_estimate is None:
-                    total_frames_estimate = frame_data.get('total_frames', 0)
+        for frame_idx, frame_data in enumerate(frame_generator):
+            # Get total frames from first frame
+            if total_frames_estimate is None:
+                total_frames_estimate = frame_data.get('total_frames', 0)
 
-                batch.append(frame_data)
+            batch.append(frame_data)
 
-                # Process batch when buffer is full
-                if len(batch) >= self.config.frame_buffer_limit:
-                    batch_results = self._process_batch(
-                        batch, request.video_path)
-                    frame_analyses.extend(batch_results)
-                    frames_processed += len(batch_results)
-                    batch.clear()
-
-                    # Send progress update
-                    if progress_callback and total_frames_estimate:
-                        self._send_progress(
-                            progress_callback,
-                            frames_processed,
-                            total_frames_estimate,
-                            time.time() - timer.start_time
-                        )
-
-                    # Memory cleanup
-                    if self.memory_monitor:
-                        if frame_idx % self.config.memory_cleanup_interval == 0:
-                            self.memory_monitor.force_cleanup()
-
-                        if self.memory_monitor.check_memory_pressure():
-                            logger.warning("Memory pressure detected")
-                            self.memory_monitor.force_cleanup(aggressive=True)
-                            time.sleep(0.5)
-
-            # Process remaining batch
-            if batch:
-                batch_results = self._process_batch(batch, request.video_path)
+            # Process batch when buffer is full
+            if len(batch) >= self.config.frame_buffer_limit:
+                batch_results = self._process_batch(
+                    batch, request.video_path)
                 frame_analyses.extend(batch_results)
                 frames_processed += len(batch_results)
+                batch.clear()
 
-                # Final progress update
+                # Send progress update
                 if progress_callback and total_frames_estimate:
                     self._send_progress(
                         progress_callback,
                         frames_processed,
                         total_frames_estimate,
-                        time.time() - timer.start_time
+                        time.time() - frame_start_time
                     )
 
-        self._record_stage_metric(timer, frames_processed=len(frame_analyses))
+                # Memory cleanup
+                if frame_idx % self.config.memory_cleanup_interval == 0:
+                    self.force_cleanup()
+
+        # Process remaining batch
+        if batch:
+            batch_results = self._process_batch(batch, request.video_path)
+            frame_analyses.extend(batch_results)
+            frames_processed += len(batch_results)
+
+            # Final progress update
+            if progress_callback and total_frames_estimate:
+                self._send_progress(
+                    progress_callback,
+                    frames_processed,
+                    total_frames_estimate,
+                    time.time() - frame_start_time
+                )
+
         self.plugin_manager.cleanup_plugins()
         logger.info(
             f"Completed analysis: {len(frame_analyses)} frames processed")
@@ -218,39 +199,3 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
 
         except Exception as e:
             logger.warning(f"Progress callback error: {e}")
-
-    def _record_stage_metric(
-        self,
-        timer: StageTimer,
-        frames_processed: int = 0
-    ) -> None:
-        """Record performance metric for a stage."""
-        fps = frames_processed / timer.duration if timer.duration > 0 else 0.0
-        memory_mb = self.memory_monitor.get_memory_mb() if self.memory_monitor else 0.0
-        peak_mb = self.memory_monitor.peak_memory_mb if self.memory_monitor else 0.0
-
-        metric = PerformanceMetrics(
-            stage=timer.stage_name,
-            duration_seconds=timer.duration,
-            frames_processed=frames_processed,
-            fps=fps,
-            memory_mb=memory_mb,
-            peak_memory_mb=peak_mb
-        )
-
-        self.performance_metrics.append(metric)
-
-    def save_result(self, result: VideoAnalysisResult, output_path: str) -> None:
-        """Save analysis result to JSON file and run post plugins."""
-        try:
-            output_file = Path(output_path)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-
-            import json
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)
-
-            logger.info(f"Results saved to: {output_path}")
-        except Exception as e:
-            logger.error(f"Failed to save results: {e}")
-            raise AnalysisError(f"Failed to save results: {e}")

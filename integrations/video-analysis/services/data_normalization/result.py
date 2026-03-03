@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 
-from plugins.post.base import EventContents
+from plugins.data_normalization.base import EventContents
 
 
 @dataclass

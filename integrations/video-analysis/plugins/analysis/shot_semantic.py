@@ -2,7 +2,7 @@ from typing import List, Dict, Tuple
 from services.logger import get_logger
 import numpy as np
 from collections import deque
-from plugins.main.base import AnalyzerPlugin, FrameAnalysis, PluginResult
+from plugins.analysis.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from core.config import AnalysisConfig
 import cv2
 from collections import Counter

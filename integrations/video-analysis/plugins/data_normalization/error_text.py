@@ -1,6 +1,6 @@
 """LLM-friendly JSON export."""
 from typing import Dict, Any, List
-from plugins.post.base import BaseDataNormalizationPlugin
+from plugins.data_normalization.base import BaseDataNormalizationPlugin
 
 
 class ErrorTextExportPlugin(BaseDataNormalizationPlugin):

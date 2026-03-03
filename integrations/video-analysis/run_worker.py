@@ -1,10 +1,8 @@
 import asyncio
-import os
 import time
 from pathlib import Path
 from typing import Optional, Dict, Any
 from uuid import uuid4
-import uuid
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -61,20 +59,6 @@ def open_db() -> psycopg2.extensions.connection:
     conn = psycopg2.connect(db_url)
     conn.autocommit = True
     return conn
-
-def ensure_video_event_kind(
-    conn: psycopg2.extensions.connection,
-    label: str,
-) -> None:
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO "VideoEventKind" ("id", "label")
-            VALUES (%s, %s)
-            ON CONFLICT ("label") DO NOTHING
-            """,
-            (str(uuid.uuid4()), label),
-        )
 
 
 def claim_next_revision(conn: psycopg2.extensions.connection) -> Optional[Dict[str, Any]]:
@@ -135,7 +119,6 @@ def update_job_status(
 async def process_revision(
     conn: psycopg2.extensions.connection,
     storage_root: Path,
-    output_root: Path,
     row: Dict[str, Any],
 ) -> None:
     storage_key = row["filePath"].lstrip("/")
@@ -144,11 +127,6 @@ async def process_revision(
         update_job_status(conn, row["id"], STATUS_FAILED)
         logger.error(f"Video missing: {video_path}")
         return
-
-    output_root.mkdir(parents=True, exist_ok=True)
-    analysis_output_path = output_root / f"{row['id']}.json"
-    data_normalization_output_path = output_root
-    transcription_output = output_root / f"{row['id']}.transcription.json"
 
     analysis_config, transcription_config, data_normalization_config = build_config(conn)
     analysis_service = AnalysisService(analysis_config)
@@ -182,7 +160,6 @@ async def process_revision(
         analysis_request = AnalysisRequest(
             video_path=str(video_path),
             job_id=job_id,
-            json_file_path=str(analysis_output_path),
             settings={},
         )
         result = await analysis_service.process_async(analysis_request, analysis_progress_callback)
@@ -190,38 +167,35 @@ async def process_revision(
             update_job_status(conn, row["id"], STATUS_FAILED)
             logger.error(f"[{job_id}] Analysis failed: {result.error}")
             return
-        analysis_service.save_result(result, str(analysis_output_path))
-        logger.info(f"[{job_id}] Analysis complete: {analysis_output_path}")
+        logger.info(f"[{job_id}] Analysis complete")
 
+        transcription_result = None
         if TRANSCRIPTION_ENABLED:
             transcription_request = TranscriptionRequest(
                 video_path=str(video_path),
-                job_id=job_id,
-                json_file_path=str(transcription_output))
+                job_id=job_id)
             transcription_result = await transcription_service.process_async(
                 transcription_request,
                 transcription_progress_callback
             )
-            transcription_service.save_result(transcription_result, str(transcription_output))
-            logger.info(f"[{job_id}] Transcription complete: {transcription_output}")
+            logger.info(f"[{job_id}] Transcription complete")
 
         data_normalization_request = DataNormalizationRequest(
-            video_analysis_result=result,
+            analysis_frames=result.frame_analysis,
+            transcription_segments=transcription_result.segments if transcription_result else None,
             video_path=str(video_path),
-            job_id=job_id,
-            json_file_path=str(data_normalization_output_path),
+            job_id=job_id
         )
         data_normalization_result = await data_normalization_service.process_async(
             data_normalization_request,
             data_normalization_progress_callback
         )
-        output_names = data_normalization_service.save_result(
-            data_normalization_result,
-            str(data_normalization_output_path),
+        inserted_events = data_normalization_service.persist_result(
+            conn=conn,
+            video_revision_id=row["id"],
+            result=data_normalization_result,
         )
-        for name in output_names:
-            ensure_video_event_kind(conn, name)
-        logger.info(f"[{job_id}] DataNormalization complete")
+        logger.info(f"[{job_id}] DataNormalization complete (events: {inserted_events})")
 
         update_job_status(
             conn,
@@ -247,11 +221,9 @@ async def run() -> None:
 
     poll_interval = ANALYSIS_POLL_INTERVAL_SECONDS
     storage_root = Path(VIDEO_REVIEW_LOCAL_ROOTDIR)
-    output_root = storage_root / "video-analysis"
 
     logger.info("Video analysis worker started")
     logger.info(f"Storage root: {storage_root}")
-    logger.info(f"Output root: {output_root}")
     logger.info(f"Poll interval: {poll_interval}s")
 
     conn = open_db()
@@ -259,7 +231,7 @@ async def run() -> None:
         while True:
             row = claim_next_revision(conn)
             if row:
-                await process_revision(conn, storage_root, output_root, row)
+                await process_revision(conn, storage_root, row)
             else:
                 time.sleep(poll_interval)
     finally:

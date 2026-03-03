@@ -1,9 +1,7 @@
 """Video data normalization service."""
-from dataclasses import asdict
-from typing import Optional, Callable
-from pathlib import Path
+from typing import Optional, Callable, Any
 import time
-import json
+import uuid
 
 from core.types import DataNormalizationRequest
 from core.config import DataNormalizationConfig
@@ -38,7 +36,17 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
         start_time = time.time()
 
         try:
-            output = self.plugin_manager.run(request.video_analysis_result.to_dict())
+            normalization_input = {"frame_analysis": request.analysis_frames}
+            if request.transcription_segments is not None:
+                segments = []
+                for segment in request.transcription_segments:
+                    if hasattr(segment, "to_dict"):
+                        segments.append(segment.to_dict())
+                    elif isinstance(segment, dict):
+                        segments.append(segment)
+                normalization_input["transcription"] = {"segments": segments}
+
+            output = self.plugin_manager.run(normalization_input)
 
             result = DataNormalizationResult(
                 id=request.job_id,
@@ -58,38 +66,72 @@ class DataNormalizationService(BaseProcessingService[DataNormalizationRequest, D
             logger.error(f"Analysis failed: {e}")
             raise DataNormalizationError(f"Data normalization failed: {e}")
 
+    def persist_result(self, conn: Any, video_revision_id: str, result: DataNormalizationResult) -> int:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM "VideoEvent"
+                WHERE "videoRevisionId" = %s
+                """,
+                (video_revision_id,),
+            )
 
-    def save_result(self, result: DataNormalizationResult, output_path: str) -> list[str]:
-        """Save data normalization result to JSON files and return saved output names."""
-        try:
-            output_file = Path(output_path)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-        
-            id = result.id
-            outputs = result.data
-            saved_names: list[str] = []
+        inserted = 0
+        for kind, payload in result.data.items():
+            if not payload or payload.is_empty():
+                continue
 
-            for name, payload in outputs.items():
-                if not payload or payload.is_empty():
+            kind_id = self._ensure_video_event_kind(conn, kind)
+            rows = []
+            for seq, block in enumerate(payload.blocks):
+                data = str(block.data).strip()
+                if not data:
                     continue
-
-                target = output_file / Path(id + f".{name}.json")
-                with target.open("w", encoding="utf-8") as handle:
-                    json.dump(
-                        {"events": [asdict(b) for b in payload.blocks]},
-                        handle,
-                        ensure_ascii=False,
-                        indent=2
+                rows.append(
+                    (
+                        str(uuid.uuid4()),
+                        video_revision_id,
+                        kind_id,
+                        int(block.start_ms),
+                        int(block.end_ms),
+                        data,
+                        seq,
                     )
-                saved_names.append(name)
-                logger.info(f"Results saved to: {target}")
+                )
 
-            return saved_names
-                
-        except Exception as e:
-            logger.error(f"Failed to save results: {e}")
-            raise DataNormalizationError(f"Failed to save results: {e}")
+            if not rows:
+                continue
 
+            with conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO "VideoEvent"
+                    ("id", "videoRevisionId", "kindId", "startMs", "endMs", "data", "seq")
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    rows,
+                )
+            inserted += len(rows)
+
+        return inserted
+
+    @staticmethod
+    def _ensure_video_event_kind(conn: Any, label: str) -> str:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO "VideoEventKind" ("id", "label")
+                VALUES (%s, %s)
+                ON CONFLICT ("label") DO UPDATE
+                SET "label" = EXCLUDED."label"
+                RETURNING "id"
+                """,
+                (str(uuid.uuid4()), label),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise RuntimeError(f"Failed to upsert VideoEventKind for label={label}")
+            return str(row[0])
 
     @staticmethod
     def _format_time(seconds: float) -> str:

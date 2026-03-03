@@ -137,20 +137,6 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                 return TranscriptionResult(text='', segments=[], language='N/A', processing_time=0)
             raise
 
-    def save_result(self, result: TranscriptionResult, output_path: str) -> None:
-        """Save transcription result to JSON."""
-        try:
-            output_file = Path(output_path)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
-
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result.to_dict(), f, indent=4, ensure_ascii=False)
-
-            logger.info(f"Transcription saved: {output_path}")
-        except Exception as e:
-            logger.error(f"Failed to save transcription: {e}")
-            raise TranscriptionError(f"Failed to save transcription: {e}")
-
     @staticmethod
     def _format_time(seconds: float) -> str:
         """Format seconds as MM:SS."""

@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from ultralytics import YOLO
 
-from plugins.main.base import AnalyzerPlugin, FrameAnalysis, PluginResult
+from plugins.analysis.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from services.logger import get_logger
 from core.config import AnalysisConfig, ultralytics_dir
 import os 

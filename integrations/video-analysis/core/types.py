@@ -17,6 +17,14 @@ class FrameAnalysis(TypedDict, total=False):
     frame_idx: int
     scale_factor: float
     job_id: str
+    
+    objects: List[Dict[str, Any]]
+    faces: List[Dict[str, Any]]
+    detected_text: List[Dict[str, Any]]
+    error_text: List[Dict[str, Any]]
+    dummy_text: List[Dict[str, Any]]
+    shot_type: str
+    angle_type: str
 
 
 # Service States
@@ -33,7 +41,6 @@ class JobRequest:
     """Base job request structure."""
     video_path: str
     job_id: str
-    json_file_path: str
 
 
 @dataclass(frozen=True)
@@ -50,4 +57,5 @@ class TranscriptionRequest(JobRequest):
 @dataclass(frozen=True)
 class DataNormalizationRequest(JobRequest):
     """Data normalization job request."""
-    video_analysis_result: Any
+    analysis_frames: List[FrameAnalysis]
+    transcription_segments: Optional[List[Any]] = None

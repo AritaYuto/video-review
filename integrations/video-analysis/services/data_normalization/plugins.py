@@ -1,7 +1,7 @@
 """Data normalization plugin manager."""
 from typing import Dict, Any, Tuple
 
-from plugins.post.base import DataNormalizationPlugin, EventContents
+from plugins.data_normalization.base import DataNormalizationPlugin, EventContents
 from services.logger import get_logger
 from services.plugin_manager_base import PluginManagerBase
 
@@ -28,9 +28,10 @@ class PluginManager(PluginManagerBase):
                 ("AngleTypeExportPlugin", "angle_type"),
                 ("ShotTypeExportPlugin", "shot_type"),
                 ("ErrorTextExportPlugin", "error_text"),
-                ("DummyTextExportPlugin", "dummy_text")
+                ("DummyTextExportPlugin", "dummy_text"),
+                ("TranscriptionExportPlugin", "transcription"),
             ],
-            module_prefix="plugins.post",
+            module_prefix="plugins.data_normalization",
             predicate=predicate,
             factory=factory,
         )

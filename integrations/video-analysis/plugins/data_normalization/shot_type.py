@@ -1,7 +1,7 @@
 
 """LLM-friendly JSON export."""
 from typing import Dict, List, Any
-from plugins.post.base import BaseDataNormalizationPlugin
+from plugins.data_normalization.base import BaseDataNormalizationPlugin
 
 
 class ShotTypeExportPlugin(BaseDataNormalizationPlugin):

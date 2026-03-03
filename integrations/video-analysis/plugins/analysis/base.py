@@ -1,28 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Union, List, TypedDict, Optional
+from typing import Dict, Union, List
 import numpy as np
 from core.config import AnalysisConfig
-
-
-class FrameAnalysis(TypedDict, total=False):
-    """Type definition for frame analysis results."""
-    start_time_ms: int
-    end_time_ms: int
-    duration_ms: int
-    frame_idx: int
-    scale_factor: float
-    job_id: str
-
-    objects: List[Dict[str, str]]
-    faces: List[Dict[str, str]]
-    detected_text: List[Dict[str, str]]
-    dominant_color: Optional[Dict[str, str]]
-    color_palette: List[Dict[str, str]]
-    brightness: float
-    saturation: float
-    color_temperature: str
-    shot_type: str
-    description: str
+from core.types import FrameAnalysis
 
 
 PluginResult = Union[Dict, List, object, None]
