@@ -32,6 +32,7 @@ const uploadBody = z.object({
             endMs: z.number().int().nonnegative(),
             data: z.string().trim().min(1),
             seq: z.number().int().nonnegative().optional(),
+            link: z.string().url().optional(),
         })
     ).default([]),
 }).superRefine((value, ctx) => {
@@ -399,6 +400,7 @@ metaDataRouter.openapi({
                 endMs: event.endMs,
                 data: event.data,
                 seq: event.seq ?? idx,
+                link: event.link,
             })),
         });
     });
