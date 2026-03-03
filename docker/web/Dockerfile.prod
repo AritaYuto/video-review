@@ -6,6 +6,9 @@ RUN npm ci
 
 FROM deps AS builder
 WORKDIR /app
+
+ENV CI_BUILD=true
+
 COPY . .
 RUN npm run prisma:generate
 RUN npm run build
