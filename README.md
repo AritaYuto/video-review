@@ -194,7 +194,7 @@ docker compose -f compose.prod.yml up -d db
 docker compose -f compose.prod.yml run --rm videoreview npm run prisma:deploy
 
 # 5. Run web service
-docker compose -f compose.prod.yml up -d videoreview
+docker compose -f compose.prod.yml up -d videoreview -d video-processing
 
 ```
 
