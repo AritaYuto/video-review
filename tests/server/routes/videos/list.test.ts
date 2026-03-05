@@ -68,6 +68,13 @@ describe("videos listRouter (DB)", () => {
 
     afterAll(async () => {
         if (createdVideoIds.length === 0) return;
+        await prisma.video.updateMany({
+            where: { id: { in: createdVideoIds } },
+            data: { latestRevisionNum: null },
+        });
+        await prisma.videoRevision.deleteMany({
+            where: { videoId: { in: createdVideoIds } },
+        });
         await prisma.video.deleteMany({
             where: { id: { in: createdVideoIds } },
         });
