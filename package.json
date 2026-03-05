@@ -9,6 +9,8 @@
         "dev": "next dev --turbopack -p 3489",
         "build": "npx tsx build.ts",
         "start": "next start -p 3489",
+        "test": "set -a && . ./.env.test && set +a && npx tsx run-test.ts",
+        "test:hono": "set -a && . ./.env.test && set +a && npx tsx run-test.ts tests/server",
         "video-analysis:setup": "cd integrations/video-analysis && npx tsx run_python.ts setup",
         "video-analysis:run": "cd integrations/video-analysis && npx tsx run_python.ts run",
         "video-processing:build": "cd integrations/video-processing && node build.mjs",
@@ -101,6 +103,7 @@
         "prisma": "^6.5.0",
         "tailwindcss": "^4",
         "tw-animate-css": "^1.3.5",
-        "typescript": "^5"
+        "typescript": "^5",
+        "vitest": "^4.0.18"
     }
 }
