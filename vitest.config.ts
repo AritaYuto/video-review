@@ -5,6 +5,8 @@ export default defineConfig({
     test: {
         environment: "node",
         include: ["tests/**/*.test.ts"],
+        reporters: ["default", "junit"],
+        outputFile: { junit: "tests/test-results/junit.xml" },
     },
     resolve: {
         alias: {

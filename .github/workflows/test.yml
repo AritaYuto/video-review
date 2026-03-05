@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   hono-test:
     runs-on: ubuntu-latest
@@ -35,4 +39,21 @@ jobs:
       - name: Prepare test env
         run: cp .example.test.env .env.test
       - name: Run hono tests
-        run: npm run test:hono
+        id: run_tests
+        run: |
+          mkdir -p test-results
+          npm run test:hono
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: Hono Tests
+          path: tests/test-results/junit.xml
+          reporter: java-junit
+          fail-on-error: true
+      - name: Upload junit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hono-junit-report
+          path: tests/test-results/junit.xml
