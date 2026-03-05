@@ -1,4 +1,4 @@
-name: build
+name: build-local
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-local:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

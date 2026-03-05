@@ -1,4 +1,4 @@
-name: docker-build
+name: build-docker
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  docker-build:
+  build-docker:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
