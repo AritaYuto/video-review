@@ -33,6 +33,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Prepare test env
-        run: cp .example.env.test .env.test
+        run: cp .example.test.env .env.test
       - name: Run hono tests
         run: npm run test:hono
