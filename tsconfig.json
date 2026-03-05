@@ -53,9 +53,6 @@
       "@/server/*": [
         "./src/server/*"
       ],
-      "@/routes/*": [
-        "./src/server/routes/*"
-      ],
       "@/schema/*": [
         "./src/schema/*"
       ]

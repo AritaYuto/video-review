@@ -1,6 +1,6 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
-import { maintenanceRouter } from "@/routes/admin/maintenance";
+import { maintenanceRouter } from "@/server/routes/admin/maintenance";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";

@@ -55,5 +55,3 @@ prisma/schemas/**
 src/schema/**
 
 models/
-
-tests/test-results/

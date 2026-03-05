@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/server/lib/db";
 import { listRouter } from "@/server/routes/videos/list";
@@ -106,5 +106,28 @@ describe("videos listRouter (DB)", () => {
 
         expect(titles).toContain(visibleTitle);
         expect(titles).not.toContain(hiddenTitle);
+    });
+
+    it("returns 500 when video query fails", async () => {
+        vi.resetModules();
+        vi.doMock("@/server/lib/db", () => ({
+            prisma: {
+                video: {
+                    findMany: vi.fn().mockRejectedValueOnce(new Error("forced db failure")),
+                },
+                videoEventKind: {
+                    findMany: vi.fn(),
+                },
+            },
+        }));
+
+        const { listRouter: mockedListRouter } = await import("@/server/routes/videos/list");
+        const res = await mockedListRouter.request("http://localhost/", { method: "GET" });
+
+        expect(res.status).toBe(500);
+        await expect(res.json()).resolves.toEqual({ error: "Failed to fetch videos" });
+
+        vi.doUnmock("@/server/lib/db");
+        vi.resetModules();
     });
 });
