@@ -66,6 +66,19 @@
         "commentItemEdit": "編集",
         "commentItemRemove": "削除"
     },
+    "video-event-panel": {
+        "tab": "イベント",
+        "openLink": "リンクを開く",
+        "empty": "イベントはありません"
+    },
+    "video-event-search": {
+        "title": "イベント検索",
+        "searchFilter": "イベントテキスト",
+        "kind": "イベント種別",
+        "hasLink": "リンク付き",
+        "ok": "検索",
+        "cancel": "キャンセル"
+    },
     "comment-confirmed": {
         "commentUpdate": "コメント更新",
         "commentAdd": "コメント追加",

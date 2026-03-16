@@ -3,10 +3,12 @@ import { getVideoRouter } from "@/server/routes/videos/[id]/get-video";
 import { latestRouter } from "@/server/routes/videos/[id]/latest";
 import { revisionsRouter } from "@/server/routes/videos/[id]/revisions";
 import { metaDataRouter } from "@/server/routes/videos/[id]/metadata";
+import { eventsRouter } from "@/server/routes/videos/[id]/events";
 
 export const videoByIdRouter = new Hono();
 
 videoByIdRouter.route("/", getVideoRouter);
 videoByIdRouter.route("/latest", latestRouter);
 videoByIdRouter.route("/revisions", revisionsRouter);
+videoByIdRouter.route("/events", eventsRouter);
 videoByIdRouter.route("/metadata", metaDataRouter);

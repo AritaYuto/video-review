@@ -6,6 +6,8 @@ export type {
     UserVideoReadStatus,
     Identity,
     VideoComment,
+    VideoEvent,
+    VideoEventKind,
     PromptTemplate,
 } from "@prisma/client";
 

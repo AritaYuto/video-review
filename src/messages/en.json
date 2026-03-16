@@ -66,6 +66,19 @@
         "commentItemEdit": "Edit",
         "commentItemRemove": "Remove"
     },
+    "video-event-panel": {
+        "tab": "Events",
+        "openLink": "Open link",
+        "empty": "No events"
+    },
+    "video-event-search": {
+        "title": "Event Search",
+        "searchFilter": "Event text",
+        "kind": "Event kind",
+        "hasLink": "Has link",
+        "ok": "Search",
+        "cancel": "Cancel"
+    },
     "comment-confirmed": {
         "commentUpdate": "Update Comment",
         "commentAdd": "Add Comment",

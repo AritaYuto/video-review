@@ -1,6 +1,6 @@
-import VideoCommentPanel from "@/components/video-comment-panel";
+import VideoSidePanel from "@/components/video-side-panel";
 import VideoListPanel from "@/components/video-list-panel";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function VideoReviewLayout({
     children,
@@ -20,7 +20,7 @@ export default function VideoReviewLayout({
                             {children}
                         </div>
                         <div className="flex flex-col min-h-0 w-full h-full border-l border-[#333]">
-                            <VideoCommentPanel />
+                            <VideoSidePanel />
                         </div>
                     </div>
                 </SidebarProvider>

@@ -4,8 +4,7 @@ import { useVideoReviewStore } from "@/stores/video-review-store";
 import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import React, { useEffect } from "react";
-import { Card } from "@/ui/card";
-
+import TimelineCardList from "@/components/video-side-panel/timeline-card-list";
 import CommentCardHeader from "@/components/video-comment-panel/comment-card/header";
 import CommentCardContent from "@/components/video-comment-panel/comment-card/content";
 import CommentCardFooter from "@/components/video-comment-panel/comment-card/footer";
@@ -31,8 +30,12 @@ export default function CommentCard(props: {
     }, [selectedComment]);
 
     return (
-        <div ref={props.containerRef} className="flex-1 overflow-y-auto p-3 space-y-3">
-            {props.comments.map((comment, i) => {
+        <TimelineCardList
+            items={props.comments}
+            containerRef={props.containerRef}
+            itemCardRef={props.commentCardRef}
+            getKey={(comment) => comment.id}
+            getCardClassName={(comment) => {
                 // Visual state rules for comment cards.
                 // Priority order (later rules override earlier ones):
                 // 1. Selected comment (explicit user focus)
@@ -44,7 +47,6 @@ export default function CommentCard(props: {
                 const isSelected = selectedComment?.id === comment.id;
                 const hasDrawing = comment.drawingPath !== "" && comment.drawingPath !== null;
                 const hasIssue = comment.issueId !== "" && comment.issueId !== null;
-                const baseClass = "bg-[#222] border border-[#333] text-white hover:bg-[#252525] transition cursor-pointer";
 
                 let stateClass = "";
                 if (hasIssue) {
@@ -63,21 +65,12 @@ export default function CommentCard(props: {
                     stateClass = "border-[#ffffff]";
                 }
 
-                return (
-                    <Card
-                        ref={el => {
-                            props.commentCardRef.current[comment.id] = el;
-                        }}
-                        key={comment.id}
-                        className={`${baseClass} ${stateClass}`}
-                        onClick={() => { handleSelectComment(comment) }}
-                    >
-                        <CommentCardHeader comment={comment} />
-                        <CommentCardContent comment={comment} />
-                        <CommentCardFooter comment={comment} />
-                    </Card>
-                );
-            })}
-        </div>
+                return stateClass;
+            }}
+            onClick={(comment) => { handleSelectComment(comment) }}
+            renderHeader={(comment) => <CommentCardHeader comment={comment} />}
+            renderContent={(comment) => <CommentCardContent comment={comment} />}
+            renderFooter={(comment) => <CommentCardFooter comment={comment} />}
+        />
     );
 }

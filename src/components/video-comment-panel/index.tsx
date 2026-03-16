@@ -9,30 +9,21 @@ import { useVideoStore } from "@/stores/video-store";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import CommentConfirmed from "@/components/video-comment-panel/comment-confirmed";
 import { useDrawingStore } from "@/stores/drawing-store";
-import { useEffect, useRef, useState } from "react";
-import { CommentSearchDialog } from "@/components/dialog/comment-search";
+import { RefObject, useEffect, useRef } from "react";
 import { readVideoComment } from "@/lib/fetch-wrapper";
-import { useTranslations } from "next-intl";
 import CommentCard from "@/components/video-comment-panel/comment-card";
 import { useCommentSearchStore } from "@/stores/comment-search-store";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { X, Search } from "lucide-react";
-import { SidebarGroup, SidebarGroupContent, SidebarInput } from "@/ui/sidebar";
-import CalendarDateRadio from "@/ui/calendar-date-radio";
 import { chatToast } from "@/components/chat-notice";
 
-export default function VideoCommentPanel() {
-    const t = useTranslations("video-comment-panel");
-    const headerRef = useRef<HTMLDivElement>(null);
+export default function VideoCommentPanel(props: {
+    topAreaRef: RefObject<HTMLDivElement | null>,
+}) {
     const containerRef = useRef<HTMLDivElement>(null);
     const commentCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-    const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const { displayName, email, userId } = useAuthStore();
     const { selectedVideo, selectedRevision } = useVideoStore();
     const { setDisplayComments, comments, addComment, fetchComments } = useCommentStore();
-    const { dateRange, filterText, setDateRange, setFilterText, clear, isFiltering } = useCommentSearchStore();
+    const { dateRange, filterText } = useCommentSearchStore();
     const { canvasSave } = useDrawingStore();
     const { videoRefElement, currentTime } = useVideoReviewStore();
     const {
@@ -92,7 +83,7 @@ export default function VideoCommentPanel() {
         // Find the latest comment whose timestamp is <= current playback time.
         // We assume `comments` is sorted by time in ascending order.
         let target = comments[0];
-        if (target === undefined || !headerRef.current) {
+        if (target === undefined || !props.topAreaRef.current) {
             return;
         }
 
@@ -107,7 +98,7 @@ export default function VideoCommentPanel() {
         // Calculate the vertical offset to keep the target comment fully visible.
         // Add a small margin (+5px) because the comment tends to be partially hidden
         // under the fixed header without this extra spacing.
-        const headerHeight = headerRef.current.getBoundingClientRect().height + 5;
+        const headerHeight = props.topAreaRef.current.getBoundingClientRect().height + 5;
         const el = commentCardRefs.current[target.id];
 
         if (!el || !containerRef.current) return;
@@ -128,64 +119,10 @@ export default function VideoCommentPanel() {
         }
     }, [dateRange, filterText]);
 
-    const handleClear = () => {
-        clear();
-        if (selectedRevision) {
-            fetchComments(selectedRevision);
-        }
-    }
-
     return (
         <div 
             style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
             className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r">
-            <div ref={headerRef} style={{color:"#ff8800"}} className="border-b p-2 font-semibold ">
-                <div>
-                    <div className="h-6">
-                        <span className="px-2">{t("title")}</span>
-                        <button
-                            onClick={() => { setSearchDialogOpen(true) }}
-                            className={`
-                            inline-flex items-center justify-center
-                            text-lg px-1 leading-none hover:text-[#ff5500]
-                            ${isFiltering() ? "text-[#15fa34ff]" : ""}
-                        `}
-                        >
-                            <FontAwesomeIcon icon={faSearch} />
-                        </button>
-                        {isFiltering()
-                            ? (
-                                <>
-                                    <button
-                                        onClick={() => { handleClear() }}
-                                        className="inline-flex items-center justify-center hover:text-[#ff5500]"
-                                    >
-                                        <X className="size-5" />
-                                    </button>
-                                </>
-                            )
-                            : (<></>)
-                        }
-                    </div>
-                    <Separator className="bg-[#333]" />
-                    <div>
-                        <SidebarGroup>
-                            <CalendarDateRadio value={dateRange} onSetValue={setDateRange} className="size-10" />
-                            <SidebarGroupContent className="relative mt-1">
-                                <SidebarInput
-                                    value={filterText}
-                                    onChange={(e) => setFilterText(e.target.value)}
-                                    placeholder="Filter comment text..."
-                                    className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
-                                <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
-                            </SidebarGroupContent>
-                        </SidebarGroup>
-                    </div>
-                </div>
-            </div>
-
-            <Separator className="bg-[#333]" />
-
             <CommentCard comments={comments} containerRef={containerRef} commentCardRef={commentCardRefs} />
 
             <Separator className="bg-[#333]" />
@@ -196,7 +133,6 @@ export default function VideoCommentPanel() {
                 onCancel={() => setEditing(null)}
                 onConfirmed={async (comment, issueId) => { await handleCommentConfirmed(comment, issueId) }}
             />
-            <CommentSearchDialog open={searchDialogOpen} onClose={() => { setSearchDialogOpen(false) }} />
         </div>
     );
 }
