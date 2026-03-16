@@ -6,10 +6,10 @@ import { Sidebar, SidebarContent, SidebarFooter } from "@/ui/sidebar"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/ui/resizable"
 import { SettingPopover } from "@/components/setting";
 import VideoUploadDialog from "@/components/dialog/video-upload";
-import VideoListPanelHeader from "@/components/video-list-panel/header";
+import VideoListPanelHeader from "@/components/video-browser/header";
 import { VideoSearchDialog } from "@/components/dialog/video-search";
-import VideoThumbnails from "@/components/video-list-panel/video-thumbnails";
-import VideoFoldersTree from "@/components/video-list-panel/video-folders-tree";
+import VideoThumbnails from "@/components/video-browser/video-thumbnails";
+import VideoFoldersTree from "@/components/video-browser/video-folders-tree";
 import { useVideoStore } from "@/stores/video-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";

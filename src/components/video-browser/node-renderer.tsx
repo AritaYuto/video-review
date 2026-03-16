@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { NodeRendererProps } from "react-arborist";
-import { VideoNode } from "@/components/video-list-panel/tree/types";
-import { TreeNodeRow } from "@/components/video-list-panel/tree/tree-node-row";
+import { VideoNode } from "@/components/video-browser/tree/types";
+import { TreeNodeRow } from "@/components/video-browser/tree/tree-node-row";
 
 interface Props extends NodeRendererProps<VideoNode> {
     selectedId?: string;

@@ -1,5 +1,5 @@
 import { Video } from "@/lib/db-types";
-import { VideoNode } from "@/components/video-list-panel/tree/types"; import dayjs from "dayjs";
+import { VideoNode } from "@/components/video-browser/tree/types"; import dayjs from "dayjs";
 import { NodeApi } from "react-arborist";
 
 export function buildTree(

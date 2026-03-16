@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Video, VideoRevision } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { ZoomInIcon } from "lucide-react";
-import { ThumbnailCell, ThumbnailLazyLoader } from "@/components/video-list-panel/thumbnail-cell";
+import { ThumbnailCell, ThumbnailLazyLoader } from "@/components/video-browser/thumbnail-cell";
 
 type Props = {
     videos: Video[];

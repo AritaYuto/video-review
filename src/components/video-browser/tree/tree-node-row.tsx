@@ -1,4 +1,4 @@
-import { VideoNode } from "@/components/video-list-panel/tree/types";
+import { VideoNode } from "@/components/video-browser/tree/types";
 import { Folder, Film } from "lucide-react";
 
 

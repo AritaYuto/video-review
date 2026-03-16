@@ -1,5 +1,5 @@
 import VideoSidePanel from "@/components/video-side-panel";
-import VideoListPanel from "@/components/video-list-panel";
+import VideoListPanel from "@/components/video-browser";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function VideoReviewLayout({

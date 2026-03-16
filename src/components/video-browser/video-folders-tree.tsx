@@ -8,9 +8,9 @@ import React, {
 } from "react";
 import { Tree, TreeApi } from "react-arborist";
 import { useSize } from "@radix-ui/react-use-size";
-import { VideoNode } from "@/components/video-list-panel/tree/types";
-import { NodeRenderer } from "@/components/video-list-panel/node-renderer";
-import { buildTree, findPath } from "@/components/video-list-panel/tree/utils";
+import { VideoNode } from "@/components/video-browser/tree/types";
+import { NodeRenderer } from "@/components/video-browser/node-renderer";
+import { buildTree, findPath } from "@/components/video-browser/tree/utils";
 import { Video } from "@/lib/db-types";
 
 type Props = {
