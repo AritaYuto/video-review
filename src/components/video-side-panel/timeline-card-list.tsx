@@ -7,6 +7,7 @@ export default function TimelineCardList<T>(props: {
     items: T[];
     containerRef: React.RefObject<HTMLDivElement | null>;
     itemCardRef: React.RefObject<Record<string, HTMLDivElement | null>>;
+    // The key must be stable because panel content uses refs for timeline sync scrolling.
     getKey: (item: T) => string;
     getCardClassName?: (item: T) => string;
     onClick?: (item: T) => void;
@@ -22,6 +23,7 @@ export default function TimelineCardList<T>(props: {
                 return (
                     <Card
                         ref={el => {
+                            // Panels read back these refs to scroll the active/selected card into view.
                             props.itemCardRef.current[key] = el;
                         }}
                         key={key}
