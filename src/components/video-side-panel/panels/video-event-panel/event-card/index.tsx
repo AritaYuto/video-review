@@ -3,9 +3,9 @@
 import React, { useMemo } from "react";
 import { useVideoReviewStore } from "@/stores/video-review-store";
 import TimelineCardList from "@/components/video-side-panel/timeline-card-list";
-import EventCardHeader from "@/components/video-event-panel/event-card/header";
-import EventCardContent from "@/components/video-event-panel/event-card/content";
-import EventCardFooter from "@/components/video-event-panel/event-card/footer";
+import EventCardHeader from "@/components/video-side-panel/panels/video-event-panel/event-card/header";
+import EventCardContent from "@/components/video-side-panel/panels/video-event-panel/event-card/content";
+import EventCardFooter from "@/components/video-side-panel/panels/video-event-panel/event-card/footer";
 import { VideoEventWithKind } from "@/lib/fetch-wrapper/events";
 
 export default function EventCard(props: {

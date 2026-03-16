@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import VideoCommentPanel from "@/components/video-comment-panel";
-import VideoEventPanel from "@/components/video-event-panel";
+import VideoCommentPanel from "@/components/video-side-panel/panels/video-comment-panel";
+import VideoEventPanel from "@/components/video-side-panel/panels/video-event-panel";
 import { CommentSearchDialog } from "@/components/dialog/comment-search";
 import { VideoEventSearchDialog } from "@/components/dialog/video-event-search";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";

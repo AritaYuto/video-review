@@ -5,9 +5,9 @@ import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import React, { useEffect } from "react";
 import TimelineCardList from "@/components/video-side-panel/timeline-card-list";
-import CommentCardHeader from "@/components/video-comment-panel/comment-card/header";
-import CommentCardContent from "@/components/video-comment-panel/comment-card/content";
-import CommentCardFooter from "@/components/video-comment-panel/comment-card/footer";
+import CommentCardHeader from "@/components/video-side-panel/panels/video-comment-panel/comment-card/header";
+import CommentCardContent from "@/components/video-side-panel/panels/video-comment-panel/comment-card/content";
+import CommentCardFooter from "@/components/video-side-panel/panels/video-comment-panel/comment-card/footer";
 
 export default function CommentCard(props: {
     comments: VideoComment[],

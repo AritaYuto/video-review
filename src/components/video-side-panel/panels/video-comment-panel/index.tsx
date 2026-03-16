@@ -7,11 +7,11 @@ import { useCommentStore } from "@/stores/comment-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useVideoStore } from "@/stores/video-store";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
-import CommentConfirmed from "@/components/video-comment-panel/comment-confirmed";
+import CommentConfirmed from "@/components/video-side-panel/panels/video-comment-panel/comment-confirmed";
 import { useDrawingStore } from "@/stores/drawing-store";
 import { RefObject, useEffect, useRef } from "react";
 import { readVideoComment } from "@/lib/fetch-wrapper";
-import CommentCard from "@/components/video-comment-panel/comment-card";
+import CommentCard from "@/components/video-side-panel/panels/video-comment-panel/comment-card";
 import { useCommentSearchStore } from "@/stores/comment-search-store";
 import { chatToast } from "@/components/chat-notice";
 

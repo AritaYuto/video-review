@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useVideoStore } from "@/stores/video-store";
 import { useVideoEventStore } from "@/stores/video-event-store";
 import { useVideoReviewStore } from "@/stores/video-review-store";
-import EventCard from "@/components/video-event-panel/event-card";
+import EventCard from "@/components/video-side-panel/panels/video-event-panel/event-card";
 import { useVideoEventSearchStore } from "@/stores/video-event-search-store";
 
 export default function VideoEventPanel(props: {
