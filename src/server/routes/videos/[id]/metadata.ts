@@ -5,7 +5,7 @@ import { z } from "zod";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { createLlamaSession, createLlama, VideoEventContext } from "@/server/lib/integration-clients/llama-client";
+import { createLLMClient, VideoEventContext } from "@/server/lib/integration-clients/llm-client";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { randomUUID } from "crypto";
 
@@ -251,37 +251,20 @@ metaDataRouter.openapi({
     let successCount = 0;
     let failureCount = 0;
 
-    const llama = await createLlama();
-    if (!llama) {
-        throw new ServerError("Failed to create Llama", 500);
+    const llmClient = createLLMClient();
+    if (!llmClient) {
+        throw new ServerError("LLM is not configured. Set VIDEO_REVIEW_LLM_PROVIDER to enable.", 500);
     }
 
-    const annotationGrammar = await llama.createGrammarForJsonSchema({
-        type: "object",
-        properties: {
-            extracted_facts: {
-                type: "string",
-                description: "Extracted objective facts, character's original stance, and emotional changes from the dialogue."
-            },
-            summary: {
-                type: "string",
-                description: "A comprehensive summary of the scene based on the extracted facts."
-            },
-            tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Relevant tags representing characters, situations, and emotions."
-            }
-        },
-        required: ["extracted_facts", "summary", "tags"]
-    });
+    const jsonInstruction = `
+Respond ONLY with a JSON object matching this structure (no markdown, no explanation):
+{
+  "extracted_facts": "<objective facts, character stances, and emotional changes from the dialogue>",
+  "summary": "<comprehensive summary of the scene>",
+  "tags": ["<tag1>", "<tag2>", ...]
+}`;
 
     for (const rev of videoRevs) {
-        const session = await createLlamaSession();
-        if (!session) {
-            throw new ServerError("Failed to create Llama session", 500);
-        }
-
         let prompt = promptTemplate.prompt;
         let hasInput = false;
 
@@ -296,9 +279,9 @@ metaDataRouter.openapi({
 
             const eventJson = await stream.text();
             const eventAnalysis = JSON.parse(eventJson) as VideoEventContext;
-            const kindText = eventAnalysis.events.map(e => `[${e.start_ms}-${e.end_ms}]\n${e.data}\n`)
-            prompt += `\n# Input ${kind} Info\n`
-            prompt += kindText.join("\n") + "\n"
+            const kindText = eventAnalysis.events.map(e => `[${e.start_ms}-${e.end_ms}]\n${e.data}\n`);
+            prompt += `\n# Input ${kind} Info\n`;
+            prompt += kindText.join("\n") + "\n";
 
             hasInput = true;
         }
@@ -308,16 +291,15 @@ metaDataRouter.openapi({
             continue;
         }
 
-
         try {
-            const resultText = await session.prompt(prompt, { grammar: annotationGrammar });
+            const resultText = await llmClient.complete(prompt + jsonInstruction);
             const resultJson = JSON.parse(resultText);
-            let data: PrismaTypes.VideoRevisionUpdateInput = {}
+            let data: PrismaTypes.VideoRevisionUpdateInput = {};
             if (generateSummary) {
-                data.summary = resultJson.summary
+                data.summary = resultJson.summary;
             }
             if (generateTags) {
-                data.tags = resultJson.tags
+                data.tags = resultJson.tags;
             }
             await prisma.videoRevision.update({ where: { id: rev.id }, data });
             successCount++;

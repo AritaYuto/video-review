@@ -1,5 +1,7 @@
+import http from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createClient } from "./client.js";
 
@@ -116,5 +118,25 @@ server.registerTool(
     },
 );
 
-const transport = new StdioServerTransport();
+const transport = process.env.MCP_TRANSPORT === "http"
+    ? await startHttpServer()
+    : new StdioServerTransport();
+
 await server.connect(transport);
+
+async function startHttpServer(): Promise<StreamableHTTPServerTransport> {
+    const port = parseInt(process.env.MCP_PORT ?? "3490", 10);
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+
+    const httpServer = http.createServer(async (req, res) => {
+        if (req.url === "/mcp") {
+            await transport.handleRequest(req, res);
+        } else {
+            res.writeHead(404).end();
+        }
+    });
+
+    await new Promise<void>((resolve) => httpServer.listen(port, resolve));
+    process.stderr.write(`MCP server listening on http://0.0.0.0:${port}/mcp\n`);
+    return transport;
+}

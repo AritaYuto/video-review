@@ -1,5 +1,4 @@
-import { booleanEnv, resolveEnv, typeEnv } from "@/lib/env/helpers";
-import { LlamaGpuType } from "node-llama-cpp";
+import { booleanEnv, resolveEnv } from "@/lib/env/helpers";
 import { env as StorageEnv } from "./storage-env";
 
 import "server-only"
@@ -24,5 +23,9 @@ export const env = {
     SMTP_TLS_STRICT: booleanEnv(process.env.VIDEO_REVIEW_SMTP_TLS_STRICT),
     VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated: process.env.ADMIN_MAINTENANCE_TOKEN,
     JWT_SECRET_deprecated: process.env.JWT_SECRET,
-    LOCAL_LLM_DEVICE: typeEnv<LlamaGpuType>(process.env.VIDEO_REVIEW_LOCAL_LLM_DEVICE, "auto"),
+    // LLM provider: "claude" | "ollama" (unset = disabled)
+    LLM_PROVIDER: process.env.VIDEO_REVIEW_LLM_PROVIDER as "claude" | "ollama" | undefined,
+    LLM_API_KEY: process.env.VIDEO_REVIEW_LLM_API_KEY,
+    LLM_BASE_URL: process.env.VIDEO_REVIEW_LLM_BASE_URL,
+    LLM_MODEL: process.env.VIDEO_REVIEW_LLM_MODEL,
 } as const;

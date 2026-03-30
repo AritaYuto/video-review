@@ -51,6 +51,33 @@ services:
     depends_on:
       - db
 
+  mcp:
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./docker/mcp/Dockerfile
+    container_name: videoreview-mcp
+    environment:
+      MCP_TRANSPORT: http
+      MCP_PORT: "3490"
+      VIDEO_REVIEW_SERVER_URL: http://web:3489
+      VIDEO_REVIEW_LLM_PROVIDER: ollama
+      VIDEO_REVIEW_LLM_BASE_URL: http://ollama:11434
+    ports:
+      - "3490:3490"
+    depends_on:
+      - web
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: videoreview-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./llm_models:/root/.ollama/models
+
   video-processing:
     env_file:
       - .env
