@@ -62,7 +62,7 @@ class OllamaClient implements LLMClient {
     }
 }
 
-export function createLLMClient(): LLMClient | null {
+function buildClient(): LLMClient | null {
     const provider = env.LLM_PROVIDER;
     if (!provider) return null;
 
@@ -81,4 +81,10 @@ export function createLLMClient(): LLMClient | null {
         default:
             throw new Error(`Unknown LLM provider: ${provider}. Supported: "claude", "ollama"`);
     }
+}
+
+const _client = buildClient();
+
+export function createLLMClient(): LLMClient | null {
+    return _client;
 }
