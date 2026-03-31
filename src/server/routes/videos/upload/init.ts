@@ -83,7 +83,10 @@ initRouter.openapi({
                 const title = fields["title"];
                 const folderKey = fields["folderKey"];
                 const scenePath = fields["scenePath"];
-                console.log("[upload.init] fields", { title, folderKey, scenePath });
+                const vcsWatchPaths = fields["vcsWatchPaths"]
+                    ? fields["vcsWatchPaths"].split(",").map(p => p.trim()).filter(Boolean)
+                    : [];
+                console.log("[upload.init] fields", { title, folderKey, scenePath, vcsWatchPaths });
 
                 if (!title || !folderKey) {
                     complete(c.json({ error: "missing parameter" }, { status: 400 }));
@@ -99,6 +102,7 @@ initRouter.openapi({
                             title,
                             folderKey,
                             scenePath,
+                            vcsWatchPaths,
                             latestRevisionNum: null,
                             /**
                              * NOTE:
@@ -142,6 +146,7 @@ initRouter.openapi({
                     title,
                     folderKey,
                     scenePath,
+                    vcsWatchPaths,
                     storageKey,
                     storage: type as UploadStorageType,
                 });

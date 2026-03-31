@@ -58,6 +58,7 @@ finishRouter.openapi({
     const title = session.title
     const folderKey = session.folderKey
     const scenePath = session.scenePath
+    const vcsWatchPaths = session.vcsWatchPaths
     const nextRev = session.nextRev;
     const storageKey = session.storageKey;
 
@@ -75,7 +76,7 @@ finishRouter.openapi({
 
             await tx.video.update({
                 where: { id: video.id },
-                data: { scenePath: scenePath, latestRevisionNum: newRevision.revision, deleted: false },
+                data: { scenePath, vcsWatchPaths, latestRevisionNum: newRevision.revision, deleted: false },
             });
             return newRevision;
         }

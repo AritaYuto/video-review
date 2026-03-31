@@ -159,6 +159,7 @@ describe("videos upload initRouter (DB)", () => {
             title,
             folderKey,
             scenePath,
+            vcsWatchPaths: [],
             storageKey: expectedStorageKey,
             storage: "local",
         });
@@ -167,5 +168,49 @@ describe("videos upload initRouter (DB)", () => {
             expectedStorageKey,
             "video/mp4",
         );
+    });
+
+    it("passes vcsWatchPaths from multipart field to createSession", async () => {
+        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+
+        const title = `init-title-${randomUUID().slice(0, 8)}`;
+        const folderKey = `init-folder-${randomUUID().slice(0, 8)}`;
+        const expectedStorageKey = path
+            .join("videos", folderKey, title, "rev_001.mp4")
+            .replace(/\\/g, "/");
+
+        mocks.createSession.mockResolvedValueOnce({
+            id: "session-init-vcs",
+            title,
+            folderKey,
+            scenePath: undefined,
+            nextRev: 1,
+            storage: "local",
+            storageKey: expectedStorageKey,
+        });
+
+        const { body, contentType } = multipartBody({
+            title,
+            folderKey,
+            vcsWatchPaths: "Assets/Scenes/Opening, Assets/Scripts/Camera/",
+        });
+
+        const res = await initRouter.request("http://localhost/", {
+            method: "POST",
+            headers: { "content-type": contentType },
+            body,
+        });
+
+        expect(res.status).toBe(200);
+
+        expect(mocks.createSession).toHaveBeenCalledWith(
+            expect.objectContaining({
+                vcsWatchPaths: ["Assets/Scenes/Opening", "Assets/Scripts/Camera/"],
+            }),
+        );
+
+        const video = await prisma.video.findFirst({ where: { title, folderKey }, select: { id: true, vcsWatchPaths: true } });
+        expect(video?.vcsWatchPaths).toEqual(["Assets/Scenes/Opening", "Assets/Scripts/Camera/"]);
+        if (video) createdVideoIds.push(video.id);
     });
 });

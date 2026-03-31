@@ -1,0 +1,24 @@
+import type { ChangeSet } from "./types";
+
+export interface GetChangesParams {
+    /** Start datetime (uploadedAt of the previous revision). If omitted, returns the latest N items before `to`. */
+    from?: Date;
+    /** End datetime (uploadedAt of this revision). */
+    to: Date;
+    branch?: string;
+}
+
+export interface VCSProvider {
+    /** Repository identifier (for display). */
+    readonly name: string;
+
+    /** Fetch changes within the specified period. */
+    getChanges(params: GetChangesParams): Promise<ChangeSet>;
+
+    /**
+     * Fetch the list of changed file paths for a given PR/MR id.
+     * Used for Approach A relevance filtering (vcsWatchPaths × file path match).
+     * Optional — providers that don't support this leave it undefined.
+     */
+    fetchPRFiles?(prId: string): Promise<string[]>;
+}
