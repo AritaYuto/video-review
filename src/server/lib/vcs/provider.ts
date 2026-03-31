@@ -21,4 +21,11 @@ export interface VCSProvider {
      * Optional — providers that don't support this leave it undefined.
      */
     fetchPRFiles?(prId: string): Promise<string[]>;
+
+    /**
+     * Fetch the list of changed file paths for a given commit hash.
+     * Used for Approach A relevance filtering on commits.
+     * Optional — providers that don't support this leave it undefined.
+     */
+    fetchCommitFiles?(hash: string): Promise<string[]>;
 }

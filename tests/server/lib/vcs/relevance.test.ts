@@ -183,33 +183,68 @@ describe("scorePRRelevance", () => {
 // ---------------------------------------------------------------------------
 
 describe("scoreCommitRelevance", () => {
-    it("returns high with 'no filter configured' when vcsWatchPaths is empty", () => {
-        const result = scoreCommitRelevance("Fix anything", [], ["cutscene"]);
+    it("returns high with 'no filter configured' when vcsWatchPaths is empty", async () => {
+        const result = await scoreCommitRelevance("Fix anything", 0, [], ["cutscene"], undefined);
         expect(result.relevance).toBe("high");
         expect(result.relevanceReason).toBe("no filter configured");
     });
 
-    it("returns maybe when commit message matches title keywords", () => {
-        const result = scoreCommitRelevance(
+    it("returns high when file list matches vcsWatchPaths (Approach A)", async () => {
+        const fetchFiles = vi.fn(async () => [
+            "Assets/Scripts/Camera/CinemachineHelper.cs",
+        ]);
+        const result = await scoreCommitRelevance(
+            "Refactor internals",
+            0,
+            ["Assets/Scripts/Camera/"],
+            [],
+            fetchFiles,
+        );
+        expect(result.relevance).toBe("high");
+        expect(result.relevanceReason).toContain("vcsWatchPaths match");
+        expect(fetchFiles).toHaveBeenCalledOnce();
+    });
+
+    it("returns maybe when commit message matches title keywords (Approach B)", async () => {
+        const fetchFiles = vi.fn(async () => ["Packages/Backend/Api.cs"]);
+        const result = await scoreCommitRelevance(
             "Adjust CutScene bloom intensity",
+            0,
             ["Assets/Scripts/Camera/"],
             ["CutScene"],
+            fetchFiles,
         );
         expect(result.relevance).toBe("maybe");
         expect(result.relevanceReason).toBe("title keyword match");
     });
 
-    it("returns unlikely when commit message does not match keywords", () => {
-        const result = scoreCommitRelevance(
+    it("returns unlikely when commit message does not match keywords", async () => {
+        const fetchFiles = vi.fn(async () => ["Packages/Backend/Api.cs"]);
+        const result = await scoreCommitRelevance(
             "Fix login session timeout",
+            0,
             ["Assets/Scripts/Camera/"],
             ["CutScene"],
+            fetchFiles,
         );
         expect(result.relevance).toBe("unlikely");
     });
 
-    it("returns unlikely when keywords list is empty and vcsWatchPaths is set", () => {
-        const result = scoreCommitRelevance("Fix camera shake", ["Assets/Scripts/Camera/"], []);
+    it("returns unlikely when keywords list is empty and vcsWatchPaths is set", async () => {
+        const result = await scoreCommitRelevance("Fix camera shake", 0, ["Assets/Scripts/Camera/"], [], undefined);
+        expect(result.relevance).toBe("unlikely");
+    });
+
+    it("skips file fetch (Approach A) for commits beyond the limit (index >= 50)", async () => {
+        const fetchFiles = vi.fn(async () => ["Assets/Scripts/Camera/Foo.cs"]);
+        const result = await scoreCommitRelevance(
+            "Fix login timeout",
+            50,
+            ["Assets/Scripts/Camera/"],
+            ["CutScene"],
+            fetchFiles,
+        );
+        expect(fetchFiles).not.toHaveBeenCalled();
         expect(result.relevance).toBe("unlikely");
     });
 });

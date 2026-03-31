@@ -1,6 +1,6 @@
 import type { Relevance } from "./types";
 
-const PR_FILES_LIMIT = 50;
+const FILES_LIMIT = 50;
 
 /**
  * Returns true if `filePath` matches any entry in `vcsWatchPaths`.
@@ -42,20 +42,19 @@ export function matchesKeywords(text: string, keywords: string[]): boolean {
 export type RelevanceResult = { relevance: Relevance; relevanceReason: string };
 
 /**
- * Score the relevance of a PR against this video.
+ * Shared scoring logic for both PRs and commits.
  *
  * Strategy:
- *   A (file path match, requires fetchFiles):
- *     - Try A for all PRs up to PR_FILES_LIMIT when vcsWatchPaths is set
+ *   A (file path match, requires fetchFiles, up to FILES_LIMIT items):
  *     - A match → "high"
- *   B (title keyword match):
- *     - Applied to PRs that A didn't match, and always for commits
+ *   B (title/message keyword match):
  *     - B match → "maybe"
- *   Neither → "unlikely" (only when vcsWatchPaths is set; otherwise "high")
+ *   Neither → "unlikely"
+ *   vcsWatchPaths empty → "high" (no filter configured)
  */
-export async function scorePRRelevance(
-    prTitle: string,
-    prIndex: number,
+async function scoreRelevance(
+    text: string,
+    index: number,
     vcsWatchPaths: string[],
     titleKeywords: string[],
     fetchFiles: (() => Promise<string[]>) | undefined,
@@ -64,8 +63,8 @@ export async function scorePRRelevance(
         return { relevance: "high", relevanceReason: "no filter configured" };
     }
 
-    // Approach A: file path match (up to PR_FILES_LIMIT PRs)
-    if (fetchFiles && prIndex < PR_FILES_LIMIT) {
+    // Approach A: file path match (up to FILES_LIMIT items)
+    if (fetchFiles && index < FILES_LIMIT) {
         const files = await fetchFiles();
         const matched = files.find(f => matchesWatchPaths(f, vcsWatchPaths));
         if (matched) {
@@ -73,27 +72,30 @@ export async function scorePRRelevance(
         }
     }
 
-    // Approach B: title keyword match
-    if (titleKeywords.length > 0 && matchesKeywords(prTitle, titleKeywords)) {
+    // Approach B: keyword match
+    if (titleKeywords.length > 0 && matchesKeywords(text, titleKeywords)) {
         return { relevance: "maybe", relevanceReason: "title keyword match" };
     }
 
     return { relevance: "unlikely", relevanceReason: "no vcsWatchPaths or keyword match" };
 }
 
-export function scoreCommitRelevance(
-    commitMessage: string,
+export function scorePRRelevance(
+    prTitle: string,
+    prIndex: number,
     vcsWatchPaths: string[],
     titleKeywords: string[],
-): RelevanceResult {
-    if (vcsWatchPaths.length === 0) {
-        return { relevance: "high", relevanceReason: "no filter configured" };
-    }
+    fetchFiles: (() => Promise<string[]>) | undefined,
+): Promise<RelevanceResult> {
+    return scoreRelevance(prTitle, prIndex, vcsWatchPaths, titleKeywords, fetchFiles);
+}
 
-    // Commits: only Approach B (fetching per-commit file lists is too costly)
-    if (titleKeywords.length > 0 && matchesKeywords(commitMessage, titleKeywords)) {
-        return { relevance: "maybe", relevanceReason: "title keyword match" };
-    }
-
-    return { relevance: "unlikely", relevanceReason: "no keyword match" };
+export function scoreCommitRelevance(
+    commitMessage: string,
+    commitIndex: number,
+    vcsWatchPaths: string[],
+    titleKeywords: string[],
+    fetchFiles: (() => Promise<string[]>) | undefined,
+): Promise<RelevanceResult> {
+    return scoreRelevance(commitMessage, commitIndex, vcsWatchPaths, titleKeywords, fetchFiles);
 }

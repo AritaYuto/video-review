@@ -112,10 +112,17 @@ vcsChangesRouter.openapi({
         )
     );
 
-    const scoredCommits = changeSet.commits.map(commit => ({
-        ...commit,
-        ...scoreCommitRelevance(commit.message, vcsWatchPaths, titleKeywords),
-    }));
+    const scoredCommits = await Promise.all(
+        changeSet.commits.map((commit, index) =>
+            scoreCommitRelevance(
+                commit.message,
+                index,
+                vcsWatchPaths,
+                titleKeywords,
+                provider.fetchCommitFiles ? () => provider.fetchCommitFiles!(commit.hash) : undefined,
+            ).then(({ relevance, relevanceReason }) => ({ ...commit, relevance, relevanceReason }))
+        )
+    );
 
     const scored: ChangeSet = {
         ...changeSet,

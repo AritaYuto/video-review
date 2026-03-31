@@ -61,6 +61,13 @@ export class GitHubProvider implements VCSProvider {
         return data.map(f => f.filename);
     }
 
+    async fetchCommitFiles(hash: string): Promise<string[]> {
+        const url =
+            `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/commits/${hash}`;
+        const data = await this.get<{ files?: GitHubFile[] }>(url);
+        return (data.files ?? []).map(f => f.filename);
+    }
+
     private async fetchPullRequests(from: Date | undefined, to: Date): Promise<PullRequest[]> {
         const results: PullRequest[] = [];
         let page = 1;
