@@ -20,7 +20,7 @@ export function PrCard({ pr }: { pr: VcsPullRequest }) {
 
     return (
         <div
-            className={`bg-[#222] border border-[#333] rounded px-3 py-2 flex flex-col gap-1 ${borderClass} ${pr.relevance === "unlikely" ? "opacity-60" : ""}`}
+            className={`bg-[#222] border border-[#333] rounded px-3 py-2 flex flex-col gap-1 min-w-0 ${borderClass} ${pr.relevance === "unlikely" ? "opacity-60" : ""}`}
         >
             <div className="flex items-start justify-between gap-2">
                 <span

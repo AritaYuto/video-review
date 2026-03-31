@@ -14,3 +14,11 @@ export async function fetchVcsChanges(data: {
     }
     return res.json();
 }
+
+export async function fetchVcsSummary(videoId: string): Promise<string | null> {
+    const res = await fetch(`/api/v1/videos/${videoId}/vcs-summary`);
+    if (res.status === 503 || res.status === 404) return null;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json() as { summary: string | null };
+    return json.summary;
+}

@@ -228,8 +228,9 @@ model VCSRevisionLink {
   vcsConfigId     String
   vcsConfig       VCSConfig @relation(fields: [vcsConfigId], references: [id])
 
-  changeSet Json?
-  fetchedAt DateTime?
+  changeSet  Json?
+  summary    String?
+  fetchedAt  DateTime?
 
   @@unique([videoRevisionId, vcsConfigId])
 }

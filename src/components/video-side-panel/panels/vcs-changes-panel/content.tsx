@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import { useVideoStore } from "@/stores/video-store";
 import { useVcsChangesStore } from "@/stores/vcs-changes-store";
 import { PrCard } from "@/components/video-side-panel/panels/vcs-changes-panel/pr-card";
-import { CommitCard } from "@/components/video-side-panel/panels/vcs-changes-panel/commit-card";
-import type { VcsPullRequest, VcsCommit } from "@/lib/vcs-types";
+import type { VcsPullRequest } from "@/lib/vcs-types";
 
 function diffDays(from: Date | null, to: Date): number {
     if (!from) return 0;
@@ -36,7 +35,7 @@ export default function VcsChangesContent(props: {
     void props.topAreaRef;
     const t = useTranslations("vcs-changes-panel");
     const { selectedVideo, revisions, selectedRevision } = useVideoStore();
-    const { data, loading, error, fetchChanges, clear } = useVcsChangesStore();
+    const { data, loading, error, summary, summaryLoading, fetchChanges, fetchSummary, clear } = useVcsChangesStore();
     const [showUnlikely, setShowUnlikely] = useState(false);
 
     const prevRevision = useMemo(() => {
@@ -55,6 +54,15 @@ export default function VcsChangesContent(props: {
         }
         void fetchChanges(selectedVideo.id, prevRevision);
     }, [selectedVideo?.id, prevRevision?.id]);
+
+    /*
+     * Summary is fetched independently after vcs-changes loads.
+     * 503 (LLM not configured) and 404 (no cache) both resolve to null silently.
+     */
+    useEffect(() => {
+        if (!selectedVideo || !data) return;
+        void fetchSummary(selectedVideo.id);
+    }, [selectedVideo?.id, data]);
 
     const prs = useMemo<ReturnType<typeof partition<VcsPullRequest>>>(
         () => partition(data?.pullRequests ?? []),
@@ -79,7 +87,7 @@ export default function VcsChangesContent(props: {
     return (
         <div
             style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r overflow-y-auto"
+            className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r overflow-y-auto overflow-x-hidden"
         >
             <div className="px-3 pt-3 pb-2 border-b border-[#333]">
                 {selectedRevision && prevRevision && (
@@ -91,6 +99,12 @@ export default function VcsChangesContent(props: {
                 {data && (
                     <div className="text-xs text-[#666]">
                         PR {data.pullRequests.length}{t("unit-items")} / {t("commits")} {data.commits.length}{t("unit-items")}
+                    </div>
+                )}
+                {(summary || summaryLoading) && (
+                    <div className="mt-2 text-xs text-[#aaa] leading-relaxed">
+                        <span className="text-[#ff8800] mr-1">[AI]</span>
+                        {summaryLoading ? <span className="text-[#555]">{t("summary-loading")}</span> : summary}
                     </div>
                 )}
                 {!loading && !data && !error && (

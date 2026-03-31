@@ -79,7 +79,8 @@
         "hide-unlikely": "Hide low-relevance changes",
         "unit-items": "",
         "unit-days": " days",
-        "commits": "Commits"
+        "commits": "Commits",
+        "summary-loading": "Generating summary..."
     },
     "video-event-panel": {
         "tab": "Events",

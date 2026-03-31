@@ -1,10 +1,11 @@
 import { OpenAPIHono as Hono, z } from "@hono/zod-openapi";
 import { prisma } from "@/server/lib/db";
 import { createVCSProviderFromEnv } from "@/server/lib/vcs/from-env";
-import type { ChangeSet } from "@/server/lib/vcs/types";
+import { ChangeSet, PullRequest } from "@/server/lib/vcs/types";
 import { extractKeywords, scorePRRelevance, scoreCommitRelevance } from "@/server/lib/vcs/relevance";
+import { createLLMClient } from "@/server/lib/integration-clients/llm-client";
 
-export const vcsChangesRouter = new Hono();
+export const vcsRouter = new Hono();
 
 const QuerySchema = z.object({
     from: z.string().optional(),   // videoRevisionId of the previous revision
@@ -12,11 +13,11 @@ const QuerySchema = z.object({
     refresh: z.string().transform(v => v === "true").optional(),
 });
 
-vcsChangesRouter.openapi({
+vcsRouter.openapi({
     method: "get",
     summary: "Get VCS changes between video revisions",
     description: "Returns pull requests and commits between two video revision upload timestamps, with relevance scoring based on the video's vcsWatchPaths and title.",
-    path: "/",
+    path: "/vcs-changes",
     request: { query: QuerySchema },
     responses: {
         200: { description: "VCS changes retrieved successfully" },
@@ -158,4 +159,87 @@ vcsChangesRouter.openapi({
     });
 
     return c.json({ ...scored, fromCache: false, fetchedAt: new Date() });
+});
+
+function buildPrompt(prs: PullRequest[], languageHint: string): string {
+    const prLines = prs
+        .map((pr) => {
+            const labels = pr.labels.length > 0 ? ` [${pr.labels.join(", ")}]` : "";
+            const desc = pr.description ? `\n  ${pr.description.slice(0, 200)}` : "";
+            return `- #${pr.id}: ${pr.title}${labels} (@${pr.author})${desc}`;
+        })
+        .join("\n");
+
+    return `The following pull requests were merged between two video review revisions.
+Summarize them in 1-2 sentences, focusing on what may affect the video content being reviewed.
+Match the language of the PR content. Language hint from the reviewer's browser: ${languageHint}.
+
+Pull requests:
+${prLines}
+
+Respond with only the summary text. No markdown, no explanation.`;
+}
+
+vcsRouter.openapi({
+    method: "get",
+    summary: "Get AI summary of VCS changes for a video revision",
+    path: "/vcs-summary",
+    responses: {
+        200: { description: "Summary returned" },
+        404: { description: "No cached VCS changes found" },
+        503: { description: "LLM not configured" },
+    },
+}, async (c) => {
+    const videoId = c.req.param("id");
+
+    const llmClient = createLLMClient();
+    if (!llmClient) {
+        return c.json({ error: "LLM is not configured" }, { status: 503 });
+    }
+
+    const toRevision = await prisma.videoRevision.findFirst({
+        where: { videoId, deleted: false },
+        orderBy: { revision: "desc" },
+    });
+    if (!toRevision) {
+        return c.json({ error: "Video revision not found" }, { status: 404 });
+    }
+
+    const link = await prisma.vCSRevisionLink.findFirst({
+        where: { videoRevisionId: toRevision.id },
+        orderBy: { fetchedAt: "desc" },
+    });
+    if (!link?.changeSet) {
+        return c.json({ error: "No cached VCS changes. Fetch vcs-changes first." }, { status: 404 });
+    }
+
+    if (link.summary) {
+        return c.json({ summary: link.summary, fromCache: true });
+    }
+
+    const changeSet = link.changeSet as unknown as ChangeSet;
+    const relevantPRs = changeSet.pullRequests.filter(
+        (pr) => pr.relevance === "high" || pr.relevance === "maybe",
+    );
+
+    if (relevantPRs.length === 0) {
+        return c.json({ summary: null, fromCache: false });
+    }
+
+    const languageHint = c.req.header("accept-language")?.split(",")[0] ?? "en";
+    const prompt = buildPrompt(relevantPRs, languageHint);
+
+    let summary: string;
+    try {
+        summary = await llmClient.complete(prompt);
+    } catch (err) {
+        return c.json({ error: `LLM error: ${String(err)}` }, { status: 502 });
+    }
+
+    await prisma.vCSRevisionLink.update({
+        where: { id: link.id },
+        data: { summary },
+    });
+
+    return c.json({ summary, fromCache: false });
 });

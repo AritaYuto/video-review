@@ -7,8 +7,11 @@ interface VcsChangesState {
     data: VcsChangeSet | null;
     loading: boolean;
     error: string | null;
+    summary: string | null;
+    summaryLoading: boolean;
 
     fetchChanges: (videoId: string, prevRevision: VideoRevision | null) => Promise<void>;
+    fetchSummary: (videoId: string) => Promise<void>;
     clear: () => void;
 }
 
@@ -16,9 +19,11 @@ export const useVcsChangesStore = create<VcsChangesState>((set) => ({
     data: null,
     loading: false,
     error: null,
+    summary: null,
+    summaryLoading: false,
 
     fetchChanges: async (videoId, prevRevision) => {
-        set({ loading: true, error: null });
+        set({ loading: true, error: null, summary: null });
         try {
             const data = await api.fetchVcsChanges({
                 videoId,
@@ -30,7 +35,17 @@ export const useVcsChangesStore = create<VcsChangesState>((set) => ({
         }
     },
 
+    fetchSummary: async (videoId) => {
+        set({ summaryLoading: true });
+        try {
+            const summary = await api.fetchVcsSummary(videoId);
+            set({ summary, summaryLoading: false });
+        } catch {
+            set({ summaryLoading: false });
+        }
+    },
+
     clear: () => {
-        set({ data: null, error: null });
+        set({ data: null, error: null, summary: null });
     },
 }));
