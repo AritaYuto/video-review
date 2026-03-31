@@ -1,6 +1,6 @@
 import { env } from "@/server/lib/env";
-import { createVCSProvider } from "./factory";
-import type { VCSProvider } from "./provider";
+import { createVCSProvider } from "@/server/lib/vcs/factory";
+import type { VCSProvider } from "@/server/lib/vcs/provider";
 
 export function createVCSProviderFromEnv(): VCSProvider | null {
     const provider = env.VCS_PROVIDER;

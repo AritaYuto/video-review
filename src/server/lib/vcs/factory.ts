@@ -1,8 +1,8 @@
-import type { VCSProvider } from "./provider";
-import { GitHubProvider } from "./providers/github";
-import { GitLabProvider } from "./providers/gitlab";
-import { SVNProvider } from "./providers/svn";
-import { PerforceProvider } from "./providers/perforce";
+import type { VCSProvider } from "@/server/lib/vcs/provider";
+import { GitHubProvider } from "@/server/lib/vcs/providers/github";
+import { GitLabProvider } from "@/server/lib/vcs/providers/gitlab";
+import { SVNProvider } from "@/server/lib/vcs/providers/svn";
+import { PerforceProvider } from "@/server/lib/vcs/providers/perforce";
 
 export type VCSProviderConfig =
     | { provider: "github";   owner: string; repo: string; token: string; branch?: string }

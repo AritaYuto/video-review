@@ -1,4 +1,4 @@
-import type { ChangeSet } from "./types";
+import type { ChangeSet } from "@/server/lib/vcs/types";
 
 export interface GetChangesParams {
     /** Start datetime (uploadedAt of the previous revision). If omitted, returns the latest N items before `to`. */

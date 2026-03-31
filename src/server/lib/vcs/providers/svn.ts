@@ -1,5 +1,5 @@
-import type { VCSProvider, GetChangesParams } from "../provider";
-import type { ChangeSet } from "../types";
+import type { VCSProvider, GetChangesParams } from "@/server/lib/vcs/provider";
+import type { ChangeSet } from "@/server/lib/vcs/types";
 
 type SVNConfig = {
     repoUrl: string;

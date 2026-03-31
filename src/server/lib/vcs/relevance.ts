@@ -1,4 +1,4 @@
-import type { Relevance } from "./types";
+import type { Relevance } from "@/server/lib/vcs/types";
 
 const FILES_LIMIT = 50;
 

@@ -1,5 +1,5 @@
-import type { VCSProvider, GetChangesParams } from "../provider";
-import type { ChangeSet, PullRequest, Commit } from "../types";
+import type { VCSProvider, GetChangesParams } from "@/server/lib/vcs/provider";
+import type { ChangeSet, PullRequest, Commit } from "@/server/lib/vcs/types";
 
 type GitHubConfig = {
     owner: string;

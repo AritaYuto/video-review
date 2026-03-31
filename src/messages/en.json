@@ -66,6 +66,21 @@
         "commentItemEdit": "Edit",
         "commentItemRemove": "Remove"
     },
+    "vcs-changes-panel": {
+        "tab": "Changes",
+        "loading": "Fetching changes...",
+        "empty": "No PRs or commits merged in this period",
+        "not-configured": "VCS integration is not configured",
+        "error": "Error",
+        "no-revision": "No previous revision",
+        "section-prs": "Merged PRs",
+        "section-commits": "Commits",
+        "show-unlikely": "Show low-relevance changes",
+        "hide-unlikely": "Hide low-relevance changes",
+        "unit-items": "",
+        "unit-days": " days",
+        "commits": "Commits"
+    },
     "video-event-panel": {
         "tab": "Events",
         "openLink": "Open link",
