@@ -8,7 +8,6 @@ export type {
     VideoComment,
     VideoEvent,
     VideoEventKind,
-    PromptTemplate,
 } from "@prisma/client";
 
 
