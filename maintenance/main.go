@@ -64,6 +64,10 @@ var commands = map[string]Command{
 		Run:  RunUploadVideoEventContext,
 		Desc: "Upload normalized video event context JSON files",
 	},
+	"patch-video": {
+		Run:  RunPatchVideo,
+		Desc: "Update mutable video metadata (e.g. vcsWatchPaths)",
+	},
 }
 
 func main() {

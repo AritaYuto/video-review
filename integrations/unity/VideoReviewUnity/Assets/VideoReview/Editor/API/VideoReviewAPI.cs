@@ -133,6 +133,22 @@ namespace VideoReview.Editor.API
             );
         }
 
+        public static VideoReviewResponse<VideoReviewSimpleMessage> PatchVideo(string videoID, string[] vcsWatchPaths = null)
+        {
+            var args = new List<string>
+            {
+                "--video_id", videoID,
+            };
+
+            if (vcsWatchPaths != null && vcsWatchPaths.Length > 0)
+            {
+                args.Add("--vcs_watch_paths");
+                args.Add(string.Join(",", vcsWatchPaths));
+            }
+
+            return ExecuteText("patch-video", args.ToArray());
+        }
+
         private static VideoReviewResponse<T> ExecuteObject<T>(string command, params string[] args)
         {
             var result = Execute(command, args);
