@@ -76,7 +76,7 @@ namespace VideoReview.Editor.API
             );
         }
 
-        public static VideoReviewResponse<VideoReviewVideoRevision> UploadVideo(string title, string folderKey, string scenePath, string videoPath)
+        public static VideoReviewResponse<VideoReviewVideoRevision> UploadVideo(string title, string folderKey, string scenePath, string videoPath, string[] vcsWatchPaths = null)
         {
             var args = new List<string>
             {
@@ -89,6 +89,12 @@ namespace VideoReview.Editor.API
             {
                 args.Add("--scene_path");
                 args.Add(scenePath);
+            }
+
+            if (vcsWatchPaths != null && vcsWatchPaths.Length > 0)
+            {
+                args.Add("--vcs_watch_paths");
+                args.Add(string.Join(",", vcsWatchPaths));
             }
 
             return ExecuteObject<VideoReviewVideoRevision>("upload-video", args.ToArray());

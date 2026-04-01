@@ -49,6 +49,9 @@ async function buildAndCopy(outDir: string) {
     cpSync("integrations/video-processing/dist",
         path.join(outDir, "integrations/video-processing/dist"), { recursive: true }
     );
+    cpSync("integrations/mcp/dist",
+        path.join(outDir, "integrations/mcp/dist"), { recursive: true }
+    );
 }
 
 const main = async () => {

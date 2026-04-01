@@ -93,7 +93,6 @@ describe("videos metadataRouter (DB)", () => {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                kind: "meta-kind-auth-fail",
                 events: [],
             }),
         });
@@ -109,7 +108,6 @@ describe("videos metadataRouter (DB)", () => {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                kind: "meta-kind-not-found",
                 events: [],
             }),
         });
@@ -119,7 +117,7 @@ describe("videos metadataRouter (DB)", () => {
     });
 
     it("upserts event kind and replaces events for the same kind", async () => {
-        vi.mocked(authorize).mockResolvedValue(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined);
         const kind = `meta-kind-${randomUUID().slice(0, 8)}`;
         createdKindLabels.push(kind);
 
@@ -127,9 +125,8 @@ describe("videos metadataRouter (DB)", () => {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                kind,
                 events: [
-                    { startMs: 0, endMs: 100, data: "first-event" },
+                    { kind: kind, startMs: 0, endMs: 100, data: "first-event" },
                 ],
             }),
         });
@@ -140,10 +137,9 @@ describe("videos metadataRouter (DB)", () => {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                kind,
                 events: [
-                    { startMs: 100, endMs: 200, data: "second-event" },
-                    { startMs: 200, endMs: 300, data: "third-event" },
+                    { kind: kind, startMs: 100, endMs: 200, data: "second-event" },
+                    { kind: kind, startMs: 200, endMs: 300, data: "third-event" },
                 ],
             }),
         });
@@ -171,6 +167,44 @@ describe("videos metadataRouter (DB)", () => {
         ]);
     });
 
+    it("inserts events with multiple kinds in a single request", async () => {
+        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        const kindA = `meta-kind-a-${randomUUID().slice(0, 8)}`;
+        const kindB = `meta-kind-b-${randomUUID().slice(0, 8)}`;
+        createdKindLabels.push(kindA, kindB);
+
+        const res = await app.request(`http://localhost/videos/${revisionId}/metadata/upload`, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                events: [
+                    { kind: kindA, startMs: 0, endMs: 100, data: "a-event" },
+                    { kind: kindB, startMs: 0, endMs: 200, data: "b-event" },
+                ],
+            }),
+        });
+
+        expect(res.status).toBe(200);
+        await expect(res.json()).resolves.toEqual({ ok: true, inserted: 2 });
+
+        const kindARow = await prisma.videoEventKind.findUnique({ where: { label: kindA } });
+        const kindBRow = await prisma.videoEventKind.findUnique({ where: { label: kindB } });
+        expect(kindARow).not.toBeNull();
+        expect(kindBRow).not.toBeNull();
+
+        const storedA = await prisma.videoEvent.findMany({
+            where: { videoRevisionId: revisionId, kindId: kindARow!.id },
+            select: { startMs: true, endMs: true, data: true },
+        });
+        const storedB = await prisma.videoEvent.findMany({
+            where: { videoRevisionId: revisionId, kindId: kindBRow!.id },
+            select: { startMs: true, endMs: true, data: true },
+        });
+
+        expect(storedA).toEqual([{ startMs: 0, endMs: 100, data: "a-event" }]);
+        expect(storedB).toEqual([{ startMs: 0, endMs: 200, data: "b-event" }]);
+    });
+
     it("returns status from ServerError on authorization", async () => {
         vi.mocked(authorize).mockRejectedValueOnce(new ServerError("forbidden", 403));
 
@@ -178,7 +212,6 @@ describe("videos metadataRouter (DB)", () => {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-                kind: "meta-kind-forbidden",
                 events: [],
             }),
         });
