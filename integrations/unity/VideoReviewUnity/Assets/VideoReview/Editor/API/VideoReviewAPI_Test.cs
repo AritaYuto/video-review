@@ -30,8 +30,7 @@ namespace VideoReview.Editor.API
         private string _uploadVideoPath = string.Empty;
 
         private string _videoRevId = string.Empty;
-        private string _promptContextKind = "log"; //upload-prompt-context
-        private string _promptContextJsonPath = string.Empty;
+        private string _eventContextJsonPath = string.Empty;
 
         private string _lastResult = string.Empty;
 
@@ -53,7 +52,7 @@ namespace VideoReview.Editor.API
             _createUserName = EditorPrefs.GetString(PrefPrefix + "CreateUserName", _createUserName);
             _createUserEmail = EditorPrefs.GetString(PrefPrefix + "CreateUserEmail", _createUserEmail);
             _uploadVideoPath = EditorPrefs.GetString(PrefPrefix + "UploadVideoPath", _uploadVideoPath);
-            _promptContextJsonPath = EditorPrefs.GetString(PrefPrefix + "PromptContextJsonPath", _promptContextJsonPath);
+            _eventContextJsonPath = EditorPrefs.GetString(PrefPrefix + "EventContextJsonPath", _eventContextJsonPath);
         }
 
         private void OnDisable()
@@ -66,7 +65,7 @@ namespace VideoReview.Editor.API
             EditorPrefs.SetString(PrefPrefix + "CreateUserName", _createUserName ?? string.Empty);
             EditorPrefs.SetString(PrefPrefix + "CreateUserEmail", _createUserEmail ?? string.Empty);
             EditorPrefs.SetString(PrefPrefix + "UploadVideoPath", _uploadVideoPath ?? string.Empty);
-            EditorPrefs.SetString(PrefPrefix + "PromptContextJsonPath", _promptContextJsonPath ?? string.Empty);
+            EditorPrefs.SetString(PrefPrefix + "EventContextJsonPath", _eventContextJsonPath ?? string.Empty);
         }
 
         private void OnGUI()
@@ -227,24 +226,23 @@ namespace VideoReview.Editor.API
                 SetResult("AnnotateVideoRev", response);
             }
 
-            _promptContextKind = EditorGUILayout.TextField("Prompt Context Kind", _promptContextKind);
             EditorGUILayout.BeginHorizontal();
-            _promptContextJsonPath = EditorGUILayout.TextField("Prompt Context Json Path", _promptContextJsonPath);
+            _eventContextJsonPath = EditorGUILayout.TextField("Event Context Json Path", _eventContextJsonPath);
             if (GUILayout.Button("Select", GUILayout.Width(80f)))
             {
                 var selected = EditorUtility.OpenFilePanel("Select json file", "", "json");
                 if (!string.IsNullOrWhiteSpace(selected))
                 {
-                    _promptContextJsonPath = selected;
+                    _eventContextJsonPath = selected;
                 }
             }
             EditorGUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Run UploadPromptContext"))
+            if (GUILayout.Button("Run UploadEventContext"))
             {
                 ApplyGlobalSettings();
-                var response = VideoReviewAPI.UploadPromptContext(_videoRevId, _promptContextKind, _promptContextJsonPath);
-                SetResult("UploadPromptContext", response);
+                var response = VideoReviewAPI.UploadEventContext(_videoRevId, _eventContextJsonPath);
+                SetResult("UploadEventContext", response);
             }
         }
 

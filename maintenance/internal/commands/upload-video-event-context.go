@@ -14,12 +14,11 @@ import (
 func RunUploadVideoEventContext(cmd string, args []string) {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	videoId := fs.String("video_rev_id", "", "video revision id")
-	kind := fs.String("kind", "", "kind type")
 	jsonPath := fs.String("json_path", "", "path to JSON file containing events array")
 	fs.Parse(args)
 
-	if *videoId == "" || *kind == "" || *jsonPath == "" {
-		fmt.Println("video_rev_id, kind, json_path are required")
+	if *videoId == "" || *jsonPath == "" {
+		fmt.Println("video_rev_id, json_path are required")
 		fs.Usage()
 		return
 	}
@@ -37,7 +36,6 @@ func RunUploadVideoEventContext(cmd string, args []string) {
 	}
 
 	payload := map[string]any{
-		"kind":   *kind,
 		"events": events,
 	}
 	bodyBytes, err := json.Marshal(payload)

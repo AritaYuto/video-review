@@ -15,9 +15,9 @@ const annotateBody = z.object({
 
 
 const uploadBody = z.object({
-    kind: z.string().min(1),
     events: z.array(
         z.object({
+            kind: z.string().min(1),
             startMs: z.number().int().nonnegative(),
             endMs: z.number().int().nonnegative(),
             data: z.string().trim().min(1),
@@ -115,7 +115,7 @@ metaDataRouter.openapi({
 
     const id = c.req.param("id");
     const body = c.req.valid("json");
-    const { kind, events } = body;
+    const { events } = body;
 
     const revision = await prisma.videoRevision.findUnique({
         where: { id },
@@ -125,37 +125,48 @@ metaDataRouter.openapi({
         return c.json({ error: "video revision not found" }, 404);
     }
 
-    const eventKind = await prisma.videoEventKind.upsert({
-        where: { label: kind },
-        update: {},
-        create: { label: kind },
-    });
+    const byKind = new Map<string, typeof events>();
+    for (const event of events) {
+        const list = byKind.get(event.kind) ?? [];
+        list.push(event);
+        byKind.set(event.kind, list);
+    }
+
+    let inserted = 0;
 
     await prisma.$transaction(async (tx) => {
-        await tx.videoEvent.deleteMany({
-            where: {
-                videoRevisionId: revision.id,
-                kindId: eventKind.id,
-            },
-        });
+        for (const [kindLabel, kindEvents] of byKind) {
+            const eventKind = await tx.videoEventKind.upsert({
+                where: { label: kindLabel },
+                update: {},
+                create: { label: kindLabel },
+            });
 
-        if (events.length === 0) {
-            return;
+            await tx.videoEvent.deleteMany({
+                where: {
+                    videoRevisionId: revision.id,
+                    kindId: eventKind.id,
+                },
+            });
+
+            if (kindEvents.length === 0) continue;
+
+            await tx.videoEvent.createMany({
+                data: kindEvents.map((event, idx) => ({
+                    id: randomUUID(),
+                    videoRevisionId: revision.id,
+                    kindId: eventKind.id,
+                    startMs: event.startMs,
+                    endMs: event.endMs,
+                    data: event.data,
+                    seq: event.seq ?? idx,
+                    link: event.link,
+                })),
+            });
+
+            inserted += kindEvents.length;
         }
-
-        await tx.videoEvent.createMany({
-            data: events.map((event, idx) => ({
-                id: randomUUID(),
-                videoRevisionId: revision.id,
-                kindId: eventKind.id,
-                startMs: event.startMs,
-                endMs: event.endMs,
-                data: event.data,
-                seq: event.seq ?? idx,
-                link: event.link,
-            })),
-        });
     });
 
-    return c.json({ ok: true, inserted: events.length });
+    return c.json({ ok: true, inserted });
 });

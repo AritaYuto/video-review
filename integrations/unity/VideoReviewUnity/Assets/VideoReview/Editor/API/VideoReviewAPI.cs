@@ -118,12 +118,11 @@ namespace VideoReview.Editor.API
             );
         }
 
-        public static VideoReviewResponse<VideoReviewSimpleMessage> UploadEventContext(string videoRevID, string kind, string jsonPath)
+        public static VideoReviewResponse<VideoReviewSimpleMessage> UploadEventContext(string videoRevID, string jsonPath)
         {
             return ExecuteText(
                 "upload-video-event-context",
                 "--video_rev_id", videoRevID,
-                "--kind", kind,
                 "--json_path", jsonPath
             );
         }
