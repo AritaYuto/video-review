@@ -72,7 +72,6 @@ model VideoRevision {
   summary        String?
   latestForVideo Video?   @relation("VideoLatestRevision")
 
-  analysisJob VideoAnalysisJob?
   processingJob VideoProcessingJob?
   events      VideoEvent[]
   vcsLinks    VCSRevisionLink[]
@@ -103,24 +102,6 @@ model VideoEvent {
   @@index([videoRevisionId])
   @@index([kindId])
   @@index([videoRevisionId, kindId, startMs])
-}
-
-model PromptTemplate {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  prompt    String
-  kinds     String[] @default([])
-}
-
-model VideoAnalysisJob {
-  id              String              @id @default(uuid())
-  videoRevisionId String              @unique
-  status          JobStatus @default(pending)
-  createdAt       DateTime            @default(now())
-
-  videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
-
-  @@index([status])
 }
 
 model VideoProcessingJob {

@@ -1,7 +1,0 @@
-services:
-  video-analysis:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]

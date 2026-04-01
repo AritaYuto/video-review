@@ -59,6 +59,22 @@ export async function fetchLatestRevision(
     return res.json();
 }
 
+export async function annotateRevision(
+    revisionId: string,
+    data: { tags?: string[]; summary?: string },
+): Promise<ApiResult<VideoRevision>> {
+    const res = await fetch(`/api/v1/videos/${revisionId}/metadata/annotate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            tags: data.tags?.join(","),
+            summary: data.summary,
+        }),
+    });
+    if (res.ok) return { ok: true, data: (await res.json()).videoRevision };
+    return ApiError(res);
+}
+
 export async function fetchAllVideoTags(): Promise<ApiResult<string[]>> {
     const res = await fetch(`/api/v1/videos/tags`);
 

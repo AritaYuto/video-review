@@ -12,6 +12,8 @@
         "revisionOption": "rev_{revision} ({date})",
         "tagsLabel": "Tags",
         "noTags": "None",
+        "addTag": "Add tag",
+        "tagInputPlaceholder": "Add tag...",
         "summaryLabel": "Summary",
         "noSummary": "None"
     },

@@ -1,67 +1,115 @@
-# AI Support Guide
+# AI サポートガイド
 
-## 1. Overview
+## 1. 概要
 
-AIサポートはオプションです
+AIサポートはオプションです。有効にすると、LLMを使って要約を生成します
+（例：VCS「コード変更」パネルにマージ済みPRのAI要約を表示）。
 
-有効にした場合、「video-analysis」Workerが起動し、動画の自動分析を行います
+MCPサーバーも同じLLMプロバイダーを使い、動画リビジョンへの質問に回答します。
 
 ---
 
-## 2. Enable AI (Common Settings)
+## 2. プロバイダーの選択
 
-`.env`に以下の値を設定してください。
+| | Claude (Anthropic) | Ollama（ローカル） |
+|---|---|---|
+| **プライバシー** | PR/コミット情報をAnthropicに送信 | 完全ローカル、外部送信なし |
+| **精度** | 高精度 | モデルに依存 |
+| **コスト** | トークン課金 | 無料（ハードウェアコストのみ） |
+| **セットアップ** | APIキーのみ | Ollama起動＋モデルのダウンロードが必要 |
+| **推奨用途** | 本番環境・チーム利用 | ローカル・オフライン環境 |
+
+---
+
+## 3. 共通設定
+
+`.example.env` を `.env` にコピーして以下を設定してください：
 
 ```env
-VIDEO_REVIEW_USE_AI_SUPPORT=true
-VIDEO_REVIEW_LOCAL_LLM_DEVICE=auto
-VIDEO_ANALYSIS_DEVICE=auto
-```
+NEXT_PUBLIC_VIDEO_REVIEW_USE_AI_SUPPORT=true
 
-| Value | Description                 |
-| ----- | --------------------------- |
-| auto  | デバイス自動選択 |
-| cpu   | 強制 CPUモード |
-| cuda  | NVIDIA CUDA GPU モード |
+# "claude" または "ollama"
+VIDEO_REVIEW_LLM_PROVIDER=claude
 
----
-
-## 3. Docker Setup
-
-### CPU Mode
-
-```bash
-
-# 1. Build image
-docker build -t video-analysis:latest -f docker/video-analysis/Dockerfile.cpu .
-
-# 2. Start video-analysis service
-docker compose -f compose.prod.yml -f compose.prod.ai.yml up -d video-analysis
-
-```
-
-### GPU Mode (CUDA Required)
-```bash
-
-# 1. Build image
-docker build -t video-analysis:latest -f docker/video-analysis/Dockerfile.gpu .
-
-# 2. Start video-analysis service
-docker compose -f compose.prod.yml \
-               -f compose.prod.ai.yml \
-               -f compose.prod.ai.gpu.yml \
-               up -d video-analysis
+# モデル名
+# Claude:  claude-haiku-4-5-20251001 / claude-sonnet-4-6
+# Ollama:  llama3.1:8b / gemma3:12b
+VIDEO_REVIEW_LLM_MODEL=claude-haiku-4-5-20251001
 ```
 
 ---
 
-## 4. Local Setup
+## 4. Claude のセットアップ
 
-### Required Environment
-`VIDEO_REVIEW_LOCAL_ROOTDIR` を必ず設定してください
-
-### Setup & Run
-```bash
-npm run video-analysis:setup
-npm run video-analysis:run
+```env
+VIDEO_REVIEW_LLM_API_KEY=sk-ant-...
 ```
+
+APIキーの取得先: https://console.anthropic.com/
+
+---
+
+## 5. Ollama のセットアップ
+
+### ローカル（ホスト直接実行）
+
+```bash
+# 1. Ollama をインストール: https://ollama.com/download
+# 2. モデルをダウンロード（初回のみ — ~/.ollama/models に保存される）
+ollama pull llama3.1:8b
+
+# 3. .env に設定
+VIDEO_REVIEW_LLM_BASE_URL=http://localhost:11434
+VIDEO_REVIEW_LLM_MODEL=llama3.1:8b
+```
+
+### Docker
+
+```bash
+# 1. Ollamaコンテナにモデルをダウンロード（初回のみ）
+docker exec videoreview-ollama ollama pull llama3.1:8b
+
+# モデルデータはDockerボリュームに保存され、再起動後も保持されます。
+```
+
+---
+
+## 6. MCPサーバーのセットアップ
+
+MCPサーバーはVideoReviewのデータをAIアシスタント（Claude Desktopなど）に公開します。
+
+### Docker — Claudeプロバイダー
+
+```bash
+# 1. MCPイメージをビルド
+docker build -t videoreview-mcp:latest -f docker/mcp/Dockerfile .
+
+# 2. MCPサーバーを起動
+docker compose -f compose.prod.yml -f compose.prod.mcp.claude.yml up -d mcp
+```
+
+### Docker — Ollamaプロバイダー
+
+```bash
+# 1. MCPイメージをビルド
+docker build -t videoreview-mcp:latest -f docker/mcp/Dockerfile .
+
+# 2. MCPサーバーとOllamaコンテナを起動
+docker compose -f compose.prod.yml -f compose.prod.mcp.ollama.yml up -d mcp ollama
+
+# 3. モデルをダウンロード（初回のみ）
+docker exec videoreview-ollama ollama pull llama3.1:8b
+```
+
+### ローカル
+
+```bash
+# ビルド
+npm run mcp:build
+
+# 実行（.envのLLM設定を読み込む）
+npm run mcp:run
+```
+
+Claude Desktopと連携する場合は、MCPクライアントの設定でトランスポートを `stdio` に設定し、
+ビルド済みバイナリを指定してください。

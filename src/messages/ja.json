@@ -12,6 +12,8 @@
         "revisionOption": "rev_{revision} ({date})",
         "tagsLabel": "タグ",
         "noTags": "なし",
+        "addTag": "タグを追加",
+        "tagInputPlaceholder": "タグを入力...",
         "summaryLabel": "要約",
         "noSummary": "なし"
     },

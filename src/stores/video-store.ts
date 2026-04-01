@@ -15,6 +15,7 @@ interface VideoState {
     selectVideo: (video: Video) => Promise<void>;
     nextVideo:() => Promise<boolean>;
     selectVideoRevision: (revision: VideoRevision) => void;
+    updateRevisionTags: (revisionId: string, tags: string[]) => Promise<void>;
 }
 
 export const useVideoStore = create<VideoState>((set, get) => ({
@@ -68,5 +69,19 @@ export const useVideoStore = create<VideoState>((set, get) => ({
 
     selectVideoRevision(revision) {
         set({ selectedRevision: revision });
+    },
+
+    async updateRevisionTags(revisionId, tags) {
+        const result = await api.annotateRevision(revisionId, { tags });
+        if (!result.ok) return;
+        set((state) => ({
+            selectedRevision:
+                state.selectedRevision?.id === revisionId
+                    ? { ...state.selectedRevision, tags }
+                    : state.selectedRevision,
+            revisions: state.revisions.map((r) =>
+                r.id === revisionId ? { ...r, tags } : r
+            ),
+        }));
     },
 }));

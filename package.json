@@ -11,8 +11,6 @@
         "start": "next start -p 3489",
         "test": "set -a && . ./.env.test && set +a && npx tsx run-test.ts",
         "test:hono": "set -a && . ./.env.test && set +a && npx tsx run-test.ts tests/server",
-        "video-analysis:setup": "cd integrations/video-analysis && npx tsx run_python.ts setup",
-        "video-analysis:run": "cd integrations/video-analysis && npx tsx run_python.ts run",
         "video-processing:build": "npx tsx integrations/video-processing/build.ts",
         "video-processing:run": "node integrations/video-processing/dist/main-local.js",
         "mcp:build": "npx tsx integrations/mcp/build.ts",
