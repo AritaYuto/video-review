@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faRightFromBracket, faUserEdit, faTerminal } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faRightFromBracket, faUserEdit } from "@fortawesome/free-solid-svg-icons";
 import { Popover, PopoverTrigger, PopoverContent } from "@/ui/popover";
 import { useLocale } from "@/app/locale-provider";
 import { Switch } from "@/ui/switch";
@@ -11,7 +11,6 @@ import { useAuthStore } from "@/stores/auth-store";
 import { ControlRow } from "@/ui/control-row";
 import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
-import PromptEditDialog from "@/components/dialog/prompt-edit";
 import { Separator } from "@/ui/separator";
 import { env } from "@/lib/env";
 
@@ -21,7 +20,6 @@ export function SettingPopover() {
     const [ isLogged, setLogged ] = useState(false);
     const { locale, setLocale } = useLocale();
     const [ editProfileOpen, setEditProfileOpen] = useState(false);
-    const [ editPromptOpen, setEditPromptOpen] = useState(false);
 
     const { verifyAuth } = useAuthStore();
 
@@ -58,20 +56,6 @@ export function SettingPopover() {
                     </div>
 
                     <Separator className="bg-gray-100"/>
-
-                    {/* Edit prompt */}
-                    {ControlRow(t("editPrompt"), () => {
-                        return (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => { setEditPromptOpen(true); }}
-                                className="text-white hover:bg-[#d4d4d4] rounded-full w-8 h-8"
-                            >
-                                <FontAwesomeIcon icon={faTerminal} />
-                            </Button>
-                        );
-                    }, !isLogged && env.USE_AI_SUPPORT)}
 
                     {/* Edit profile */}
                     {ControlRow(t("editProfile"), () => {
@@ -117,7 +101,6 @@ export function SettingPopover() {
                     }, !isLogged)}
 
                     <EditUserProfileDialog open={editProfileOpen} onClose={() => { setEditProfileOpen(false) }} />
-                    <PromptEditDialog open={editPromptOpen} onClose={() => { setEditPromptOpen(false) }} />
                 </div>
             </PopoverContent>
         </Popover>

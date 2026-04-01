@@ -19,10 +19,6 @@ jobs:
             dockerfile: docker/web/Dockerfile.prod
           - name: video-processing
             dockerfile: docker/video-processing/Dockerfile
-          - name: video-analysis-cpu
-            dockerfile: docker/video-analysis/Dockerfile.cpu
-          - name: video-analysis-gpu
-            dockerfile: docker/video-analysis/Dockerfile.gpu
     steps:
       - uses: actions/checkout@v5
       - name: Set up Docker Buildx

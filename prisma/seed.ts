@@ -145,24 +145,6 @@ async function seedVideoEventKinds() {
     return kinds;
 }
 
-async function seedPromptTemplates() {
-    for (const template of PROMPT_TEMPLATES) {
-        await prisma.promptTemplate.upsert({
-            where: { key: template.key },
-            update: {
-                prompt: template.prompt,
-                kinds: template.kinds,
-            },
-            create: {
-                id: randomUUID(),
-                key: template.key,
-                prompt: template.prompt,
-                kinds: template.kinds,
-            },
-        });
-    }
-}
-
 async function seedVideoEvents(videoRevisionId: string, kindIdByLabel: Map<string, string>) {
     const shotTypeKindId = kindIdByLabel.get("shot_type");
     const angleTypeKindId = kindIdByLabel.get("angle_type");
@@ -308,7 +290,6 @@ async function main() {
     console.log("Seeding realistic project data...");
     const users = await seedUsers();
     const kindIdByLabel = await seedVideoEventKinds();
-    await seedPromptTemplates();
 
     await createBatch(40, {
         daysAgoMax: 7,

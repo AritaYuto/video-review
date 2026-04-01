@@ -56,14 +56,6 @@ var commands = map[string]Command{
 		Run:  RunGetComments,
 		Desc: "Get comments",
 	},
-	"auto-ai-annotate-video-rev": {
-		Run:  RunAiAutoAnnotateVideoRev,
-		Desc: "Generate tags and/or summary using LLM",
-	},
-	"auto-deterministic-annotate-video-rev": {
-		Run:  RunDeterministicAutoAnnotateVideoRev,
-		Desc: "Generate tags from deterministic video event rules",
-	},
 	"annotate-video-rev": {
 		Run:  RunAnnotateVideoRev,
 		Desc: "Manually set tags and/or summary for a video revision",

@@ -12,6 +12,8 @@
         "revisionOption": "rev_{revision} ({date})",
         "tagsLabel": "Tags",
         "noTags": "None",
+        "addTag": "Add tag",
+        "tagInputPlaceholder": "Add tag...",
         "summaryLabel": "Summary",
         "noSummary": "None"
     },
@@ -65,6 +67,22 @@
         "commentItemBug": "Convert to Bug",
         "commentItemEdit": "Edit",
         "commentItemRemove": "Remove"
+    },
+    "vcs-changes-panel": {
+        "tab": "Changes",
+        "loading": "Fetching changes...",
+        "empty": "No PRs or commits merged in this period",
+        "not-configured": "VCS integration is not configured",
+        "error": "Error",
+        "no-revision": "No previous revision",
+        "section-prs": "Merged PRs",
+        "section-commits": "Commits",
+        "show-unlikely": "Show low-relevance changes",
+        "hide-unlikely": "Hide low-relevance changes",
+        "unit-items": "",
+        "unit-days": " days",
+        "commits": "Commits",
+        "summary-loading": "Generating summary..."
     },
     "video-event-panel": {
         "tab": "Events",

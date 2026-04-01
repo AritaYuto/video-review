@@ -1,0 +1,211 @@
+import { afterAll, beforeAll, afterEach, describe, expect, it, vi } from "vitest";
+import { randomUUID } from "node:crypto";
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { prisma } from "@/server/lib/db";
+import { videoByIdRouter } from "@/server/routes/videos/[id]";
+
+// ---------------------------------------------------------------------------
+// Test fixtures
+// ---------------------------------------------------------------------------
+
+const createdVideoIds: string[] = [];
+const createdRevisionIds: string[] = [];
+const createdVCSConfigIds: string[] = [];
+
+async function createTestVideo(opts: { vcsWatchPaths?: string[] } = {}) {
+    const videoId = randomUUID();
+    const rev1Id  = randomUUID();
+    const rev2Id  = randomUUID();
+
+    const rev1UploadedAt = new Date("2026-03-10T09:00:00Z");
+    const rev2UploadedAt = new Date("2026-03-20T15:00:00Z");
+
+    await prisma.video.create({
+        data: {
+            id: videoId,
+            title: "VCS Test Video",
+            folderKey: "vcs-test",
+            vcsWatchPaths: opts.vcsWatchPaths ?? [],
+        },
+    });
+
+    await prisma.videoRevision.create({
+        data: { id: rev1Id, videoId, revision: 1, filePath: "test/rev1.mp4", uploadedAt: rev1UploadedAt },
+    });
+    await prisma.videoRevision.create({
+        data: { id: rev2Id, videoId, revision: 2, filePath: "test/rev2.mp4", uploadedAt: rev2UploadedAt },
+    });
+
+    await prisma.video.update({
+        where: { id: videoId },
+        data: { latestRevisionNum: 2 },
+    });
+
+    createdVideoIds.push(videoId);
+    createdRevisionIds.push(rev1Id, rev2Id);
+    return { videoId, rev1Id, rev1UploadedAt, rev2Id, rev2UploadedAt };
+}
+
+// ---------------------------------------------------------------------------
+// Suite
+// ---------------------------------------------------------------------------
+
+describe("GET /videos/:id/vcs-changes", () => {
+    const app = new Hono();
+    app.route("/videos/:id", videoByIdRouter);
+
+    let videoId = "";
+    let rev1Id  = "";
+    let rev2Id  = "";
+
+    beforeAll(async () => {
+        const created = await createTestVideo();
+        videoId = created.videoId;
+        rev1Id  = created.rev1Id;
+        rev2Id  = created.rev2Id;
+    });
+
+    afterAll(async () => {
+        // Clean up VCSConfig + VCSRevisionLinks created by the route
+        await prisma.vCSRevisionLink.deleteMany({ where: { vcsConfigId: { in: createdVCSConfigIds } } });
+        await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
+
+        // Clean up test videos
+        await prisma.video.updateMany({ where: { id: { in: createdVideoIds } }, data: { latestRevisionNum: null } });
+        await prisma.videoRevision.deleteMany({ where: { id: { in: createdRevisionIds } } });
+        await prisma.video.deleteMany({ where: { id: { in: createdVideoIds } } });
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+
+
+    // -----------------------------------------------------------------------
+    // With mocked GitHub provider
+    // -----------------------------------------------------------------------
+
+    describe("with mocked GitHub provider", () => {
+        const mockChangeSet = {
+            pullRequests: [
+                {
+                    id: "142",
+                    title: "Fix camera shake in cutscene",
+                    description: null,
+                    author: "yamada",
+                    mergedAt: new Date("2026-03-15T11:20:00Z"),
+                    url: "https://github.com/org/repo/pull/142",
+                    labels: ["bug", "camera"],
+                },
+            ],
+            commits: [
+                {
+                    hash: "abc1234def5678",
+                    shortHash: "abc1234",
+                    message: "Adjust bloom intensity",
+                    author: "tanaka",
+                    committedAt: new Date("2026-03-18T14:00:00Z"),
+                    url: "https://github.com/org/repo/commit/abc1234def5678",
+                },
+            ],
+            range: {
+                from: new Date("2026-03-10T09:00:00Z"),
+                to:   new Date("2026-03-20T15:00:00Z"),
+            },
+        };
+
+        beforeAll(async () => {
+            // Pre-create a VCSConfig so the route doesn't hit GitHub
+            const config = await prisma.vCSConfig.create({
+                data: { label: "mock-github", provider: "github", config: {}, branch: "main" },
+            });
+            createdVCSConfigIds.push(config.id);
+
+            // Pre-populate cache so the route returns cached data
+            await prisma.vCSRevisionLink.upsert({
+                where: { videoRevisionId_vcsConfigId: { videoRevisionId: rev2Id, vcsConfigId: config.id } },
+                create: {
+                    videoRevisionId: rev2Id,
+                    vcsConfigId: config.id,
+                    changeSet: mockChangeSet as object,
+                    fetchedAt: new Date(),
+                },
+                update: {},
+            });
+        });
+
+        it("returns 200 with cached change set", async () => {
+            vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
+
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes`);
+            expect(res.status).toBe(200);
+
+            const body = await res.json() as {
+                pullRequests: { id: string; title: string }[];
+                commits: { shortHash: string }[];
+                fromCache: boolean;
+            };
+            expect(body.fromCache).toBe(true);
+            expect(body.pullRequests).toHaveLength(1);
+            expect(body.pullRequests[0].title).toBe("Fix camera shake in cutscene");
+            expect(body.commits).toHaveLength(1);
+            expect(body.commits[0].shortHash).toBe("abc1234");
+        });
+
+        it("returns 404 for unknown video id", async () => {
+            vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
+
+            const res = await app.request(`http://localhost/videos/${randomUUID()}/vcs-changes`);
+            expect(res.status).toBe(404);
+        });
+
+        it("accepts from= query param (previous revision id)", async () => {
+            vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
+            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
+
+            // Should resolve without error even when specifying from=rev1Id
+            const res = await app.request(
+                `http://localhost/videos/${videoId}/vcs-changes?from=${rev1Id}`,
+            );
+            // Cache was built without from= so this will miss cache and try real GitHub.
+            // We only verify it doesn't crash with a 5xx from param parsing.
+            expect([200, 502, 503]).toContain(res.status);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Integration test — only runs when real GitHub token is provided
+    // -----------------------------------------------------------------------
+
+    const hasCredentials = !!(
+        process.env.VIDEO_REVIEW_VCS_GITHUB_OWNER &&
+        process.env.VIDEO_REVIEW_VCS_GITHUB_REPO &&
+        process.env.VIDEO_REVIEW_VCS_GITHUB_TOKEN
+    );
+
+    describe.skipIf(!hasCredentials)("with real GitHub API", () => {
+        it("fetches and caches real change set", async () => {
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?refresh=true`);
+            expect(res.status).toBe(200);
+
+            const body = await res.json() as {
+                pullRequests: unknown[];
+                commits: unknown[];
+                fromCache: boolean;
+                fetchedAt: string;
+            };
+            expect(Array.isArray(body.pullRequests)).toBe(true);
+            expect(Array.isArray(body.commits)).toBe(true);
+            expect(typeof body.fetchedAt).toBe("string");
+        }, 30_000);
+    });
+});

@@ -12,6 +12,8 @@
         "revisionOption": "rev_{revision} ({date})",
         "tagsLabel": "タグ",
         "noTags": "なし",
+        "addTag": "タグを追加",
+        "tagInputPlaceholder": "タグを入力...",
         "summaryLabel": "要約",
         "noSummary": "なし"
     },
@@ -58,7 +60,7 @@
         "playMode": "再生モード"
     },
     "video-comment-panel": {
-        "title": "コメント",
+        "title": "Comments",
         "newBadge": "NEW",
         "commentItemCopyLink": "リンクコピー",
         "commentItemTask": "タスク化",
@@ -66,8 +68,24 @@
         "commentItemEdit": "編集",
         "commentItemRemove": "削除"
     },
+    "vcs-changes-panel": {
+        "tab": "Changes",
+        "loading": "コード変更を取得中...",
+        "empty": "この期間にマージされた PR・コミットはありません",
+        "not-configured": "VCS連携が設定されていません",
+        "error": "エラー",
+        "no-revision": "前リビジョンがありません",
+        "section-prs": "マージ済み PR",
+        "section-commits": "コミット",
+        "show-unlikely": "関連性の低い変更を表示",
+        "hide-unlikely": "関連性の低い変更を隠す",
+        "unit-items": "件",
+        "unit-days": "日間",
+        "commits": "コミット",
+        "summary-loading": "要約を生成中..."
+    },
     "video-event-panel": {
-        "tab": "イベント",
+        "tab": "Events",
         "openLink": "リンクを開く",
         "empty": "イベントはありません"
     },

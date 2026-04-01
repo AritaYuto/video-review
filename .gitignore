@@ -54,4 +54,4 @@ public/swagger.json
 prisma/schemas/**
 src/schema/**
 
-models/
+llm_models/

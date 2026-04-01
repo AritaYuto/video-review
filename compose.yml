@@ -32,24 +32,33 @@ services:
     volumes:
       - videoreview-db:/var/lib/postgresql/data
 
-  video-analysis:
+
+  mcp:
     env_file:
       - .env
     build:
       context: ./
-      dockerfile: ./docker/video-analysis/Dockerfile.cpu
-    container_name: videoreview-video-analysis
+      dockerfile: ./docker/mcp/Dockerfile
+    container_name: videoreview-mcp
     environment:
-      DATABASE_URL: postgres://videoreview:videoreview@db:5432/videoreview
-      VIDEO_REVIEW_LOCAL_ROOTDIR: /app/uploads
-      ANALYSIS_POLL_INTERVAL_SECONDS: "10"
-    volumes:
-      - ./integrations/video-analysis:/app
-      - videoreview-storage:/app/uploads
-      # If you want to specify Local Storage
-      # - /mnt/d/data/videoreview:/storage
+      MCP_TRANSPORT: http
+      MCP_PORT: "3490"
+      VIDEO_REVIEW_SERVER_URL: http://web:3489
+      VIDEO_REVIEW_LLM_PROVIDER: ollama
+      VIDEO_REVIEW_LLM_BASE_URL: http://ollama:11434
+    ports:
+      - "3490:3490"
     depends_on:
-      - db
+      - web
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: videoreview-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./llm_models:/root/.ollama/models
 
   video-processing:
     env_file:

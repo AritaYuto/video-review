@@ -49,6 +49,7 @@ model Video {
   title             String
   folderKey         String
   scenePath         String?
+  vcsWatchPaths     String[]          @default([])
   revisions         VideoRevision[]   @relation("VideoRevisions")
   latestRevisionNum Int?
   latestRevision    VideoRevision?    @relation("VideoLatestRevision", fields: [id, latestRevisionNum], references: [videoId, revision])
@@ -71,9 +72,9 @@ model VideoRevision {
   summary        String?
   latestForVideo Video?   @relation("VideoLatestRevision")
 
-  analysisJob VideoAnalysisJob?
   processingJob VideoProcessingJob?
   events      VideoEvent[]
+  vcsLinks    VCSRevisionLink[]
 
   @@unique([videoId, revision])
 }
@@ -101,24 +102,6 @@ model VideoEvent {
   @@index([videoRevisionId])
   @@index([kindId])
   @@index([videoRevisionId, kindId, startMs])
-}
-
-model PromptTemplate {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  prompt    String
-  kinds     String[] @default([])
-}
-
-model VideoAnalysisJob {
-  id              String              @id @default(uuid())
-  videoRevisionId String              @unique
-  status          JobStatus @default(pending)
-  createdAt       DateTime            @default(now())
-
-  videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
-
-  @@index([status])
 }
 
 model VideoProcessingJob {
@@ -182,14 +165,15 @@ model UserVideoReadStatus {
 }
 
 model UploadSession {
-  id          String   @id @default(uuid())
-  storageKey String
-  storage    UploadStorageType
-  title      String
-  folderKey  String
-  scenePath  String?
-  nextRev    Int
-  createdAt  DateTime @default(now())
+  id            String            @id @default(uuid())
+  storageKey    String
+  storage       UploadStorageType
+  title         String
+  folderKey     String
+  scenePath     String?
+  vcsWatchPaths String[]          @default([])
+  nextRev       Int
+  createdAt     DateTime          @default(now())
 }
 
 enum UploadStorageType {
@@ -203,4 +187,31 @@ enum JobStatus {
   running
   succeeded
   failed
+}
+
+model VCSConfig {
+  id        String   @id @default(uuid())
+  label     String
+  provider  String
+  config    Json
+  tokenKey  String?
+  branch    String   @default("main")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  revisionLinks VCSRevisionLink[]
+}
+
+model VCSRevisionLink {
+  id              String   @id @default(uuid())
+  videoRevisionId String
+  videoRevision   VideoRevision @relation(fields: [videoRevisionId], references: [id])
+  vcsConfigId     String
+  vcsConfig       VCSConfig @relation(fields: [vcsConfigId], references: [id])
+
+  changeSet  Json?
+  summary    String?
+  fetchedAt  DateTime?
+
+  @@unique([videoRevisionId, vcsConfigId])
 }

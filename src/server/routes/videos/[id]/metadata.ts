@@ -1,12 +1,9 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { createLlamaSession, createLlama, VideoEventContext } from "@/server/lib/integration-clients/llama-client";
-import { VideoReviewStorage } from "@/server/lib/storage";
 import { randomUUID } from "crypto";
 
 export const metaDataRouter = new Hono();
@@ -14,13 +11,6 @@ export const metaDataRouter = new Hono();
 const annotateBody = z.object({
     tags: z.string().transform((x) => x.split(",")).optional(),
     summary: z.string().optional(),
-});
-
-
-const llmAutoAnnotateBody = z.object({
-    promptKey: z.string(),
-    generateTags: z.string().transform(x => x === "true").optional(),
-    generateSummary: z.string().transform(x => x === "true").optional(),
 });
 
 
@@ -69,15 +59,6 @@ metaDataRouter.openapi({
         500: { description: "" }
     },
 }, async (c) => {
-    try {
-        await authorize(c.req.raw, ["admin"]);
-    } catch (e) {
-        if (e instanceof ServerError) {
-            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
-        }
-        return c.json({ error: "unauthorized" }, { status: 401 });
-    }
-
     const id = c.req.param("id");
     const body = c.req.valid("json");
     const { tags, summary } = body;
@@ -99,235 +80,6 @@ metaDataRouter.openapi({
         }
     });
     return c.json({ videoRevision: updatedVideoRev });
-});
-
-
-metaDataRouter.openapi({
-    method: "post",
-    summary: "",
-    description: "",
-    path: "/deterministic-auto-tagging",
-    responses: {
-        200: { description: "" },
-        401: { description: "Unauthorized" },
-        403: { description: "Forbidden" },
-        500: { description: "" }
-    },
-}, async (c) => {
-    try {
-        await authorize(c.req.raw, ["admin"]);
-    } catch (e) {
-        if (e instanceof ServerError) {
-            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
-        }
-        return c.json({ error: "unauthorized" }, { status: 401 });
-    }
-
-    const id = c.req.param("id");
-
-
-    let whereVideoRevision: PrismaTypes.VideoRevisionWhereInput = { deleted: false };
-    if (id === "all") {
-        whereVideoRevision.summary = { equals: null };
-    } else {
-        whereVideoRevision.id = { equals: id };
-    }
-
-    const videoRevs = await prisma.videoRevision.findMany({
-        where: whereVideoRevision,
-        include: { events: { select: { kind: true, data: true } } },
-    });
-
-
-    type ExistsRule = { type: "exists"; tag: string; };
-    type FromDataRule = { type: "fromData"; };
-    type TagRule = ExistsRule | FromDataRule;
-
-    const tagRules: Record<string, TagRule> = {
-        angle_type: { type: "fromData" },
-        shot_type: { type: "fromData" },
-        error_text: { type: "exists", tag: "Error" },
-        dummy_text: { type: "exists", tag: "Dummy" },
-    };
-
-    let successCount = 0;
-    let failureCount = 0;
-
-    for (const rev of videoRevs) {
-        const tags = rev.events.flatMap(e => {
-            const rule = tagRules[e.kind.label];
-            if (rule) {
-                switch (rule.type) {
-                    case "exists":
-                        if(e.data.length > 0) {
-                            return [ rule.tag ];
-                        }
-                        break;
-                    case "fromData":
-                        if (typeof e.data === "string" && e.data.length > 0) {
-                            return [ e.data ];
-                        }
-                        break;
-                }
-            }
-            return [];
-        });
-
-        try {
-            let data: PrismaTypes.VideoRevisionUpdateInput = {
-                tags: [...new Set([...rev.tags, ...tags])].filter((tag): tag is string => tag !== undefined)
-            }
-            await prisma.videoRevision.update({ where: { id: rev.id }, data });
-            successCount++;
-            console.log(`Processed videoRev ${rev.id} successfully.`);
-        } catch (e) {
-            console.error(`Failed to process videoRev ${rev.id}:`, e);
-            failureCount++;
-        }
-    }
-    return c.json({ successCount, failureCount });
-});
-
-
-metaDataRouter.openapi({
-    method: "post",
-    summary: "",
-    description: "",
-    path: "/llm-auto-annotate",
-    request: {
-        body: {
-            content: {
-                "application/json": {
-                    schema: llmAutoAnnotateBody,
-                },
-            },
-        },
-    },
-    responses: {
-        200: { description: "" },
-        401: { description: "Unauthorized" },
-        403: { description: "Forbidden" },
-        500: { description: "" }
-    },
-}, async (c) => {
-    try {
-        await authorize(c.req.raw, ["admin"]);
-    } catch (e) {
-        if (e instanceof ServerError) {
-            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
-        }
-        return c.json({ error: "unauthorized" }, { status: 401 });
-    }
-
-    const id = c.req.param("id");
-    const body = c.req.valid("json");
-    const { promptKey, generateTags, generateSummary } = body;
-
-    if (!generateSummary && !generateTags) {
-        return c.json({ successCount: 0, failureCount: 0 });
-    }
-
-    let whereVideoRevision: PrismaTypes.VideoRevisionWhereInput = { deleted: false };
-    if (id === "all") {
-        whereVideoRevision.summary = { equals: null };
-    } else {
-        whereVideoRevision.id = { equals: id };
-    }
-
-    const videoRevs = await prisma.videoRevision.findMany({
-        where: whereVideoRevision,
-        select: { id: true, videoId: true },
-    });
-
-    const promptTemplate = await prisma.promptTemplate.findUnique({
-        where: { key: promptKey },
-        select: { prompt: true, kinds: true }
-    })
-
-    if (!promptTemplate) {
-        throw new ServerError("Prompt not found", 404);
-    }
-
-    let successCount = 0;
-    let failureCount = 0;
-
-    const llama = await createLlama();
-    if (!llama) {
-        throw new ServerError("Failed to create Llama", 500);
-    }
-
-    const annotationGrammar = await llama.createGrammarForJsonSchema({
-        type: "object",
-        properties: {
-            extracted_facts: {
-                type: "string",
-                description: "Extracted objective facts, character's original stance, and emotional changes from the dialogue."
-            },
-            summary: {
-                type: "string",
-                description: "A comprehensive summary of the scene based on the extracted facts."
-            },
-            tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Relevant tags representing characters, situations, and emotions."
-            }
-        },
-        required: ["extracted_facts", "summary", "tags"]
-    });
-
-    for (const rev of videoRevs) {
-        const session = await createLlamaSession();
-        if (!session) {
-            throw new ServerError("Failed to create Llama session", 500);
-        }
-
-        let prompt = promptTemplate.prompt;
-        let hasInput = false;
-
-        for (const kind of promptTemplate.kinds) {
-            const storageKey = `video-analysis/${rev.id}.${kind}.json`;
-            const stream = await VideoReviewStorage.download(storageKey);
-
-            if (!stream) {
-                console.warn(`No analysis found for videoRev ${rev.id}`);
-                continue;
-            }
-
-            const eventJson = await stream.text();
-            const eventAnalysis = JSON.parse(eventJson) as VideoEventContext;
-            const kindText = eventAnalysis.events.map(e => `[${e.start_ms}-${e.end_ms}]\n${e.data}\n`)
-            prompt += `\n# Input ${kind} Info\n`
-            prompt += kindText.join("\n") + "\n"
-
-            hasInput = true;
-        }
-
-        if (!hasInput) {
-            console.log(`Skip videoRev ${rev.id}: no analysis inputs.`);
-            continue;
-        }
-
-
-        try {
-            const resultText = await session.prompt(prompt, { grammar: annotationGrammar });
-            const resultJson = JSON.parse(resultText);
-            let data: PrismaTypes.VideoRevisionUpdateInput = {}
-            if (generateSummary) {
-                data.summary = resultJson.summary
-            }
-            if (generateTags) {
-                data.tags = resultJson.tags
-            }
-            await prisma.videoRevision.update({ where: { id: rev.id }, data });
-            successCount++;
-            console.log(`Processed videoRev ${rev.id} successfully.`);
-        } catch (e) {
-            console.error(`Failed to process videoRev ${rev.id}:`, e);
-            failureCount++;
-        }
-    }
-    return c.json({ successCount, failureCount });
 });
 
 

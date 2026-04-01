@@ -5,13 +5,15 @@ import { Tabs, TabsContent } from "@/ui/tabs";
 import VideoSidePanelHeader from "@/components/video-side-panel/header";
 import { useVideoCommentPanelDefinition } from "@/components/video-side-panel/panels/video-comment-panel";
 import { useVideoEventPanelDefinition } from "@/components/video-side-panel/panels/video-event-panel";
+import { useVcsChangesPanelDefinition } from "@/components/video-side-panel/panels/vcs-changes-panel";
 
 export default function VideoSidePanel() {
     const commentPanel = useVideoCommentPanelDefinition();
     const eventPanel = useVideoEventPanelDefinition();
+    const vcsChangesPanel = useVcsChangesPanelDefinition();
     // Add new tabs by appending another panel definition here.
     // The shell will automatically render its tab, body, and optional dialog slots.
-    const panels = [commentPanel, eventPanel];
+    const panels = [commentPanel, eventPanel, vcsChangesPanel];
     const [tab, setTab] = useState("comments");
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const topAreaRef = useRef<HTMLDivElement>(null);
