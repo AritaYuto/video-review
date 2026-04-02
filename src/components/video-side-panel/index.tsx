@@ -24,7 +24,7 @@ export default function VideoSidePanel() {
     }, [tab]);
 
     return (
-        <Tabs value={tab} onValueChange={setTab} className="h-full gap-0">
+        <Tabs value={tab} onValueChange={setTab} className="h-full min-w-0 gap-0">
             <div ref={topAreaRef}>
                 <VideoSidePanelHeader
                     panels={panels}
@@ -33,7 +33,7 @@ export default function VideoSidePanel() {
                 />
             </div>
             {panels.map((panel) => (
-                <TabsContent key={panel.key} value={panel.key} className="min-h-0 mt-0">
+                <TabsContent key={panel.key} value={panel.key} className="min-h-0 min-w-0 mt-0 overflow-x-hidden">
                     {panel.renderPanel({ topAreaRef })}
                 </TabsContent>
             ))}

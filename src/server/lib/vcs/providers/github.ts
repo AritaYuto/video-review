@@ -14,6 +14,7 @@ type GitHubPR = {
     body: string | null;
     user: { login: string } | null;
     merged_at: string | null;
+    updated_at: string;
     html_url: string;
     labels: { name: string }[];
 };
@@ -74,7 +75,9 @@ export class GitHubProvider implements VCSProvider {
         const perPage = 100;
 
         // GitHub API cannot filter by mergedAt directly, so we paginate and filter client-side.
-        // We stop once we find a PR merged before `from` (they are sorted by updated desc).
+        // Break condition uses updated_at (the sort key) rather than merged_at:
+        // since merged_at <= updated_at always holds, if updated_at < from then
+        // merged_at < from is also guaranteed for all subsequent pages.
         outer: while (true) {
             const url =
                 `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/pulls` +
@@ -84,10 +87,12 @@ export class GitHubProvider implements VCSProvider {
             if (data.length === 0) break;
 
             for (const pr of data) {
+                if (from && new Date(pr.updated_at) < from) break outer;
                 if (!pr.merged_at) continue;
+                if (pr.user?.login.includes("[bot]")) continue; // Skip bot PRs
                 const mergedAt = new Date(pr.merged_at);
                 if (mergedAt > to) continue;
-                if (from && mergedAt < from) break outer;
+                if (from && mergedAt < from) continue;
                 results.push({
                     id: String(pr.number),
                     title: pr.title,
@@ -126,6 +131,8 @@ export class GitHubProvider implements VCSProvider {
             if (data.length === 0) break;
 
             for (const c of data) {
+                if (c.commit?.author?.name.includes("[bot]")) continue;
+
                 results.push({
                     hash: c.sha,
                     shortHash: c.sha.slice(0, 7),
