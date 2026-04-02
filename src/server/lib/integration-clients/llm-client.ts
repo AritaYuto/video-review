@@ -62,6 +62,36 @@ class OllamaClient implements LLMClient {
     }
 }
 
+class GeminiClient implements LLMClient {
+    private apiKey: string;
+    private model: string;
+
+    constructor(apiKey: string, model: string) {
+        this.apiKey = apiKey;
+        this.model = model;
+    }
+
+    async complete(prompt: string): Promise<string> {
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.apiKey}`,
+                },
+                body: JSON.stringify({
+                    model: this.model,
+                    messages: [{ role: "user", content: prompt }],
+                }),
+            }
+        );
+        if (!res.ok) throw new Error(`Gemini error: HTTP ${res.status}`);
+        const data = await res.json() as { choices: { message: { content: string } }[] };
+        return data.choices[0].message.content;
+    }
+}
+
 function buildClient(): LLMClient | null {
     const provider = env.LLM_PROVIDER;
     if (!provider) return null;
@@ -78,8 +108,14 @@ function buildClient(): LLMClient | null {
             const model = env.LLM_MODEL ?? "llama3.1:8b";
             return new OllamaClient(baseUrl, model);
         }
+        case "gemini": {
+            const apiKey = env.LLM_API_KEY;
+            if (!apiKey) throw new Error("VIDEO_REVIEW_LLM_API_KEY is required for the Gemini provider");
+            const model = env.LLM_MODEL ?? "gemini-2.0-flash";
+            return new GeminiClient(apiKey, model);
+        }
         default:
-            throw new Error(`Unknown LLM provider: ${provider}. Supported: "claude", "ollama"`);
+            throw new Error(`Unknown LLM provider: ${provider}. Supported: "claude", "ollama", "gemini"`);
     }
 }
 

@@ -6,16 +6,38 @@ const FILES_LIMIT = 50;
  * Returns true if `filePath` matches any entry in `vcsWatchPaths`.
  *
  * Match rules (per design):
- *   - Entry ending with "/" → prefix match (the directory and everything below it)
- *   - Otherwise            → exact file path match
+ *   - Entry ending with "/" → directory-like match
+ *   - Otherwise             → file-like match
+ *
+ * To absorb repo-root differences, matching is done with path-segment-aware, bi-directional partial checks.
  */
 export function matchesWatchPaths(filePath: string, vcsWatchPaths: string[]): boolean {
+    const normalizePath = (value: string): string =>
+        value
+            .replace(/\\/g, "/")
+            .replace(/^\.?\//, "")
+            .replace(/\/+/g, "/")
+            .replace(/\/$/, "");
+
+    const containsBySegment = (a: string, b: string): boolean => {
+        if (a === b) return true;
+        if (a.startsWith(`${b}/`)) return true;
+        if (a.endsWith(`/${b}`)) return true;
+        if (a.includes(`/${b}/`)) return true;
+        return false;
+    };
+
+    const file = normalizePath(filePath);
     for (const watchPath of vcsWatchPaths) {
-        if (watchPath.endsWith("/")) {
-            if (filePath.startsWith(watchPath)) return true;
-        } else {
-            if (filePath === watchPath) return true;
+        const watch = normalizePath(watchPath);
+        const isDirectory = watchPath.endsWith("/");
+
+        if (isDirectory) {
+            if (containsBySegment(file, watch) || containsBySegment(watch, file)) return true;
+            continue;
         }
+
+        if (containsBySegment(file, watch) || containsBySegment(watch, file)) return true;
     }
     return false;
 }

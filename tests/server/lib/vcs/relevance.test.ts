@@ -27,11 +27,11 @@ describe("matchesWatchPaths", () => {
         )).toBe(true);
     });
 
-    it("does not match a file under the path when no trailing slash", () => {
+    it("matches a nested file path when no trailing slash (bi-directional partial match)", () => {
         expect(matchesWatchPaths(
             "Assets/Scenes/CutScene_Opening/Sub.prefab",
             ["Assets/Scenes/CutScene_Opening"],
-        )).toBe(false);
+        )).toBe(true);
     });
 
     it("matches the first matching entry in a list", () => {
@@ -48,6 +48,13 @@ describe("matchesWatchPaths", () => {
 
     it("is case-sensitive", () => {
         expect(matchesWatchPaths("assets/scripts/camera/Foo.cs", ["Assets/Scripts/Camera/"])).toBe(false);
+    });
+
+    it("matches when file path has additional repo-root prefixes", () => {
+        expect(matchesWatchPaths(
+            "client/hokusai/Assets/remote/skit/scene/skit_stage_org_013_120_0020.unity",
+            ["Assets/remote/skit/scene/skit_stage_org_013_120_0020.unity"],
+        )).toBe(true);
     });
 });
 
