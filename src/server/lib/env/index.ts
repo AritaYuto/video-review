@@ -23,8 +23,8 @@ export const env = {
     SMTP_TLS_STRICT: booleanEnv(process.env.VIDEO_REVIEW_SMTP_TLS_STRICT),
     VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated: process.env.ADMIN_MAINTENANCE_TOKEN,
     JWT_SECRET_deprecated: process.env.JWT_SECRET,
-    // LLM provider: "claude" | "ollama" (unset = disabled)
-    LLM_PROVIDER: process.env.VIDEO_REVIEW_LLM_PROVIDER as "claude" | "ollama" | undefined,
+    // LLM provider: "claude" | "ollama" | "gemini" (unset = disabled)
+    LLM_PROVIDER: process.env.VIDEO_REVIEW_LLM_PROVIDER as "claude" | "ollama" | "gemini" | undefined,
     LLM_API_KEY: process.env.VIDEO_REVIEW_LLM_API_KEY,
     LLM_BASE_URL: process.env.VIDEO_REVIEW_LLM_BASE_URL,
     LLM_MODEL: process.env.VIDEO_REVIEW_LLM_MODEL,

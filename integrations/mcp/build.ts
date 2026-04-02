@@ -24,6 +24,7 @@ await build({
     external: [
         "@modelcontextprotocol/sdk",
         "zod",
+        "dotenv",
     ],
     logLevel: "info",
 });
