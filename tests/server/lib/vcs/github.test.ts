@@ -9,15 +9,18 @@ function makePR(overrides: Partial<{
     number: number;
     title: string;
     merged_at: string | null;
+    updated_at: string;
     labels: { name: string }[];
 }> = {}) {
+    const merged_at = "merged_at" in overrides ? overrides.merged_at : "2026-03-15T10:00:00Z";
     return {
         number: overrides.number ?? 1,
         title: overrides.title ?? "Test PR",
         body: null,
         user: { login: "tester" },
-        // Use `in` check so explicit null is not replaced by the default
-        merged_at: "merged_at" in overrides ? overrides.merged_at : "2026-03-15T10:00:00Z",
+        merged_at,
+        // updated_at defaults to merged_at (realistic default); override to simulate "old PR recently commented"
+        updated_at: overrides.updated_at ?? merged_at ?? "2026-03-15T10:00:00Z",
         html_url: `https://github.com/org/repo/pull/${overrides.number ?? 1}`,
         labels: overrides.labels ?? [],
     };
@@ -46,6 +49,20 @@ function mockFetch(...pages: object[][]) {
             ok: true,
             json: async () => data,
         };
+    });
+}
+
+function mockFetchByUrl(prPages: object[][], commitPages: object[][]) {
+    const prCall = { count: 0 };
+    const commitCall = { count: 0 };
+    return vi.fn(async (url: string) => {
+        let data: object[];
+        if ((url as string).includes("/pulls")) {
+            data = prPages[Math.min(prCall.count++, prPages.length - 1)];
+        } else {
+            data = commitPages[Math.min(commitCall.count++, commitPages.length - 1)];
+        }
+        return { ok: true, json: async () => data };
     });
 }
 
@@ -171,6 +188,62 @@ describe("GitHubProvider", () => {
         expect(commitUrl).toContain("sha=develop");
         expect(commitUrl).toContain(`since=${from.toISOString()}`);
         expect(commitUrl).toContain(`until=${to.toISOString()}`);
+    });
+
+    // -------------------------------------------------------------------
+    // Break-outer timing bug hypothesis
+    // -------------------------------------------------------------------
+    // Scenario: PRs are sorted by `updated_at` desc.
+    // If a PR was merged long ago (mergedAt < from) but updated recently,
+    // it appears early in the list and triggers `break outer` before
+    // in-range PRs on later pages are ever fetched.
+    // -------------------------------------------------------------------
+
+    it("does NOT miss in-range PRs when an out-of-range PR appears before them (same page)", async () => {
+        const from = new Date("2026-03-10T00:00:00Z");
+        const to   = new Date("2026-03-20T00:00:00Z");
+
+        // OLD-merged PR appears BEFORE in-range PR (simulates "updated recently" sort)
+        fetchSpy = mockFetch(
+            [
+                makePR({ number: 99, title: "Old PR recently commented", merged_at: "2026-01-01T00:00:00Z", updated_at: "2026-03-19T00:00:00Z" }),
+                makePR({ number: 50, title: "Should be included",        merged_at: "2026-03-15T10:00:00Z", updated_at: "2026-03-15T10:00:00Z" }),
+            ],
+            [],
+        );
+        vi.stubGlobal("fetch", fetchSpy);
+
+        const result = await provider.getChanges({ from, to });
+
+        console.log("[test] pullRequests:", result.pullRequests.map(p => p.title));
+        // If break outer fires on PR #99, PR #50 will be missing
+        expect(result.pullRequests).toHaveLength(1);
+        expect(result.pullRequests[0].title).toBe("Should be included");
+    });
+
+    it("does NOT miss in-range PRs when an out-of-range PR appears on page 1 and in-range PRs are on page 2", async () => {
+        const from = new Date("2026-03-10T00:00:00Z");
+        const to   = new Date("2026-03-20T00:00:00Z");
+
+        // Fill page 1 with 100 old PRs (updated recently → updated_at check won't break, merged_at check → continue)
+        // This forces page 2 to be fetched, where the in-range PR lives.
+        const page1 = Array.from({ length: 100 }, (_, i) =>
+            makePR({ number: 200 + i, title: `Old PR ${i}`, merged_at: "2026-01-01T00:00:00Z", updated_at: "2026-03-19T00:00:00Z" })
+        );
+        fetchSpy = mockFetchByUrl(
+            // PR pages
+            [page1, [makePR({ number: 50, title: "Should be included", merged_at: "2026-03-15T10:00:00Z", updated_at: "2026-03-15T10:00:00Z" })]],
+            // Commit pages
+            [[]],
+        );
+        vi.stubGlobal("fetch", fetchSpy);
+
+        const result = await provider.getChanges({ from, to });
+
+        console.log("[test] pullRequests:", result.pullRequests.map(p => p.title));
+        // This test will FAIL with the current break-outer logic, confirming the bug
+        expect(result.pullRequests).toHaveLength(1);
+        expect(result.pullRequests[0].title).toBe("Should be included");
     });
 
     it("throws on non-OK response", async () => {
