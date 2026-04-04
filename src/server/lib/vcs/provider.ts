@@ -16,15 +16,15 @@ export interface VCSProvider {
     getChanges(params: GetChangesParams): Promise<ChangeSet>;
 
     /**
-     * Fetch the list of changed file paths for a given PR/MR id.
-     * Used for Approach A relevance filtering (vcsWatchPaths × file path match).
+     * Fetch the list of changed file paths for a given merge request id (PR/MR/Swarm Review etc.).
+     * Used for relevance filtering (vcsWatchPaths × file path match).
      * Optional — providers that don't support this leave it undefined.
      */
-    fetchPRFiles?(prId: string): Promise<string[]>;
+    fetchMergeFiles?(mergeId: string): Promise<string[]>;
 
     /**
      * Fetch the list of changed file paths for a given commit hash.
-     * Used for Approach A relevance filtering on commits.
+     * Used for relevance filtering on commits.
      * Optional — providers that don't support this leave it undefined.
      */
     fetchCommitFiles?(hash: string): Promise<string[]>;

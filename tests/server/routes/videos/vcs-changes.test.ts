@@ -11,6 +11,8 @@ import { videoByIdRouter } from "@/server/routes/videos/[id]";
 const createdVideoIds: string[] = [];
 const createdRevisionIds: string[] = [];
 const createdVCSConfigIds: string[] = [];
+const createdCachedMergeIds: string[] = [];
+const createdCachedCommitIds: string[] = [];
 
 async function createTestVideo(opts: { vcsWatchPaths?: string[] } = {}) {
     const videoId = randomUUID();
@@ -57,20 +59,30 @@ describe("GET /videos/:id/vcs-changes", () => {
     let videoId = "";
     let rev1Id  = "";
     let rev2Id  = "";
+    let vcsConfigId = "";
 
     beforeAll(async () => {
         const created = await createTestVideo();
         videoId = created.videoId;
         rev1Id  = created.rev1Id;
         rev2Id  = created.rev2Id;
+
+        // Create VCSConfig at the outer level so it persists for the entire test file
+        // (including the integration test) regardless of parallel test file execution.
+        const config = await prisma.vCSConfig.create({
+            data: { label: "mock-github", provider: "github", config: {}, branch: "main" },
+        });
+        vcsConfigId = config.id;
+        createdVCSConfigIds.push(vcsConfigId);
     });
 
     afterAll(async () => {
-        // Clean up VCSConfig + VCSRevisionLinks created by the route
         await prisma.vCSRevisionLink.deleteMany({ where: { vcsConfigId: { in: createdVCSConfigIds } } });
         await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
+        await prisma.vCSFetchedRange.deleteMany({ where: { repoName: "github:org/repo" } });
+        await prisma.vCSCachedMerge.deleteMany({ where: { id: { in: createdCachedMergeIds } } });
+        await prisma.vCSCachedCommit.deleteMany({ where: { id: { in: createdCachedCommitIds } } });
 
-        // Clean up test videos
         await prisma.video.updateMany({ where: { id: { in: createdVideoIds } }, data: { latestRevisionNum: null } });
         await prisma.videoRevision.deleteMany({ where: { id: { in: createdRevisionIds } } });
         await prisma.video.deleteMany({ where: { id: { in: createdVideoIds } } });
@@ -87,48 +99,54 @@ describe("GET /videos/:id/vcs-changes", () => {
     // -----------------------------------------------------------------------
 
     describe("with mocked GitHub provider", () => {
-        const mockChangeSet = {
-            pullRequests: [
-                {
-                    id: "142",
+        beforeAll(async () => {
+            // Seed VCSCachedMerge
+            const cachedMerge = await prisma.vCSCachedMerge.upsert({
+                where: { externalId_repoName: { externalId: "142", repoName: "github:org/repo" } },
+                create: {
+                    externalId: "142",
+                    repoName: "github:org/repo",
                     title: "Fix camera shake in cutscene",
                     description: null,
                     author: "yamada",
                     mergedAt: new Date("2026-03-15T11:20:00Z"),
                     url: "https://github.com/org/repo/pull/142",
                     labels: ["bug", "camera"],
+                    files: ["Assets/Scripts/Camera/Shake.cs"],
+                    filesFetchedAt: new Date(),
                 },
-            ],
-            commits: [
-                {
+                update: {},
+            });
+            createdCachedMergeIds.push(cachedMerge.id);
+
+            // Seed VCSCachedCommit
+            const cachedCommit = await prisma.vCSCachedCommit.upsert({
+                where: { hash_repoName: { hash: "abc1234def5678", repoName: "github:org/repo" } },
+                create: {
                     hash: "abc1234def5678",
+                    repoName: "github:org/repo",
                     shortHash: "abc1234",
                     message: "Adjust bloom intensity",
                     author: "tanaka",
                     committedAt: new Date("2026-03-18T14:00:00Z"),
                     url: "https://github.com/org/repo/commit/abc1234def5678",
+                    files: [],
+                    filesFetchedAt: new Date(),
                 },
-            ],
-            range: {
-                from: new Date("2026-03-10T09:00:00Z"),
-                to:   new Date("2026-03-20T15:00:00Z"),
-            },
-        };
-
-        beforeAll(async () => {
-            // Pre-create a VCSConfig so the route doesn't hit GitHub
-            const config = await prisma.vCSConfig.create({
-                data: { label: "mock-github", provider: "github", config: {}, branch: "main" },
+                update: {},
             });
-            createdVCSConfigIds.push(config.id);
+            createdCachedCommitIds.push(cachedCommit.id);
 
-            // Pre-populate cache so the route returns cached data
+            // Seed VCSRevisionLink with mergeResults / commitResults
             await prisma.vCSRevisionLink.upsert({
-                where: { videoRevisionId_vcsConfigId: { videoRevisionId: rev2Id, vcsConfigId: config.id } },
+                where: { videoRevisionId_vcsConfigId: { videoRevisionId: rev2Id, vcsConfigId: vcsConfigId } },
                 create: {
                     videoRevisionId: rev2Id,
-                    vcsConfigId: config.id,
-                    changeSet: mockChangeSet as object,
+                    vcsConfigId: vcsConfigId,
+                    rangeFrom: new Date("2026-03-10T09:00:00Z"),
+                    rangeTo: new Date("2026-03-20T15:00:00Z"),
+                    mergeResults: [{ cachedMergeId: cachedMerge.id, relevance: "high", relevanceReason: "vcsWatchPaths match: Assets/Scripts/Camera/Shake.cs" }],
+                    commitResults: [{ cachedCommitId: cachedCommit.id, relevance: "unlikely", relevanceReason: "no vcsWatchPaths match" }],
                     fetchedAt: new Date(),
                 },
                 update: {},
@@ -145,13 +163,14 @@ describe("GET /videos/:id/vcs-changes", () => {
             expect(res.status).toBe(200);
 
             const body = await res.json() as {
-                pullRequests: { id: string; title: string }[];
-                commits: { shortHash: string }[];
+                pullRequests: { id: string; title: string; relevance: string }[];
+                commits: { shortHash: string; relevance: string }[];
                 fromCache: boolean;
             };
             expect(body.fromCache).toBe(true);
             expect(body.pullRequests).toHaveLength(1);
             expect(body.pullRequests[0].title).toBe("Fix camera shake in cutscene");
+            expect(body.pullRequests[0].relevance).toBe("high");
             expect(body.commits).toHaveLength(1);
             expect(body.commits[0].shortHash).toBe("abc1234");
         });
@@ -172,7 +191,6 @@ describe("GET /videos/:id/vcs-changes", () => {
             vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
             vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
 
-            // Should resolve without error even when specifying from=rev1Id
             const res = await app.request(
                 `http://localhost/videos/${videoId}/vcs-changes?from=${rev1Id}`,
             );
@@ -206,6 +224,6 @@ describe("GET /videos/:id/vcs-changes", () => {
             expect(Array.isArray(body.pullRequests)).toBe(true);
             expect(Array.isArray(body.commits)).toBe(true);
             expect(typeof body.fetchedAt).toBe("string");
-        }, 30_000);
+        }, 90_000);
     });
 });

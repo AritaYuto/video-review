@@ -54,9 +54,9 @@ export class GitHubProvider implements VCSProvider {
         };
     }
 
-    async fetchPRFiles(prId: string): Promise<string[]> {
+    async fetchMergeFiles(mergeId: string): Promise<string[]> {
         const url =
-            `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/pulls/${prId}/files` +
+            `https://api.github.com/repos/${this.config.owner}/${this.config.repo}/pulls/${mergeId}/files` +
             `?per_page=100`;
         const data = await this.get<GitHubFile[]>(url);
         return data.map(f => f.filename);
