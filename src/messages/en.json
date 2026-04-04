@@ -82,7 +82,8 @@
         "unit-items": "",
         "unit-days": " days",
         "commits": "Commits",
-        "summary-loading": "Generating summary..."
+        "summary-loading": "Generating summary...",
+        "refresh": "Refresh"
     },
     "video-event-panel": {
         "tab": "Events",

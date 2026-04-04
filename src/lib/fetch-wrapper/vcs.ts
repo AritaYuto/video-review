@@ -3,9 +3,11 @@ import type { VcsChangeSet } from "@/lib/vcs-types";
 export async function fetchVcsChanges(data: {
     videoId: string;
     fromRevisionId?: string;
+    refresh?: boolean;
 }): Promise<VcsChangeSet> {
     const params = new URLSearchParams();
     if (data.fromRevisionId) params.set("from", data.fromRevisionId);
+    if (data.refresh) params.set("refresh", "true");
 
     const res = await fetch(`/api/v1/videos/${data.videoId}/vcs-changes?${params.toString()}`);
     if (!res.ok) {

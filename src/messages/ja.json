@@ -82,7 +82,8 @@
         "unit-items": "件",
         "unit-days": "日間",
         "commits": "コミット",
-        "summary-loading": "要約を生成中..."
+        "summary-loading": "要約を生成中...",
+        "refresh": "再取得"
     },
     "video-event-panel": {
         "tab": "Events",
