@@ -209,9 +209,62 @@ model VCSRevisionLink {
   vcsConfigId     String
   vcsConfig       VCSConfig @relation(fields: [vcsConfigId], references: [id])
 
-  changeSet  Json?
-  summary    String?
-  fetchedAt  DateTime?
+  rangeFrom     DateTime?
+  rangeTo       DateTime?
+  fetchedAt     DateTime?
+  summary       String?
+  /// [{ cachedMergeId: string, relevance: string, relevanceReason: string }]
+  mergeResults  Json?
+  /// [{ cachedCommitId: string, relevance: string, relevanceReason: string }]
+  commitResults Json?
 
   @@unique([videoRevisionId, vcsConfigId])
+}
+
+model VCSCachedMerge {
+  id             String    @id @default(uuid())
+  /// 外部ID（PR番号など）
+  externalId     String
+  /// プロバイダー識別子（例: "github:owner/repo"）
+  repoName       String
+  title          String
+  description    String?
+  author         String
+  mergedAt       DateTime
+  url            String
+  labels         String[]
+  /// fetchMergeFiles() の結果。filesFetchedAt IS NULL = 未フェッチ
+  files          String[]  @default([])
+  filesFetchedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([externalId, repoName])
+}
+
+model VCSFetchedRange {
+  repoName  String
+  /// UTC midnight (start of UTC day)
+  date      DateTime
+  fetchedAt DateTime @default(now())
+
+  @@unique([repoName, date])
+}
+
+model VCSCachedCommit {
+  id             String    @id @default(uuid())
+  hash           String
+  repoName       String
+  shortHash      String
+  message        String
+  author         String
+  committedAt    DateTime
+  url            String?
+  /// fetchCommitFiles() の結果。filesFetchedAt IS NULL = 未フェッチ
+  files          String[]  @default([])
+  filesFetchedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([hash, repoName])
 }

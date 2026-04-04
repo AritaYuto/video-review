@@ -68,6 +68,10 @@ var commands = map[string]Command{
 		Run:  RunPatchVideo,
 		Desc: "Update mutable video metadata (e.g. vcsWatchPaths)",
 	},
+	"warm-vcs-cache": {
+		Run:  RunWarmVCSCache,
+		Desc: "Pre-warm VCS file cache for a date range (use before users access vcs-changes)",
+	},
 }
 
 func main() {

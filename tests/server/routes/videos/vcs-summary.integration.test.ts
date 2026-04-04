@@ -23,6 +23,7 @@ const createdVideoIds: string[] = [];
 const createdRevisionIds: string[] = [];
 const createdVCSConfigIds: string[] = [];
 const createdLinkIds: string[] = [];
+const createdCachedMergeIds: string[] = [];
 
 const TEST_PRS = [
     {
@@ -87,15 +88,36 @@ describe.skipIf(!hasLLMCredentials)("GET /videos/:id/vcs-summary (real LLM)", ()
             data: { label: "integration-test", provider: "github", config: {}, branch: "main" },
         });
 
+        const mergeResults: { cachedMergeId: string; relevance: string; relevanceReason: string }[] = [];
+        for (const pr of TEST_PRS) {
+            const cached = await prisma.vCSCachedMerge.upsert({
+                where: { externalId_repoName: { externalId: pr.id, repoName: "github:org/repo" } },
+                create: {
+                    externalId: pr.id,
+                    repoName: "github:org/repo",
+                    title: pr.title,
+                    description: pr.description,
+                    author: pr.author,
+                    mergedAt: pr.mergedAt,
+                    url: pr.url,
+                    labels: pr.labels,
+                    files: [],
+                    filesFetchedAt: new Date(),
+                },
+                update: {},
+            });
+            createdCachedMergeIds.push(cached.id);
+            mergeResults.push({ cachedMergeId: cached.id, relevance: pr.relevance, relevanceReason: pr.relevanceReason });
+        }
+
         const link = await prisma.vCSRevisionLink.create({
             data: {
                 videoRevisionId: rev2Id,
                 vcsConfigId: config.id,
-                changeSet: {
-                    pullRequests: TEST_PRS,
-                    commits: [],
-                    range: { from: new Date("2026-03-10T09:00:00Z"), to: new Date("2026-03-20T15:00:00Z") },
-                } as object,
+                rangeFrom: new Date("2026-03-10T09:00:00Z"),
+                rangeTo: new Date("2026-03-20T15:00:00Z"),
+                mergeResults: mergeResults as object[],
+                commitResults: [],
                 fetchedAt: new Date(),
             },
         });
@@ -117,6 +139,7 @@ describe.skipIf(!hasLLMCredentials)("GET /videos/:id/vcs-summary (real LLM)", ()
     afterAll(async () => {
         await prisma.vCSRevisionLink.deleteMany({ where: { videoRevisionId: { in: createdRevisionIds } } });
         await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
+        await prisma.vCSCachedMerge.deleteMany({ where: { id: { in: createdCachedMergeIds } } });
         await prisma.video.updateMany({ where: { id: { in: createdVideoIds } }, data: { latestRevisionNum: null } });
         await prisma.videoRevision.deleteMany({ where: { id: { in: createdRevisionIds } } });
         await prisma.video.deleteMany({ where: { id: { in: createdVideoIds } } });

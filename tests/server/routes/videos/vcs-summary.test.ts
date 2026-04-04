@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { prisma } from "@/server/lib/db";
@@ -18,10 +18,13 @@ vi.mock("@/server/lib/integration-clients/llm-client", () => ({
 // Test fixtures
 // ---------------------------------------------------------------------------
 
+const TEST_REPO = "github:org/summary-test-repo";
+
 const createdVideoIds: string[] = [];
 const createdRevisionIds: string[] = [];
 const createdVCSConfigIds: string[] = [];
 const createdLinkIds: string[] = [];
+const createdCachedMergeIds: string[] = [];
 
 async function createTestVideo() {
     const videoId = randomUUID();
@@ -44,11 +47,23 @@ async function createTestVideo() {
     return { videoId, rev1Id, rev2Id };
 }
 
+type SeedPR = {
+    id: string;
+    title: string;
+    description: string | null;
+    author: string;
+    mergedAt: Date;
+    url: string;
+    labels: string[];
+    relevance: string;
+    relevanceReason: string;
+};
+
 async function seedCachedChangeSet(rev2Id: string, opts: {
-    prs?: object[];
+    prs?: SeedPR[];
     summary?: string | null;
 } = {}) {
-    const prs = opts.prs ?? [
+    const prs: SeedPR[] = opts.prs ?? [
         {
             id: "142",
             title: "Fix camera shake in cutscene",
@@ -73,22 +88,42 @@ async function seedCachedChangeSet(rev2Id: string, opts: {
         },
     ];
 
-    const changeSet = {
-        pullRequests: prs,
-        commits: [],
-        range: { from: new Date("2026-03-10T09:00:00Z"), to: new Date("2026-03-20T15:00:00Z") },
-    };
-
     const config = await prisma.vCSConfig.create({
         data: { label: "mock-github", provider: "github", config: {}, branch: "main" },
     });
     createdVCSConfigIds.push(config.id);
 
+    // Create VCSCachedMerge entries and build mergeResults
+    const mergeResults: { cachedMergeId: string; relevance: string; relevanceReason: string }[] = [];
+    for (const pr of prs) {
+        const cached = await prisma.vCSCachedMerge.upsert({
+            where: { externalId_repoName: { externalId: pr.id, repoName: TEST_REPO } },
+            create: {
+                externalId: pr.id,
+                repoName: TEST_REPO,
+                title: pr.title,
+                description: pr.description,
+                author: pr.author,
+                mergedAt: pr.mergedAt,
+                url: pr.url,
+                labels: pr.labels,
+                files: [],
+                filesFetchedAt: new Date(),
+            },
+            update: {},
+        });
+        createdCachedMergeIds.push(cached.id);
+        mergeResults.push({ cachedMergeId: cached.id, relevance: pr.relevance, relevanceReason: pr.relevanceReason });
+    }
+
     const link = await prisma.vCSRevisionLink.create({
         data: {
             videoRevisionId: rev2Id,
             vcsConfigId: config.id,
-            changeSet: changeSet as object,
+            rangeFrom: new Date("2026-03-10T09:00:00Z"),
+            rangeTo: new Date("2026-03-20T15:00:00Z"),
+            mergeResults: mergeResults as object[],
+            commitResults: [],
             summary: opts.summary !== undefined ? opts.summary : null,
             fetchedAt: new Date(),
         },
@@ -108,6 +143,7 @@ describe("GET /videos/:id/vcs-summary", () => {
     afterAll(async () => {
         await prisma.vCSRevisionLink.deleteMany({ where: { id: { in: createdLinkIds } } });
         await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
+        await prisma.vCSCachedMerge.deleteMany({ where: { id: { in: createdCachedMergeIds } } });
         await prisma.video.updateMany({ where: { id: { in: createdVideoIds } }, data: { latestRevisionNum: null } });
         await prisma.videoRevision.deleteMany({ where: { id: { in: createdRevisionIds } } });
         await prisma.video.deleteMany({ where: { id: { in: createdVideoIds } } });
@@ -202,7 +238,7 @@ describe("GET /videos/:id/vcs-summary", () => {
                     url: "https://github.com/org/repo/pull/99",
                     labels: [],
                     relevance: "unlikely",
-                    relevanceReason: "no vcsWatchPaths or keyword match",
+                    relevanceReason: "no vcsWatchPaths match",
                 }],
             });
 
@@ -229,7 +265,8 @@ describe("GET /videos/:id/vcs-summary", () => {
             });
 
             expect(completeSpy).toHaveBeenCalledOnce();
-            const prompt = completeSpy.mock.calls[0][0] as string;
+            const calls = completeSpy.mock.calls as unknown as [[string]];
+            const prompt = calls[0][0];
             expect(prompt).toContain("ja");
         });
     });
