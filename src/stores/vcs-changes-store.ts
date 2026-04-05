@@ -10,7 +10,7 @@ interface VcsChangesState {
     summary: string | null;
     summaryLoading: boolean;
 
-    fetchChanges: (videoId: string, prevRevision: VideoRevision | null) => Promise<void>;
+    fetchChanges: (videoId: string, prevRevision: VideoRevision | null, refresh?: boolean) => Promise<void>;
     fetchSummary: (videoId: string) => Promise<void>;
     clear: () => void;
 }
@@ -22,12 +22,13 @@ export const useVcsChangesStore = create<VcsChangesState>((set) => ({
     summary: null,
     summaryLoading: false,
 
-    fetchChanges: async (videoId, prevRevision) => {
+    fetchChanges: async (videoId, prevRevision, refresh) => {
         set({ loading: true, error: null, summary: null });
         try {
             const data = await api.fetchVcsChanges({
                 videoId,
                 fromRevisionId: prevRevision?.id,
+                refresh,
             });
             set({ data, loading: false });
         } catch (err) {

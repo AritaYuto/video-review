@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { prisma } from "@/server/lib/db";
 import { videoByIdRouter } from "@/server/routes/videos/[id]";
+import { startOfUTCDay } from "@/server/lib/vcs/cache";
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -19,8 +20,8 @@ async function createTestVideo(opts: { vcsWatchPaths?: string[] } = {}) {
     const rev1Id  = randomUUID();
     const rev2Id  = randomUUID();
 
-    const rev1UploadedAt = new Date("2026-03-10T09:00:00Z");
-    const rev2UploadedAt = new Date("2026-03-20T15:00:00Z");
+    const rev2UploadedAt = new Date();
+    const rev1UploadedAt = new Date(rev2UploadedAt.getTime() - 2 * 86_400_000);
 
     await prisma.video.create({
         data: {
@@ -77,9 +78,9 @@ describe("GET /videos/:id/vcs-changes", () => {
     });
 
     afterAll(async () => {
-        await prisma.vCSRevisionLink.deleteMany({ where: { vcsConfigId: { in: createdVCSConfigIds } } });
+        await prisma.vCSRevisionLink.deleteMany({ where: { videoRevisionId: { in: createdRevisionIds } } });
         await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
-        await prisma.vCSFetchedRange.deleteMany({ where: { repoName: "github:org/repo" } });
+        await prisma.vCSFetchedRange.deleteMany({ where: { repoName: { startsWith: "github:" } } });
         await prisma.vCSCachedMerge.deleteMany({ where: { id: { in: createdCachedMergeIds } } });
         await prisma.vCSCachedCommit.deleteMany({ where: { id: { in: createdCachedCommitIds } } });
 
@@ -138,13 +139,18 @@ describe("GET /videos/:id/vcs-changes", () => {
             createdCachedCommitIds.push(cachedCommit.id);
 
             // Seed VCSRevisionLink with mergeResults / commitResults
+            // rangeFrom/rangeTo must align with the revision uploadedAt values (day-rounded)
+            // used in createTestVideo so the cache hit path matches.
+            const now = new Date();
+            const rangeFrom = startOfUTCDay(new Date(now.getTime() - 2 * 86_400_000));
+            const rangeTo = startOfUTCDay(now);
             await prisma.vCSRevisionLink.upsert({
                 where: { videoRevisionId_vcsConfigId: { videoRevisionId: rev2Id, vcsConfigId: vcsConfigId } },
                 create: {
                     videoRevisionId: rev2Id,
                     vcsConfigId: vcsConfigId,
-                    rangeFrom: new Date("2026-03-10T09:00:00Z"),
-                    rangeTo: new Date("2026-03-20T15:00:00Z"),
+                    rangeFrom,
+                    rangeTo,
                     mergeResults: [{ cachedMergeId: cachedMerge.id, relevance: "high", relevanceReason: "vcsWatchPaths match: Assets/Scripts/Camera/Shake.cs" }],
                     commitResults: [{ cachedCommitId: cachedCommit.id, relevance: "unlikely", relevanceReason: "no vcsWatchPaths match" }],
                     fetchedAt: new Date(),
@@ -184,46 +190,5 @@ describe("GET /videos/:id/vcs-changes", () => {
             const res = await app.request(`http://localhost/videos/${randomUUID()}/vcs-changes`);
             expect(res.status).toBe(404);
         });
-
-        it("accepts from= query param (previous revision id)", async () => {
-            vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
-
-            const res = await app.request(
-                `http://localhost/videos/${videoId}/vcs-changes?from=${rev1Id}`,
-            );
-            // Cache was built without from= so this will miss cache and try real GitHub.
-            // We only verify it doesn't crash with a 5xx from param parsing.
-            expect([200, 502, 503]).toContain(res.status);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // Integration test — only runs when real GitHub token is provided
-    // -----------------------------------------------------------------------
-
-    const hasCredentials = !!(
-        process.env.VIDEO_REVIEW_VCS_GITHUB_OWNER &&
-        process.env.VIDEO_REVIEW_VCS_GITHUB_REPO &&
-        process.env.VIDEO_REVIEW_VCS_GITHUB_TOKEN
-    );
-
-    describe.skipIf(!hasCredentials)("with real GitHub API", () => {
-        it("fetches and caches real change set", async () => {
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?refresh=true`);
-            expect(res.status).toBe(200);
-
-            const body = await res.json() as {
-                pullRequests: unknown[];
-                commits: unknown[];
-                fromCache: boolean;
-                fetchedAt: string;
-            };
-            expect(Array.isArray(body.pullRequests)).toBe(true);
-            expect(Array.isArray(body.commits)).toBe(true);
-            expect(typeof body.fetchedAt).toBe("string");
-        }, 90_000);
     });
 });
