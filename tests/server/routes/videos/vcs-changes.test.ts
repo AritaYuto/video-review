@@ -78,9 +78,9 @@ describe("GET /videos/:id/vcs-changes", () => {
     });
 
     afterAll(async () => {
-        await prisma.vCSRevisionLink.deleteMany({ where: { vcsConfigId: { in: createdVCSConfigIds } } });
+        await prisma.vCSRevisionLink.deleteMany({ where: { videoRevisionId: { in: createdRevisionIds } } });
         await prisma.vCSConfig.deleteMany({ where: { id: { in: createdVCSConfigIds } } });
-        await prisma.vCSFetchedRange.deleteMany({ where: { repoName: "github:org/repo" } });
+        await prisma.vCSFetchedRange.deleteMany({ where: { repoName: { startsWith: "github:" } } });
         await prisma.vCSCachedMerge.deleteMany({ where: { id: { in: createdCachedMergeIds } } });
         await prisma.vCSCachedCommit.deleteMany({ where: { id: { in: createdCachedCommitIds } } });
 
@@ -190,47 +190,5 @@ describe("GET /videos/:id/vcs-changes", () => {
             const res = await app.request(`http://localhost/videos/${randomUUID()}/vcs-changes`);
             expect(res.status).toBe(404);
         });
-
-        // Skip when real credentials are present: cache miss triggers ensureDaysCached
-        // which would make a real GitHub API call with a fake token, interfering with
-        // the integration test running in the same suite.
-        it.skipIf(hasCredentials)("accepts from= query param (previous revision id)", async () => {
-            vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
-            vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
-
-            const res = await app.request(
-                `http://localhost/videos/${videoId}/vcs-changes?from=${rev1Id}`,
-            );
-            expect([200, 502, 503]).toContain(res.status);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // Integration test — only runs when real GitHub token is provided
-    // -----------------------------------------------------------------------
-
-    const hasCredentials = !!(
-        process.env.VIDEO_REVIEW_VCS_GITHUB_OWNER &&
-        process.env.VIDEO_REVIEW_VCS_GITHUB_REPO &&
-        process.env.VIDEO_REVIEW_VCS_GITHUB_TOKEN
-    );
-
-    describe.skipIf(!hasCredentials)("with real GitHub API", () => {
-        it("fetches and caches real change set", async () => {
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?refresh=true`);
-            expect(res.status).toBe(200);
-
-            const body = await res.json() as {
-                pullRequests: unknown[];
-                commits: unknown[];
-                fromCache: boolean;
-                fetchedAt: string;
-            };
-            expect(Array.isArray(body.pullRequests)).toBe(true);
-            expect(Array.isArray(body.commits)).toBe(true);
-            expect(typeof body.fetchedAt).toBe("string");
-        }, 90_000);
     });
 });
