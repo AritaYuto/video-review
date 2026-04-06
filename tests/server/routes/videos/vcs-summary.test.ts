@@ -198,7 +198,7 @@ describe("GET /videos/:id/vcs-summary", () => {
             const completeSpy = vi.fn(async () => mockSummary);
             vi.mocked(createLLMClient).mockReturnValue({ complete: completeSpy });
 
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary`);
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary?to=${rev2Id}`);
             expect(res.status).toBe(200);
 
             const body = await res.json() as { summary: string; fromCache: boolean };
@@ -217,7 +217,7 @@ describe("GET /videos/:id/vcs-summary", () => {
             const completeSpy = vi.fn();
             vi.mocked(createLLMClient).mockReturnValue({ complete: completeSpy });
 
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary`);
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary?to=${rev2Id}`);
             expect(res.status).toBe(200);
 
             const body = await res.json() as { summary: string; fromCache: boolean };
@@ -245,7 +245,7 @@ describe("GET /videos/:id/vcs-summary", () => {
             const completeSpy = vi.fn();
             vi.mocked(createLLMClient).mockReturnValue({ complete: completeSpy });
 
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary`);
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-summary?to=${rev2Id}`);
             expect(res.status).toBe(200);
 
             const body = await res.json() as { summary: null; fromCache: boolean };
@@ -260,7 +260,7 @@ describe("GET /videos/:id/vcs-summary", () => {
             const completeSpy = vi.fn(async () => "summary text");
             vi.mocked(createLLMClient).mockReturnValue({ complete: completeSpy });
 
-            await app.request(`http://localhost/videos/${videoId}/vcs-summary`, {
+            await app.request(`http://localhost/videos/${videoId}/vcs-summary?to=${rev2Id}`, {
                 headers: { "accept-language": "ja,en;q=0.9" },
             });
 

@@ -43,15 +43,15 @@ vcsRouter.openapi({
     const videoId = c.req.param("id") as string;
     const { from: fromRevisionId, to: toRevisionId, refresh } = c.req.valid("query");
 
-    if(!fromRevisionId || !toRevisionId) {
-        return c.json({ error: "Both 'from' and 'to' revision IDs are required" }, { status: 400 });
-    }
-
     const video = await prisma.video.findUnique({
         where: { id: videoId },
         select: { vcsWatchPaths: true },
     });
     if (!video) return c.json({ error: "Video not found" }, { status: 404 });
+
+    if(!fromRevisionId || !toRevisionId) {
+        return c.json({ error: "Both 'from' and 'to' revision IDs are required" }, { status: 400 });
+    }
 
     const revisions = await prisma.videoRevision.findMany({ 
         where: { videoId: videoId, id: { in: [fromRevisionId, toRevisionId] }, deleted: false }, 
