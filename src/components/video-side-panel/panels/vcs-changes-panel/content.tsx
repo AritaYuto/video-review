@@ -41,7 +41,7 @@ export default function VcsChangesContent(props: {
     const handleRefresh = () => {
         if (!selectedVideo) return;
         setShowUnlikely(false);
-        void fetchChanges(selectedVideo.id, prevRevision, true);
+        void fetchChanges(selectedVideo.id, prevRevision, selectedRevision, true);
     };
 
     const prevRevision = useMemo(() => {
@@ -58,7 +58,7 @@ export default function VcsChangesContent(props: {
             clear();
             return;
         }
-        void fetchChanges(selectedVideo.id, prevRevision);
+        void fetchChanges(selectedVideo.id, prevRevision, selectedRevision);
     }, [selectedVideo?.id, prevRevision?.id]);
 
     /*
@@ -67,8 +67,8 @@ export default function VcsChangesContent(props: {
      */
     useEffect(() => {
         if (!selectedVideo || !data) return;
-        void fetchSummary(selectedVideo.id);
-    }, [selectedVideo?.id, data]);
+        void fetchSummary(selectedVideo.id, selectedRevision);
+    }, [selectedVideo?.id, data, selectedRevision]);
 
     const prs = useMemo<ReturnType<typeof partition<VcsPullRequest>>>(
         () => partition(data?.pullRequests ?? []),

@@ -10,8 +10,8 @@ interface VcsChangesState {
     summary: string | null;
     summaryLoading: boolean;
 
-    fetchChanges: (videoId: string, prevRevision: VideoRevision | null, refresh?: boolean) => Promise<void>;
-    fetchSummary: (videoId: string) => Promise<void>;
+    fetchChanges: (videoId: string, fromRevision: VideoRevision | null, toRevision: VideoRevision | null, refresh?: boolean) => Promise<void>;
+    fetchSummary: (videoId: string, toRevision: VideoRevision | null) => Promise<void>;
     clear: () => void;
 }
 
@@ -22,12 +22,13 @@ export const useVcsChangesStore = create<VcsChangesState>((set) => ({
     summary: null,
     summaryLoading: false,
 
-    fetchChanges: async (videoId, prevRevision, refresh) => {
+    fetchChanges: async (videoId, fromRevision, toRevision, refresh) => {
         set({ loading: true, error: null, summary: null });
         try {
             const data = await api.fetchVcsChanges({
                 videoId,
-                fromRevisionId: prevRevision?.id,
+                fromRevisionId: fromRevision?.id,
+                toRevisionId: toRevision?.id,
                 refresh,
             });
             set({ data, loading: false });
@@ -36,10 +37,13 @@ export const useVcsChangesStore = create<VcsChangesState>((set) => ({
         }
     },
 
-    fetchSummary: async (videoId) => {
+    fetchSummary: async (videoId, toRevision) => {
         set({ summaryLoading: true });
         try {
-            const summary = await api.fetchVcsSummary(videoId);
+            const summary = await api.fetchVcsSummary({
+                videoId,
+                toRevisionId: toRevision?.id,
+            });
             set({ summary, summaryLoading: false });
         } catch {
             set({ summaryLoading: false });
