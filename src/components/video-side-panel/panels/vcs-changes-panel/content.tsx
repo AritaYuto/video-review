@@ -54,6 +54,9 @@ export default function VcsChangesContent(props: {
     }, [revisions, selectedRevision]);
 
     useEffect(() => {
+        if(!prevRevision || !selectedRevision) {
+            return;
+        }
         if (!selectedVideo) {
             clear();
             return;
