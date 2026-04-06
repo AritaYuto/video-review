@@ -8,12 +8,16 @@ import { createLLMClient } from "@/server/lib/integration-clients/llm-client";
 
 export const vcsRouter = new Hono();
 
-// When there is no previous revision, look back this many days.
 const DEFAULT_LOOKBACK_DAYS = 30;
 
-const QuerySchema = z.object({
-    from: z.string().optional(),   // videoRevisionId of the previous revision
+const QueryVcsChangesSchema = z.object({
+    from: z.string().optional(),
+    to: z.string().optional(),
     refresh: z.string().transform(v => v === "true").optional(),
+});
+
+const QueryVcsSummarySchema = z.object({
+    to: z.string().optional(),
 });
 
 type MergeResult  = { cachedMergeId: string;  relevance: string; relevanceReason: string };
@@ -29,7 +33,7 @@ vcsRouter.openapi({
         "so repeat requests and cross-video requests for the same time range are served from DB.",
     ].join(" "),
     path: "/vcs-changes",
-    request: { query: QuerySchema },
+    request: { query: QueryVcsChangesSchema },
     responses: {
         200: { description: "VCS changes retrieved successfully" },
         404: { description: "Video revision not found" },
@@ -37,7 +41,11 @@ vcsRouter.openapi({
     },
 }, async (c) => {
     const videoId = c.req.param("id") as string;
-    const { from: fromRevisionId, refresh } = c.req.valid("query");
+    const { from: fromRevisionId, to: toRevisionId, refresh } = c.req.valid("query");
+
+    if(!fromRevisionId || !toRevisionId) {
+        return c.json({ error: "Both 'from' and 'to' revision IDs are required" }, { status: 400 });
+    }
 
     const video = await prisma.video.findUnique({
         where: { id: videoId },
@@ -45,23 +53,35 @@ vcsRouter.openapi({
     });
     if (!video) return c.json({ error: "Video not found" }, { status: 404 });
 
-    const toRevision = await prisma.videoRevision.findFirst({
-        where: { videoId, deleted: false },
-        orderBy: { revision: "desc" },
-    });
-    if (!toRevision) return c.json({ error: "Video revision not found" }, { status: 404 });
+    const revisions = await prisma.videoRevision.findMany({ 
+        where: { videoId: videoId, id: { in: [fromRevisionId, toRevisionId] }, deleted: false }, 
+        orderBy: { revision: "asc" },
+        select: { id: true, uploadedAt: true } }
+    );
 
-    const fromRevision = await resolveFromRevision(videoId, fromRevisionId, toRevision.revision);
+    if (revisions.length !== 2) {
+        return c.json({ error: "One or both video revisions not found" }, { status: 404 });
+    }
+
+    const fromRevision = revisions.find(r => r.id === fromRevisionId);
+    const toRevision   = revisions.find(r => r.id === toRevisionId);
+    if (!fromRevision || !toRevision) {
+        return c.json({ error: "One or both video revisions not found" }, { status: 404 });
+    }
+    if (fromRevision.uploadedAt >= toRevision.uploadedAt) {
+        return c.json({ error: "'from' revision must be older than 'to' revision" }, { status: 400 });
+    }
+
     const rangeTo   = startOfUTCDay(toRevision.uploadedAt);
     const rangeFrom = fromRevision
         ? startOfUTCDay(fromRevision.uploadedAt)
         : new Date(rangeTo.getTime() - DEFAULT_LOOKBACK_DAYS * 86_400_000);
 
-    // Check revision-level cache first — provider not needed on hit.
     const existingLink = await prisma.vCSRevisionLink.findFirst({
         where: { videoRevisionId: toRevision.id, fetchedAt: { not: null } },
         orderBy: { fetchedAt: "desc" },
     });
+    
     if (existingLink && !refresh) {
         return c.json({
             ...(await buildResponse(existingLink.mergeResults, existingLink.commitResults)),
@@ -102,9 +122,24 @@ vcsRouter.openapi({
 
     const fetchedAt = new Date();
     await prisma.vCSRevisionLink.upsert({
-        where: { videoRevisionId_vcsConfigId: { videoRevisionId: toRevision.id, vcsConfigId: vcsConfig.id } },
-        create: { videoRevisionId: toRevision.id, vcsConfigId: vcsConfig.id, rangeFrom, rangeTo, mergeResults: mergeResults as object[], commitResults: commitResults as object[], fetchedAt },
-        update: { rangeFrom, rangeTo, mergeResults: mergeResults as object[], commitResults: commitResults as object[], fetchedAt, summary: null },
+        where: { videoRevisionId_vcsConfigId: 
+            { videoRevisionId: toRevision.id, vcsConfigId: vcsConfig.id }
+        },
+        create: { 
+            videoRevisionId: toRevision.id, 
+            vcsConfigId: vcsConfig.id, 
+            rangeFrom, 
+            rangeTo, 
+            mergeResults: mergeResults as object[], 
+            commitResults: commitResults as object[], 
+            fetchedAt },
+        update: { 
+            rangeFrom, 
+            rangeTo, 
+            mergeResults: mergeResults as object[], 
+            commitResults: commitResults as object[], 
+            fetchedAt, 
+            summary: null },
     });
 
     return c.json({
@@ -119,6 +154,7 @@ vcsRouter.openapi({
     method: "get",
     summary: "Get AI summary of VCS changes for a video revision",
     path: "/vcs-summary",
+    request: { query: QueryVcsSummarySchema },
     responses: {
         200: { description: "Summary returned" },
         404: { description: "No cached VCS changes found" },
@@ -126,13 +162,13 @@ vcsRouter.openapi({
     },
 }, async (c) => {
     const videoId = c.req.param("id") as string;
+    const { to: toRevisionId } = c.req.valid("query");
 
     const llmClient = createLLMClient();
     if (!llmClient) return c.json({ error: "LLM is not configured" }, { status: 503 });
 
     const toRevision = await prisma.videoRevision.findFirst({
-        where: { videoId, deleted: false },
-        orderBy: { revision: "desc" },
+        where: { videoId, id: toRevisionId, deleted: false },
     });
     if (!toRevision) return c.json({ error: "Video revision not found" }, { status: 404 });
 
@@ -165,24 +201,6 @@ vcsRouter.openapi({
 
     return c.json({ summary, fromCache: false });
 });
-
-async function resolveFromRevision(
-    videoId: string,
-    fromRevisionId: string | undefined,
-    toRevisionNum: number,
-): Promise<{ uploadedAt: Date } | null> {
-    if (fromRevisionId) {
-        return prisma.videoRevision.findUnique({
-            where: { id: fromRevisionId },
-            select: { uploadedAt: true },
-        });
-    }
-    return prisma.videoRevision.findFirst({
-        where: { videoId, deleted: false, revision: { lt: toRevisionNum } },
-        orderBy: { revision: "desc" },
-        select: { uploadedAt: true },
-    });
-}
 
 async function buildResponse(
     mergeResults: unknown,
