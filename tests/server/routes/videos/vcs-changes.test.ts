@@ -165,7 +165,7 @@ describe("GET /videos/:id/vcs-changes", () => {
             vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_REPO", "repo");
             vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_TOKEN", "test-token");
 
-            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes`);
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?to=${rev2Id}&from=${rev1Id}`);
             expect(res.status).toBe(200);
 
             const body = await res.json() as {
