@@ -56,6 +56,7 @@ model Video {
   comments          VideoComment[]
   latestUpdatedAt   DateTime          @default(now())
   deleted           Boolean           @default(false)
+  links             Json              @default("[]")
 
   @@unique([id, latestRevisionNum])
 }
@@ -92,9 +93,10 @@ model VideoEvent {
   startMs         Int
   endMs           Int
   data            String
-  seq             Int      @default(0)
-  link            String?
-  createdAt       DateTime @default(now())
+  contentId       String?
+  seq             Int               @default(0)
+  links           Json              @default("[]")
+  createdAt       DateTime          @default(now())
 
   videoRevision VideoRevision @relation(fields: [videoRevisionId], references: [id], onDelete: Cascade)
   kind          VideoEventKind @relation(fields: [kindId], references: [id], onDelete: Restrict)
@@ -119,14 +121,14 @@ model VideoComment {
   id                String          @id @default(uuid())
   video             Video           @relation(fields: [videoId], references: [id])
   videoId           String
-  videoRevNum       Int     
+  videoRevNum       Int
   userName          String
   userEmail         String          @default("")
-  comment           String         
-  time              Float          
-  issueId           String?        
+  comment           String
+  time              Float
+  issueId           String?
   notifiedProviders String[]        @default([])
-  drawingPath       String?        
+  drawingPath       String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   deleted           Boolean         @default(false)

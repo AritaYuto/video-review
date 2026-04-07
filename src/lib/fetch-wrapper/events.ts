@@ -1,8 +1,4 @@
-import { VideoEvent, VideoEventKind } from "@/lib/db-types";
-
-export type VideoEventWithKind = VideoEvent & {
-    kind: Pick<VideoEventKind, "label">;
-};
+import { VideoEventWithKind } from "@/lib/db-types";
 
 export async function fetchVideoEvents(data: {
     videoId: string;

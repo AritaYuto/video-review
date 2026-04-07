@@ -33,7 +33,6 @@ eventsRouter.openapi({
                     ...(selectRevision ? { revision: selectRevision } : {}),
                 },
                 ...(filterText ? { data: { contains: filterText } } : {}),
-                ...(hasLink ? { link: { not: null } } : {}),
                 ...(kind ? { kind: { label: kind } } : {}),
             },
             include: {

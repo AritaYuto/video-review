@@ -5,8 +5,7 @@ import { useVideoReviewStore } from "@/stores/video-review-store";
 import TimelineCardList from "@/components/video-side-panel/timeline-card-list";
 import EventCardHeader from "@/components/video-side-panel/panels/video-event-panel/event-card/header";
 import EventCardContent from "@/components/video-side-panel/panels/video-event-panel/event-card/content";
-import EventCardFooter from "@/components/video-side-panel/panels/video-event-panel/event-card/footer";
-import { VideoEventWithKind } from "@/lib/fetch-wrapper/events";
+import { VideoEventWithKind } from "@/lib/db-types";
 
 export default function EventCard(props: {
     events: VideoEventWithKind[];
@@ -35,7 +34,7 @@ export default function EventCard(props: {
             getCardClassName={(event) => {
                 const isSelected = props.selectedEventId === event.id;
                 const isActive = activeEventIds.has(event.id);
-                const hasLink = event.link !== "" && event.link !== null;
+                const hasLink = event.links.length > 0;
 
                 if (isSelected) {
                     return "border-[#ff8800] bg-[#3a2b00]";
@@ -54,7 +53,7 @@ export default function EventCard(props: {
             onClick={(event) => { props.onSelectEvent(event) }}
             renderHeader={(event) => <EventCardHeader event={event} />}
             renderContent={(event) => <EventCardContent event={event} />}
-            renderFooter={(event) => <EventCardFooter event={event} />}
+            renderFooter={() => null}
         />
     );
 }
