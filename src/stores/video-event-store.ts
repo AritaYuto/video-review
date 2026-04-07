@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import * as api from "@/lib/fetch-wrapper";
-import { VideoRevision } from "@/lib/db-types";
-import { VideoEventWithKind } from "@/lib/fetch-wrapper/events";
+import { VideoRevision, VideoEventWithKind } from "@/lib/db-types";
 import { useVideoEventSearchStore } from "@/stores/video-event-search-store";
 
 interface VideoEventState {

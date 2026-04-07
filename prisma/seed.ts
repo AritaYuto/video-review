@@ -165,6 +165,11 @@ async function seedVideoEvents(videoRevisionId: string, kindIdByLabel: Map<strin
                 endMs: 5000,
                 data: "wide-shot",
                 seq: 0,
+                contentId: "shot-001",
+                links: [
+                    { label: "Shot Design Doc", url: "https://example.com/docs/shot-design" },
+                    { url: "https://example.com/reference/wide-shot" },
+                ],
             },
             {
                 id: randomUUID(),
@@ -183,6 +188,10 @@ async function seedVideoEvents(videoRevisionId: string, kindIdByLabel: Map<strin
                 endMs: 4200,
                 data: "Sample dialogue line for seed data.",
                 seq: 0,
+                contentId: "transcription-001",
+                links: [
+                    { label: "Script", url: "https://example.com/scripts/scene-01" },
+                ],
             },
             {
                 id: randomUUID(),
