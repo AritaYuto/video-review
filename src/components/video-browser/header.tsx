@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Plus, Search, LayoutGrid } from "lucide-react";
+import { X, Plus, Search, LayoutGrid, MessageSquare } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
-import { isGuest, isViewer } from "@/lib/role";
+import { isGuest } from "@/lib/role";
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -19,6 +19,9 @@ import { useVideoDateFilterStore } from "@/stores/date-filter-store";
 import { useVideoStore } from "@/stores/video-store";
 import CalendarDateRadio from "@/ui/calendar-date-radio";
 import { Separator } from "../ui/separator";
+import { useLLMStatusStore } from "@/stores/llm-status-store";
+import { useChatSearchStore } from "@/stores/chat-search-store";
+import { ChatSearchPanel } from "@/components/chat-search";
 
 export default function VideoListPanelHeader(
 { onSearchDialogShow, onUploadDialogShow, onThumbnailsToggle, thumbnailsOpen }: {
@@ -33,6 +36,8 @@ export default function VideoListPanelHeader(
     const { fetchVideos } = useVideoStore();
     const { filterTree, setFilterTree, isFiltering, clear } = useVideoSearchStore();
     const videoDate = useVideoDateFilterStore();
+    const { available, checked, check } = useLLMStatusStore();
+    const { open: openChat } = useChatSearchStore();
 
     // Refetch when the tree text or the date filter changes.
     useEffect(() => {
@@ -41,6 +46,10 @@ export default function VideoListPanelHeader(
 
     // The date filter now lives in its own store, so fold it into the indicator.
     const filtering = isFiltering() || videoDate.mode !== "none";
+
+    useEffect(() => {
+        if (!checked) check();
+    }, []);
 
     const handleClear = () => {
         clear();
@@ -79,6 +88,17 @@ export default function VideoListPanelHeader(
                         )
                         : (<></>)
                     }
+                    <button
+                        onClick={() => openChat()}
+                        disabled={!available}
+                        title={available ? undefined : "LLM is not configured"}
+                        className={`
+                            inline-flex items-center justify-center px-1 leading-none transition-colors
+                            ${available ? "hover:text-[#ff5500]" : "opacity-30 cursor-not-allowed"}
+                        `}
+                    >
+                        <MessageSquare className="size-4" />
+                    </button>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -107,6 +127,8 @@ export default function VideoListPanelHeader(
                 </div>
             </div>
             <Separator className="bg-[#333]" />
+
+            <ChatSearchPanel />
 
             <SidebarGroup className="py-0">
                 <CalendarDateRadio
