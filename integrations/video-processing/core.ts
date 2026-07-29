@@ -89,7 +89,7 @@ export async function generateThumbnail(videoRevId: string, tempMoviePath: strin
             "-ss", "1",
             "-i", tempMoviePath,
             "-frames:v", "1",
-            "-vf", "scale=320:-1",
+            "-vf", "scale=480:-1",
             tmpPngPath
         ]);
 
