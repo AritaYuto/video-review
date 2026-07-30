@@ -16,7 +16,7 @@ import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";
 export default function VideoListPanel() {
     const router = useRouter();
     const { userId } = useAuthStore();
-    const { videos, fetchVideos, selectedVideo, selectedRevision } = useVideoStore();
+    const { videos, fetchVideos, selectedVideo } = useVideoStore();
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [thumbnailsOpen, setThumbnailsOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function VideoListPanel() {
             <VideoThumbnailsPanel
                 open={thumbnailsOpen}
                 videos={videos}
-                videoRevision={selectedRevision?.revision}
+                unReadVideoIds={unReadVideoIds}
                 selectedVideoId={selectedVideo?.id}
                 onSelectVideo={(id) => {
                     router.replace(`/video-review/review/${id}`);

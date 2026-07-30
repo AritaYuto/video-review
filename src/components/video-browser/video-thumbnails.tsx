@@ -2,46 +2,32 @@
 
 import { Separator } from "@/ui/separator";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Video, VideoRevision } from "@/lib/db-types";
+import { Video } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { ZoomInIcon } from "lucide-react";
 import { ThumbnailCell, ThumbnailLazyLoader } from "@/components/video-browser/thumbnail-cell";
 
 type Props = {
     videos: Video[];
-    videoRevision: number | undefined;
+    unReadVideoIds: string[];
     selectedVideoId: string | undefined;
     onSelectVideo?: (videoId: string) => void;
 };
 
-export default function VideoThumbnails({ videos, videoRevision, selectedVideoId, onSelectVideo }: Props) {
+export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoId, onSelectVideo }: Props) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [thumbSize, setThumbSize] = useState(160);
-    const [containerWidth, setContainerWidth] = useState(0);
-    const gap = 16;
-    const currentColumns = useMemo(() => {
-        return Math.max(
-            1,
-            Math.floor((containerWidth + gap) / (thumbSize + gap))
-        );
-    }, [containerWidth, thumbSize]);
 
-    const hideTitle = useMemo(() => currentColumns >= 4, [currentColumns]);
-    const hideFolder = useMemo(() => currentColumns >= 3, [currentColumns]);
+    // Hide by how much room one cell has, not by column count. The old
+    // column-count thresholds (>=4 hid the title, >=3 the folder) were tuned for
+    // the 26rem sidebar strip; in the float panel four columns is the normal
+    // wide case, so they hid every label exactly when there was room for them.
+    const hideTitle = thumbSize < 110;
+    const hideFolder = thumbSize < 150;
+
+    const unread = useMemo(() => new Set(unReadVideoIds), [unReadVideoIds]);
     const [thumbnailsCache, setThumbnailsCache] = useState<Map<string, string | undefined>>(() => new Map());
     const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-    useEffect(() => {
-        if (!containerRef.current) return;
-
-        const observer = new ResizeObserver((entries) => {
-            const rect = entries[0].contentRect;
-            setContainerWidth(rect.width);
-        });
-
-        observer.observe(containerRef.current);
-        return () => observer.disconnect();
-    }, []);
 
     useEffect(() => {
         if (!selectedVideoId) return;
@@ -77,15 +63,14 @@ export default function VideoThumbnails({ videos, videoRevision, selectedVideoId
                                 }
                             }}
                             video={video}
-                            videoRevision={videoRevision}
                             selectedVideoId={selectedVideoId}
+                            unread={unread.has(video.id)}
                             hideTitle={hideTitle}
                             hideFolder={hideFolder}
                             onSelectVideo={onSelectVideo}
                         >
                             <ThumbnailLazyLoader
                                 video={video}
-                                videoRevision={videoRevision}
                                 containerRef={containerRef}
                                 cache={thumbnailsCache}
                                 onResolve={(key, url) => {
@@ -106,7 +91,9 @@ export default function VideoThumbnails({ videos, videoRevision, selectedVideoId
                 <ZoomInIcon></ZoomInIcon>
                 <Slider
                     min={60}
-                    max={200}
+                    // The source frame is 480px wide, so past ~240 the cell is
+                    // upscaling the PNG rather than showing more of it.
+                    max={240}
                     step={10}
                     value={[thumbSize]}
                     onValueChange={(v) => {

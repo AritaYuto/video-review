@@ -57,6 +57,22 @@ test.describe("thumbnails float panel", () => {
         await expect(page.locator(PANEL)).toHaveCount(0);
     });
 
+    test("flags videos with unread comments", async ({ page }) => {
+        await login(page);
+        await page.locator(TOGGLE).click();
+        await expect(page.locator(PANEL)).toBeVisible();
+
+        // The panel reads the same unread list the tree does, so seeded videos
+        // with unread comments must be badged here too. Cards all render up
+        // front (only the thumbnail image is lazy), so the badge exists in the
+        // DOM even for rows far down the grid -- scroll one into view to make
+        // the shot show what the assertion checks.
+        const badged = page.locator(PANEL).getByText("NEW").first();
+        await expect(badged).toBeVisible();
+        await badged.scrollIntoViewIfNeeded();
+        await shoot(page, "04-unread-badge");
+    });
+
     test("does not push the player area aside", async ({ page }) => {
         await login(page);
 

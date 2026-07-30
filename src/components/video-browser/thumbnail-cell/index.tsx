@@ -1,14 +1,14 @@
-import { Video, VideoRevision, VideoWithRevision } from "@/lib/db-types";
+import { Video, VideoWithRevision } from "@/lib/db-types";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type ThumbnailCellProps = {
     video: Video;
-    videoRevision: number | undefined;
     selectedVideoId: string | undefined;
+    unread: boolean;
     hideTitle: boolean;
     hideFolder: boolean;
     children?: React.ReactNode;
@@ -17,18 +17,34 @@ type ThumbnailCellProps = {
 
 export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
     function ThumbnailCell(props, ref) {
-        const { video, videoRevision,selectedVideoId, hideTitle, hideFolder, onSelectVideo, children } = props;
+        const { video, selectedVideoId, unread, hideTitle, hideFolder, onSelectVideo, children } = props;
         const isSelected = video.id === selectedVideoId;
+        const latest = (video as VideoWithRevision).latestRevision;
+        // Cap the chips: a revision can carry many tags, and a card that reflows
+        // to three lines of tags stops being scannable.
+        const tags = latest?.tags?.slice(0, 3) ?? [];
 
         return (
             <div
                 ref={ref}
                 className={cn(
-                    "bg-[#202020] rounded-md overflow-hidden border",
-                    isSelected && "border-[#ff8800]"
+                    "relative bg-[#202020] rounded-md overflow-hidden border",
+                    isSelected ? "border-[#ff8800]" : "border-transparent"
                 )}
                 onClick={() => onSelectVideo?.(video.id)}
             >
+                {unread && (
+                    <span className="absolute top-1 left-1 z-10 text-[8px] px-1 py-[1px] bg-red-500 text-white rounded leading-none">
+                        NEW
+                    </span>
+                )}
+
+                {latest && (
+                    <span className="absolute top-1 right-1 z-10 text-[10px] px-1 py-[1px] bg-black/70 text-white rounded leading-none">
+                        v{latest.revision}
+                    </span>
+                )}
+
                 {children}
 
                 {(!hideTitle || !hideFolder) && (
@@ -38,7 +54,19 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
                         )}
                         {!hideFolder && (
                             <div className="text-xs text-[#777] truncate">
-                                {video.folderKey} {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
+                                {video.folderKey} · {formatRelative(latest?.uploadedAt)}
+                            </div>
+                        )}
+                        {!hideFolder && tags.length > 0 && (
+                            <div className="flex gap-1 mt-1 overflow-hidden">
+                                {tags.map(tag => (
+                                    <span
+                                        key={tag}
+                                        className="text-[10px] px-1 py-[1px] bg-[#333] text-[#bbb] rounded truncate"
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -50,13 +78,12 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
 
 type ThumbnailLazyLoaderProps = {
     video: Video;
-    videoRevision: number | undefined;
     containerRef: React.RefObject<HTMLDivElement | null>;
     cache: Map<string, string | undefined>;
     onResolve?: (key: string, resolveURL: string | undefined) => void;
 };
 
-export function ThumbnailLazyLoader({ video, videoRevision, containerRef, cache, onResolve }: ThumbnailLazyLoaderProps) {
+export function ThumbnailLazyLoader({ video, containerRef, cache, onResolve }: ThumbnailLazyLoaderProps) {
     const ref = useRef<HTMLDivElement | null>(null);
     const key = `thumbnails/${video.id}/thumb.png`;
     const cached = cache.get(key);
@@ -105,7 +132,9 @@ export function ThumbnailLazyLoader({ video, videoRevision, containerRef, cache,
                         {video.title}
                     </div>
                     <div className="mt-1 text-[11px] text-[#aaa]">
-                        {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
+                        {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)}
+                        {" · Rev."}
+                        {(video as VideoWithRevision).latestRevision?.revision ?? "-"}
                     </div>
                 </TooltipContent>
             </Tooltip>

@@ -10,7 +10,7 @@ import VideoThumbnails from "@/components/video-browser/video-thumbnails";
 type Props = {
     open: boolean;
     videos: Video[];
-    videoRevision: number | undefined;
+    unReadVideoIds: string[];
     selectedVideoId: string | undefined;
     onSelectVideo: (videoId: string) => void;
     onClose: () => void;
@@ -19,7 +19,7 @@ type Props = {
 export default function VideoThumbnailsPanel({
     open,
     videos,
-    videoRevision,
+    unReadVideoIds,
     selectedVideoId,
     onSelectVideo,
     onClose,
@@ -81,7 +81,7 @@ export default function VideoThumbnailsPanel({
             <div className="flex-1 min-h-0">
                 <VideoThumbnails
                     videos={videos}
-                    videoRevision={videoRevision}
+                    unReadVideoIds={unReadVideoIds}
                     selectedVideoId={selectedVideoId}
                     onSelectVideo={(id) => {
                         onSelectVideo(id);
