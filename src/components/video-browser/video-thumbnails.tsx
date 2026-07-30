@@ -1,14 +1,14 @@
 "use client";
 
-import { Separator } from "@/ui/separator";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Video } from "@/lib/db-types";
+import { useEffect, useMemo, useRef } from "react";
+import { VideoWithRevision } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { ZoomInIcon } from "lucide-react";
 import { ThumbnailCell, ThumbnailLazyLoader } from "@/components/video-browser/thumbnail-cell";
+import { useThumbnailGridStore } from "@/stores/thumbnail-grid-store";
 
 type Props = {
-    videos: Video[];
+    videos: VideoWithRevision[];
     unReadVideoIds: string[];
     selectedVideoId: string | undefined;
     onSelectVideo?: (videoId: string) => void;
@@ -16,7 +16,9 @@ type Props = {
 
 export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoId, onSelectVideo }: Props) {
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const [thumbSize, setThumbSize] = useState(160);
+    // Zoom and the resolved-URL cache live in a store: this component unmounts
+    // whenever the float panel closes.
+    const { thumbSize, setThumbSize, urls, cacheUrl } = useThumbnailGridStore();
 
     // Hide by how much room one cell has, not by column count. The old
     // column-count thresholds (>=4 hid the title, >=3 the folder) were tuned for
@@ -26,7 +28,6 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
     const hideFolder = thumbSize < 150;
 
     const unread = useMemo(() => new Set(unReadVideoIds), [unReadVideoIds]);
-    const [thumbnailsCache, setThumbnailsCache] = useState<Map<string, string | undefined>>(() => new Map());
     const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
     useEffect(() => {
@@ -72,14 +73,8 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
                             <ThumbnailLazyLoader
                                 video={video}
                                 containerRef={containerRef}
-                                cache={thumbnailsCache}
-                                onResolve={(key, url) => {
-                                    setThumbnailsCache(prev => {
-                                        const next = new Map(prev);
-                                        next.set(key, url);
-                                        return next;
-                                    });
-                                }}
+                                cache={urls}
+                                onResolve={cacheUrl}
                             />
                         </ThumbnailCell>
                     ))}
@@ -105,7 +100,6 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
                     className="w-full"
                 />
             </div>
-            <Separator className="bg-[#333]" />
         </div>
     );
 }

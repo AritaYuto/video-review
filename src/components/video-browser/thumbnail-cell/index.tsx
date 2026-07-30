@@ -1,12 +1,13 @@
-import { Video, VideoWithRevision } from "@/lib/db-types";
+import { VideoWithRevision } from "@/lib/db-types";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { cn, formatDate, formatRelative } from "@/lib/utils";
+import { useFormatter } from "next-intl";
+import { cn, formatDate } from "@/lib/utils";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type ThumbnailCellProps = {
-    video: Video;
+    video: VideoWithRevision;
     selectedVideoId: string | undefined;
     unread: boolean;
     hideTitle: boolean;
@@ -19,10 +20,16 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
     function ThumbnailCell(props, ref) {
         const { video, selectedVideoId, unread, hideTitle, hideFolder, onSelectVideo, children } = props;
         const isSelected = video.id === selectedVideoId;
-        const latest = (video as VideoWithRevision).latestRevision;
+        const latest = video.latestRevision;
+        // next-intl formats the age in the active locale; a hand-rolled
+        // "3d ago" would stay English on a Japanese UI.
+        const format = useFormatter();
         // Cap the chips: a revision can carry many tags, and a card that reflows
-        // to three lines of tags stops being scannable.
-        const tags = latest?.tags?.slice(0, 3) ?? [];
+        // to three lines of tags stops being scannable. Empty strings are real:
+        // clearing the last tag posts "", which the metadata route's
+        // `split(",")` stores as [""] -- without the filter that renders as a
+        // blank pill.
+        const tags = latest?.tags?.filter(Boolean).slice(0, 3) ?? [];
 
         return (
             <div
@@ -54,7 +61,8 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
                         )}
                         {!hideFolder && (
                             <div className="text-xs text-[#777] truncate">
-                                {video.folderKey} · {formatRelative(latest?.uploadedAt)}
+                                {video.folderKey}
+                                {latest && ` · ${format.relativeTime(new Date(latest.uploadedAt))}`}
                             </div>
                         )}
                         {!hideFolder && tags.length > 0 && (
@@ -62,7 +70,9 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
                                 {tags.map(tag => (
                                     <span
                                         key={tag}
-                                        className="text-[10px] px-1 py-[1px] bg-[#333] text-[#bbb] rounded truncate"
+                                        // min-w-0 so a long tag ellipsizes instead of
+                                        // being clipped by the row's overflow.
+                                        className="min-w-0 text-[10px] px-1 py-[1px] bg-[#333] text-[#bbb] rounded truncate"
                                     >
                                         {tag}
                                     </span>
@@ -77,7 +87,7 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
 );
 
 type ThumbnailLazyLoaderProps = {
-    video: Video;
+    video: VideoWithRevision;
     containerRef: React.RefObject<HTMLDivElement | null>;
     cache: Map<string, string | undefined>;
     onResolve?: (key: string, resolveURL: string | undefined) => void;
@@ -132,9 +142,9 @@ export function ThumbnailLazyLoader({ video, containerRef, cache, onResolve }: T
                         {video.title}
                     </div>
                     <div className="mt-1 text-[11px] text-[#aaa]">
-                        {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)}
+                        {formatDate(video.latestRevision?.uploadedAt)}
                         {" · Rev."}
-                        {(video as VideoWithRevision).latestRevision?.revision ?? "-"}
+                        {video.latestRevision?.revision ?? "-"}
                     </div>
                 </TooltipContent>
             </Tooltip>

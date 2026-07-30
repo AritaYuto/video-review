@@ -10,6 +10,7 @@ import {
     SidebarGroupContent,
     SidebarHeader,
     SidebarInput,
+    useSidebar,
 } from "@/ui/sidebar"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -27,6 +28,7 @@ export default function VideoListPanelHeader(
     thumbnailsOpen: boolean;
 }) {
     const t = useTranslations("video-list-panel");
+    const { isMobile } = useSidebar();
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
     const { filterTree, setFilterTree, isFiltering, clear } = useVideoSearchStore();
@@ -82,6 +84,9 @@ export default function VideoListPanelHeader(
                 <div className="flex items-center gap-1">
                     <button
                         data-slot="thumbnails-toggle"
+                        // The float panel cannot work under the mobile sidebar's
+                        // modal sheet, so don't offer a button that does nothing.
+                        hidden={isMobile}
                         onClick={() => onThumbnailsToggle()}
                         title={t("thumbnails")}
                         className={`
