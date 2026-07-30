@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Plus, Search } from "lucide-react";
+import { X, Plus, Search, LayoutGrid } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { isGuest, isViewer } from "@/lib/role";
@@ -20,7 +20,12 @@ import CalendarDateRadio from "@/ui/calendar-date-radio";
 import { Separator } from "../ui/separator";
 
 export default function VideoListPanelHeader(
-{ onSearchDialogShow, onUploadDialogShow }: { onSearchDialogShow: () => void; onUploadDialogShow: () => void;}) {
+{ onSearchDialogShow, onUploadDialogShow, onThumbnailsToggle, thumbnailsOpen }: {
+    onSearchDialogShow: () => void;
+    onUploadDialogShow: () => void;
+    onThumbnailsToggle: () => void;
+    thumbnailsOpen: boolean;
+}) {
     const t = useTranslations("video-list-panel");
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
@@ -74,13 +79,28 @@ export default function VideoListPanelHeader(
                     }
                 </div>
 
-                <button
-                    hidden={isGuest(role)}
-                    onClick={() => onUploadDialogShow()}
-                    className="text-lg leading-none hover:text-[#fbba5e]"
-                >
-                    <Plus />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        data-slot="thumbnails-toggle"
+                        onClick={() => onThumbnailsToggle()}
+                        title={t("thumbnails")}
+                        className={`
+                            inline-flex items-center justify-center
+                            leading-none hover:text-[#ff5500]
+                            ${thumbnailsOpen ? "text-[#15fa34ff]" : ""}
+                        `}
+                    >
+                        <LayoutGrid className="size-5" />
+                    </button>
+
+                    <button
+                        hidden={isGuest(role)}
+                        onClick={() => onUploadDialogShow()}
+                        className="text-lg leading-none hover:text-[#fbba5e]"
+                    >
+                        <Plus />
+                    </button>
+                </div>
             </div>
             <Separator className="bg-[#333]" />
 

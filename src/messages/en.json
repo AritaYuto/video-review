@@ -51,7 +51,8 @@
         "noVideoSelected": "Please select a video"
     },
     "video-list-panel": {
-        "title": "Video list"
+        "title": "Video list",
+        "thumbnails": "Thumbnails"
     },
     "video-control-panel": {
         "normal": "Normal",

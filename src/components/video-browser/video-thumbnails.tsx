@@ -58,8 +58,8 @@ export default function VideoThumbnails({ videos, videoRevision, selectedVideoId
     return (
         <div
             ref={containerRef}
-            style={{ height: "calc(100% - 50px)", scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="font-sans text-white bg-[#181818] w-full h-full flex flex-col border-r border-[#333]"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
+            className="font-sans text-white bg-[#181818] w-full h-full flex flex-col"
         >
             {/* Grid */}
             <div className="flex-1 overflow-auto p-3">

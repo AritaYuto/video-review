@@ -3,12 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar, SidebarContent, SidebarFooter } from "@/ui/sidebar"
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/ui/resizable"
 import { SettingPopover } from "@/components/setting";
 import VideoUploadDialog from "@/components/dialog/video-upload";
 import VideoListPanelHeader from "@/components/video-browser/header";
 import { VideoSearchDialog } from "@/components/dialog/video-search";
-import VideoThumbnails from "@/components/video-browser/video-thumbnails";
+import VideoThumbnailsPanel from "@/components/video-browser/video-thumbnails-panel";
 import VideoFoldersTree from "@/components/video-browser/video-folders-tree";
 import { useVideoStore } from "@/stores/video-store";
 import { useAuthStore } from "@/stores/auth-store";
@@ -20,6 +19,7 @@ export default function VideoListPanel() {
     const { videos, fetchVideos, selectedVideo, selectedRevision } = useVideoStore();
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [thumbnailsOpen, setThumbnailsOpen] = useState(false);
     const [unReadVideoIds, setUnReadVideoIds] = useState<string[]>([]);
 
     useEffect(() => {
@@ -49,48 +49,50 @@ export default function VideoListPanel() {
     }, [userId]);
 
     return (
-        <Sidebar
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="bg-[#181818] border-[#333] "
-        >
-            <VideoListPanelHeader
-                onSearchDialogShow={() => setSearchDialogOpen(true)}
-                onUploadDialogShow={() => setUploadDialogOpen(true)}
-            />
+        <>
+            <Sidebar
+                style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
+                className="bg-[#181818] border-[#333] "
+            >
+                <VideoListPanelHeader
+                    onSearchDialogShow={() => setSearchDialogOpen(true)}
+                    onUploadDialogShow={() => setUploadDialogOpen(true)}
+                    onThumbnailsToggle={() => setThumbnailsOpen((open) => !open)}
+                    thumbnailsOpen={thumbnailsOpen}
+                />
 
-            <SidebarContent className="font-sans text-white bg-[#181818] border-[#333]">
-                <ResizablePanelGroup
-                    direction="vertical"
-                    className="max-w-md rounded-lg "
-                >
-                    <ResizablePanel minSize={30}>
-                        <VideoFoldersTree
-                            videos={videos}
-                            unReadVideoIds={unReadVideoIds}
-                            selectedVideoId={selectedVideo?.id ?? null}
-                            onSelectVideo={(id) => {
-                                router.replace(`/video-review/review/${id}`);
-                            }}
-                        />
-                    </ResizablePanel>
-                    <ResizableHandle className="bg-[#333]" />
-                    <ResizablePanel minSize={40} defaultSize={40}>
-                        <VideoThumbnails videos={videos} videoRevision={selectedRevision?.revision} selectedVideoId={selectedVideo?.id} onSelectVideo={(id) => {
+                <SidebarContent className="font-sans text-white bg-[#181818] border-[#333]">
+                    <VideoFoldersTree
+                        videos={videos}
+                        unReadVideoIds={unReadVideoIds}
+                        selectedVideoId={selectedVideo?.id ?? null}
+                        onSelectVideo={(id) => {
                             router.replace(`/video-review/review/${id}`);
-                        }} />
-                    </ResizablePanel>
-                </ResizablePanelGroup>
-            </SidebarContent>
+                        }}
+                    />
+                </SidebarContent>
 
-            <SidebarFooter className="bg-[#181818] border-[#333]">
-                <SettingPopover />
-            </SidebarFooter>
+                <SidebarFooter className="bg-[#181818] border-[#333]">
+                    <SettingPopover />
+                </SidebarFooter>
 
-            <VideoSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
-            <VideoUploadDialog open={uploadDialogOpen} onClose={() => {
-                fetchVideos();
-                setUploadDialogOpen(false);
-            }} />
-        </Sidebar>
+                <VideoSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
+                <VideoUploadDialog open={uploadDialogOpen} onClose={() => {
+                    fetchVideos();
+                    setUploadDialogOpen(false);
+                }} />
+            </Sidebar>
+
+            <VideoThumbnailsPanel
+                open={thumbnailsOpen}
+                videos={videos}
+                videoRevision={selectedRevision?.revision}
+                selectedVideoId={selectedVideo?.id}
+                onSelectVideo={(id) => {
+                    router.replace(`/video-review/review/${id}`);
+                }}
+                onClose={() => setThumbnailsOpen(false)}
+            />
+        </>
     );
 }
