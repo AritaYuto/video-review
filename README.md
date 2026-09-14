@@ -29,18 +29,6 @@
     </a>
   </p>
 </div>
-
-<hr/>
-
-<h3>🔎 Online Demo</h3>
-<p>
-  Try the online demo here (no installation required) →
-  <a href="https://demo-video-review.d16slh4aq95cwn.amplifyapp.com/"
-     target="_blank" rel="noopener noreferrer"
-     style="font-weight: 600;">
-    View Online Demo!
-  </a>
-</p>
 <hr/>
 
 <!-- One-liner + bullets -->
