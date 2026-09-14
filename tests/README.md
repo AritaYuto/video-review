@@ -21,6 +21,7 @@ This document describes the test implementation rules and execution steps for `v
 - All tests: `npm test`
 - Server tests: `npm run test:hono`
 - Single file: `npm run test:hono -- tests/server/routes/videos/list.test.ts`
+- E2E tests: `npm run test:e2e`
 
 ## DB-Dependent Tests
 - Run DB-dependent tests through `run-test.ts`
@@ -29,6 +30,13 @@ This document describes the test implementation rules and execution steps for `v
 - Create only minimal fixture data inside each test
 - Always clean up created data in `afterAll`
 - Respect foreign key order during cleanup
+
+## End-to-End Tests
+- Run: `npm run test:e2e` (install the browser once with `npm run test:e2e:install`)
+- Specs live in `tests/e2e/`, orchestrated by `run-e2e.ts`
+- Playwright runs twice: `@bootstrap` specs against an unseeded database, the rest against the seeded one
+- Each pass gets its own server: the secret cache in `src/server/lib/token.ts` is process-wide
+- Tag a spec `@bootstrap` in its `describe` title if it needs an empty database
 
 ## Test Writing Policy
 - Keep one responsibility per test
