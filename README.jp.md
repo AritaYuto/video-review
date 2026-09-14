@@ -17,8 +17,8 @@
   </p>
 
   <p align="center">
-    <a href="https://github.com/KirisameMarisa/video-review/stargazers">
-      <img src="https://img.shields.io/github/stars/KirisameMarisa/video-review?style=social" alt="GitHub stars" />
+    <a href="https://github.com/arita-yuto/video-review/stargazers">
+      <img src="https://img.shields.io/github/stars/arita-yuto/video-review?style=social" alt="GitHub stars" />
     </a>
     &nbsp;&nbsp;
     <a href="./LICENSE">
