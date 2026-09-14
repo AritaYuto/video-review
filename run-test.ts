@@ -18,7 +18,8 @@ async function main() {
     console.log(`Running tests for target: ${testTarget}`);
 
     run("npx prisma migrate reset --force --skip-seed --skip-generate");
-    run("npx prisma generate --generator client");
+    // Not just --generator client: tests import the gitignored src/schema zod output.
+    run("npm run prisma:generate");
     run("npm run prisma:seed");
     run(`npx vitest run ${testTarget}`);
 }
