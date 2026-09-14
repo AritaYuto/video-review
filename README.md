@@ -206,6 +206,13 @@ docker compose -f compose.prod.yml up -d videoreview -d video-processing
 - API Documentation (Swagger)  
   http://localhost:3489/api/docs
 
+### First Launch
+
+VideoReview has no web-based admin console.
+On first access the Web UI asks you to register an administrator, and everything after that runs through the maintenance CLI.
+
+See the [Admin Guide](./documents/admin-guide.md) for the setup steps and for how to issue an API token.
+
 ---
 
 ## 📘 More Setup Options
@@ -214,6 +221,7 @@ For detailed instructions, see:
 * 🐳 [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.md)
 * 💻 [Local / On‑premise Build Guide](./documents/build.run/local-guide.md)
 * 🤖 [AI & Advanced Build Guide](./documents/build.run/ai-guide.md)
+* 🛠 [Admin Guide (initial setup / API token)](./documents/admin-guide.md)
 
 ## 📄 License
 
