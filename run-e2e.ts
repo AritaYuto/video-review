@@ -23,6 +23,9 @@ async function main() {
     run("npx prisma generate --generator client");
     run("npm run prisma:seed");
 
+    // Not just --generator client: next build imports the gitignored src/schema zod output.
+    run("npm run prisma:generate");
+
     console.log("[e2e] building app (next build)...");
     run("npx next build");
 
