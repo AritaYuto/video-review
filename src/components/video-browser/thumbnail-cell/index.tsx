@@ -1,114 +1,68 @@
-import { Video, VideoRevision, VideoWithRevision } from "@/lib/db-types";
-import { forwardRef, useEffect, useRef, useState } from "react";
-import { cn, formatDate } from "@/lib/utils";
-import { fetchMediaUrl } from "@/lib/fetch-wrapper";
-import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { forwardRef } from "react";
+import { VideoWithRevision } from "@/lib/db-types";
+import { cn } from "@/lib/utils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { ThumbnailDetailCard } from "@/components/video-browser/thumbnail-cell/detail-card";
 
-type ThumbnailCellProps = {
-    video: Video;
-    videoRevision: number | undefined;
+type Props = {
+    video: VideoWithRevision;
     selectedVideoId: string | undefined;
-    hideTitle: boolean;
-    hideFolder: boolean;
+    unread: boolean;
+    /** Resolved by the lazy loader; reused by the hover card. */
+    thumbnailUrl: string | undefined;
     children?: React.ReactNode;
     onSelectVideo?: (videoId: string) => void;
 };
 
-export const ThumbnailCell = forwardRef<HTMLDivElement, ThumbnailCellProps>(
-    function ThumbnailCell(props, ref) {
-        const { video, videoRevision,selectedVideoId, hideTitle, hideFolder, onSelectVideo, children } = props;
+/** Picture-only grid cell; hovering it opens the detail card beside it. */
+export const ThumbnailCell = forwardRef<HTMLDivElement, Props>(
+    function ThumbnailCell({ video, selectedVideoId, unread, thumbnailUrl, onSelectVideo, children }, ref) {
         const isSelected = video.id === selectedVideoId;
+        const select = () => onSelectVideo?.(video.id);
 
         return (
-            <div
-                ref={ref}
-                className={cn(
-                    "bg-[#202020] rounded-md overflow-hidden border",
-                    isSelected && "border-[#ff8800]"
-                )}
-                onClick={() => onSelectVideo?.(video.id)}
-            >
-                {children}
-
-                {(!hideTitle || !hideFolder) && (
-                    <div className="p-2">
-                        {!hideTitle && (
-                            <div className="text-xs truncate">{video.title}</div>
+            <HoverCard openDelay={300} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                    <div
+                        ref={ref}
+                        data-slot="thumbnail-card"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={video.title}
+                        className={cn(
+                            "relative rounded-sm overflow-hidden ring-1 cursor-pointer transition-[box-shadow]",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#888]",
+                            isSelected ? "ring-2 ring-[#ff8800]" : "ring-[#2a2a2a] hover:ring-[#888]"
                         )}
-                        {!hideFolder && (
-                            <div className="text-xs text-[#777] truncate">
-                                {video.folderKey} {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
-                            </div>
+                        onClick={select}
+                        // HoverCardTrigger preventDefaults touchstart, which cancels the synthesized click.
+                        onPointerUp={(e) => { if (e.pointerType === "touch") select(); }}
+                        onKeyDown={(e) => {
+                            if (e.key !== "Enter" && e.key !== " ") return;
+                            e.preventDefault();
+                            select();
+                        }}
+                    >
+                        {unread && (
+                            <span className="absolute top-1 left-1 z-10 text-[8px] px-1 py-[1px] bg-red-500 text-white rounded leading-none">
+                                NEW
+                            </span>
                         )}
+                        {children}
                     </div>
-                )}
-            </div>
+                </HoverCardTrigger>
+
+                <HoverCardContent
+                    data-slot="thumbnail-detail"
+                    side="right"
+                    sideOffset={8}
+                    collisionPadding={12}
+                    onClick={select}
+                    className="w-[34rem] max-w-[calc(100vw-2rem)] flex gap-3 p-3 bg-[#202020] border-[#555] font-sans text-white cursor-pointer"
+                >
+                    <ThumbnailDetailCard video={video} thumbnailUrl={thumbnailUrl} />
+                </HoverCardContent>
+            </HoverCard>
         );
     }
 );
-
-type ThumbnailLazyLoaderProps = {
-    video: Video;
-    videoRevision: number | undefined;
-    containerRef: React.RefObject<HTMLDivElement | null>;
-    cache: Map<string, string | undefined>;
-    onResolve?: (key: string, resolveURL: string | undefined) => void;
-};
-
-export function ThumbnailLazyLoader({ video, videoRevision, containerRef, cache, onResolve }: ThumbnailLazyLoaderProps) {
-    const ref = useRef<HTMLDivElement | null>(null);
-    const key = `thumbnails/${video.id}/thumb.png`;
-    const cached = cache.get(key);
-    const [isResolving, setIsResolving] = useState(false);
-
-    useEffect(() => {
-        if (!ref.current || cached !== undefined) return;
-
-        const observer = new IntersectionObserver(
-            entries => {
-                if (!entries[0].isIntersecting) return;
-
-                setIsResolving(true);
-                fetchMediaUrl(key)
-                    .then(ret => onResolve?.(key, ret.ok ? ret.data : undefined))
-                    .finally(() => {
-                        setIsResolving(false);
-                        observer.disconnect();
-                    });
-            },
-            { root: containerRef.current, rootMargin: "200px" }
-        );
-
-        observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, [cached, key]);
-
-    return (
-        <div ref={ref} className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    {cached ? (
-                        <img src={cached} className="w-full h-full object-cover" />
-                    ) : isResolving ? (
-                        <div className="flex items-center justify-center w-full h-full">
-                            <Spinner />
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
-                            thumbnail
-                        </div>
-                    )}
-                </TooltipTrigger>
-                <TooltipContent className="max-w-65">
-                    <div className="text-xs font-medium leading-tight">
-                        {video.title}
-                    </div>
-                    <div className="mt-1 text-[11px] text-[#aaa]">
-                        {formatDate((video as VideoWithRevision).latestRevision?.uploadedAt)} · Rev.{videoRevision}
-                    </div>
-                </TooltipContent>
-            </Tooltip>
-        </div>
-    );
-}

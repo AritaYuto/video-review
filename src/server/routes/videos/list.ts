@@ -130,6 +130,7 @@ listRouter.openapi({
                         revision: true,
                         uploadedAt: true,
                         tags: true,
+                        filePath: true,
                     },
                 },
                 ...(includeRevisions ? {

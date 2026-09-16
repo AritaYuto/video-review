@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Plus, Search } from "lucide-react";
+import { X, Plus, Search, LayoutGrid } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { isGuest, isViewer } from "@/lib/role";
@@ -10,6 +10,7 @@ import {
     SidebarGroupContent,
     SidebarHeader,
     SidebarInput,
+    useSidebar,
 } from "@/ui/sidebar"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -20,8 +21,14 @@ import CalendarDateRadio from "@/ui/calendar-date-radio";
 import { Separator } from "../ui/separator";
 
 export default function VideoListPanelHeader(
-{ onSearchDialogShow, onUploadDialogShow }: { onSearchDialogShow: () => void; onUploadDialogShow: () => void;}) {
+{ onSearchDialogShow, onUploadDialogShow, onThumbnailsToggle, thumbnailsOpen }: {
+    onSearchDialogShow: () => void;
+    onUploadDialogShow: () => void;
+    onThumbnailsToggle: () => void;
+    thumbnailsOpen: boolean;
+}) {
     const t = useTranslations("video-list-panel");
+    const { isMobile } = useSidebar();
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
     const { filterTree, setFilterTree, isFiltering, clear } = useVideoSearchStore();
@@ -74,13 +81,30 @@ export default function VideoListPanelHeader(
                     }
                 </div>
 
-                <button
-                    hidden={isGuest(role)}
-                    onClick={() => onUploadDialogShow()}
-                    className="text-lg leading-none hover:text-[#fbba5e]"
-                >
-                    <Plus />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        data-slot="thumbnails-toggle"
+                        // The panel does not render under the mobile sidebar sheet.
+                        hidden={isMobile}
+                        onClick={() => onThumbnailsToggle()}
+                        title={t("thumbnails")}
+                        className={`
+                            inline-flex items-center justify-center
+                            leading-none hover:text-[#ff5500]
+                            ${thumbnailsOpen ? "text-[#15fa34ff]" : ""}
+                        `}
+                    >
+                        <LayoutGrid className="size-5" />
+                    </button>
+
+                    <button
+                        hidden={isGuest(role)}
+                        onClick={() => onUploadDialogShow()}
+                        className="text-lg leading-none hover:text-[#fbba5e]"
+                    >
+                        <Plus />
+                    </button>
+                </div>
             </div>
             <Separator className="bg-[#333]" />
 
