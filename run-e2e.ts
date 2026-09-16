@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import fs from "node:fs";
 
 function run(cmd: string): void {
     execSync(cmd, {
@@ -25,6 +26,11 @@ async function main() {
     }
 
     const target = process.argv[2];
+
+    // The local storage driver falls back to ./uploads when the root is missing at startup.
+    if (process.env.VIDEO_REVIEW_LOCAL_ROOTDIR) {
+        fs.mkdirSync(process.env.VIDEO_REVIEW_LOCAL_ROOTDIR, { recursive: true });
+    }
 
     // Not just --generator client: next build imports the gitignored src/schema zod output.
     console.log("[e2e] generating prisma artifacts...");

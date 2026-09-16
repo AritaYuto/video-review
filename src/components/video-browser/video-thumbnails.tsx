@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { VideoWithRevision } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { ZoomInIcon } from "lucide-react";
-import { ThumbnailCell, ThumbnailLazyLoader, thumbnailKey } from "@/components/video-browser/thumbnail-cell";
+import { ThumbnailCell } from "@/components/video-browser/thumbnail-cell";
+import { ThumbnailLazyLoader, thumbnailKey } from "@/components/video-browser/thumbnail-cell/lazy-loader";
 import { useThumbnailGridStore } from "@/stores/thumbnail-grid-store";
 
 type Props = {

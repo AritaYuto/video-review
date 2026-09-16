@@ -15,7 +15,7 @@ export { Prisma as PrismaTypes } from "@prisma/client";
 
 import { Video, VideoRevision, VideoEvent, VideoEventKind } from "@prisma/client";
 export type VideoWithRevision = Video & {
-  latestRevision: Pick<VideoRevision, "revision" | "uploadedAt" | "tags"> | null;
+  latestRevision: Pick<VideoRevision, "revision" | "uploadedAt" | "tags" | "filePath"> | null;
 };
 
 export type VideoEventLink = { label?: string; url: string };

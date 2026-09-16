@@ -87,11 +87,12 @@ describe("videos listRouter (DB)", () => {
         );
         expect(res.status).toBe(200);
 
-        const body = await res.json() as Array<{ title: string; deleted: boolean }>;
+        const body = await res.json() as Array<{ title: string; deleted: boolean; latestRevision: { filePath?: string } | null }>;
         const titles = body.map((x) => x.title);
 
         expect(titles).toContain(visibleTitle);
         expect(titles).not.toContain(hiddenTitle);
+        expect(body.find((x) => x.title === visibleTitle)?.latestRevision?.filePath).toBeTruthy();
     });
 
     it("filters by latestRevision tags", async () => {

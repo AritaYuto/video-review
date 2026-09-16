@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
 
 // Seeded admin user (see prisma/seed.ts).
 const USER = { email: "Bocchi@example.com", password: "pass123" };
@@ -7,6 +9,14 @@ const PANEL = '[data-slot="thumbnails-panel"]';
 const TOGGLE = '[data-slot="thumbnails-toggle"]';
 
 const SHOTS = "tests/test-results/screenshots";
+
+// Every seeded revision points at videos/demo/rev_001.mp4 (prisma/seed.ts). The preview
+// width is inlined at build time from NEXT_PUBLIC_VIDEO_REVIEW_RESOLUTION_PRESETS, so the
+// spec needs the same value in .env.test.
+const PRESETS = (process.env.NEXT_PUBLIC_VIDEO_REVIEW_RESOLUTION_PRESETS ?? "").split(",").map(Number).filter(w => w > 0);
+const VARIANT_KEY = PRESETS.length > 0 ? `videos/demo/rev_001_${Math.min(...PRESETS)}p.mp4` : undefined;
+const LOCAL_ROOT = process.env.VIDEO_REVIEW_STORAGE === "local" ? process.env.VIDEO_REVIEW_LOCAL_ROOTDIR : undefined;
+const VARIANT_PATH = VARIANT_KEY && LOCAL_ROOT ? path.join(LOCAL_ROOT, VARIANT_KEY) : undefined;
 
 async function shoot(page: import("@playwright/test").Page, name: string) {
     // Cells load lazily; wait so the shot is not empty.
@@ -26,6 +36,9 @@ async function login(page: import("@playwright/test").Page) {
 }
 
 test.describe("thumbnails float panel", () => {
+    // A run killed before afterAll would leave the variant behind and break the fallback test.
+    test.beforeAll(() => { if (VARIANT_PATH) fs.rmSync(VARIANT_PATH, { force: true }); });
+
     test("is closed until the header button opens it", async ({ page }) => {
         await login(page);
 
@@ -122,6 +135,9 @@ test.describe("thumbnails float panel", () => {
         await expect(card).not.toContainText(title);
         await shoot(page, "05-shelf-at-rest");
 
+        const variantResolved = VARIANT_KEY
+            ? page.waitForResponse(r => r.url().includes(encodeURI(VARIANT_KEY)))
+            : undefined;
         await card.hover();
         const detail = page.locator('[data-slot="thumbnail-detail"]');
         await expect(detail).toBeVisible();
@@ -131,6 +147,9 @@ test.describe("thumbnails float panel", () => {
         const cardBox = await card.boundingBox();
         const detailBox = await detail.boundingBox();
         expect(detailBox!.x).toBeGreaterThanOrEqual(cardBox!.x + cardBox!.width);
+        // The seed has no media files, so the preview falls back to the still image.
+        if (variantResolved) expect((await variantResolved).status()).toBe(404);
+        await expect(detail.locator('[data-slot="thumbnail-preview"]')).toHaveCount(0);
         await shoot(page, "06-detail-card-on-hover");
 
         // Escape goes to the hover card, not the panel.
@@ -159,6 +178,34 @@ test.describe("thumbnails float panel", () => {
             await card.tap();
             await expect(page.locator(PANEL)).toHaveCount(0);
             await expect(page.getByRole("heading", { level: 2 })).toContainText(title);
+        });
+    });
+
+    test.describe("with a preview variant in storage", () => {
+        test.skip(!VARIANT_PATH, "needs local storage and NEXT_PUBLIC_VIDEO_REVIEW_RESOLUTION_PRESETS in .env.test");
+
+        test.beforeAll(() => {
+            fs.mkdirSync(path.dirname(VARIANT_PATH!), { recursive: true });
+            // 3 s fade to orange, 64x36, VP9 (Playwright's Chromium has no H.264):
+            // ffmpeg -f lavfi -i "color=c=#ff8800:s=64x36:r=10:d=3,fade=t=in:st=0:d=3" -pix_fmt yuv420p -c:v libvpx-vp9 -b:v 50k -movflags frag_keyframe+empty_moov -f mp4 preview.mp4
+            fs.copyFileSync(path.join(import.meta.dirname, "fixtures", "preview.mp4"), VARIANT_PATH!);
+        });
+        test.afterAll(() => fs.rmSync(VARIANT_PATH!, { force: true }));
+
+        test("plays a muted preview in the detail card and shows the duration", async ({ page }) => {
+            await login(page);
+            await page.locator(TOGGLE).click();
+            await expect(page.locator(PANEL)).toBeVisible();
+            await page.locator(`${PANEL} [data-slot="thumbnail-card"]`).first().hover();
+
+            const preview = page.locator('[data-slot="thumbnail-preview"]');
+            await expect(preview).toBeVisible();
+            await expect.poll(() => preview.evaluate((v: HTMLVideoElement) => v.currentTime)).toBeGreaterThan(0);
+            expect(await preview.evaluate((v: HTMLVideoElement) => v.muted)).toBe(true);
+            expect(await preview.evaluate((v: HTMLVideoElement) => v.loop)).toBe(true);
+            expect(await preview.evaluate((v: HTMLVideoElement) => v.paused)).toBe(false);
+            await expect(page.locator('[data-slot="thumbnail-duration"]')).toHaveText("00:03");
+            await shoot(page, "07-detail-card-preview-playing");
         });
     });
 
