@@ -20,6 +20,16 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
     const { thumbSize, setThumbSize, urls, cacheUrl } = useThumbnailGridStore();
 
     const unread = useMemo(() => new Set(unReadVideoIds), [unReadVideoIds]);
+    // One section per folder, in the list's (folderKey-sorted) order.
+    const groups = useMemo(() => {
+        const byFolder = new Map<string, VideoWithRevision[]>();
+        for (const video of videos) {
+            let group = byFolder.get(video.folderKey);
+            if (!group) byFolder.set(video.folderKey, group = []);
+            group.push(video);
+        }
+        return [...byFolder.entries()];
+    }, [videos]);
     const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
     useEffect(() => {
@@ -41,35 +51,47 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
             className="font-sans text-white bg-[#181818] w-full h-full flex flex-col"
         >
             {/* Grid */}
-            <div className="flex-1 overflow-auto p-3">
-                <div className="grid gap-1.5" style={{
-                    gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
-                }}>
-                    {videos.map(video => (
-                        <ThumbnailCell
-                            key={video.id}
-                            ref={el => {
-                                if (el) {
-                                    itemRefs.current.set(video.id, el);
-                                } else {
-                                    itemRefs.current.delete(video.id);
-                                }
-                            }}
-                            video={video}
-                            selectedVideoId={selectedVideoId}
-                            unread={unread.has(video.id)}
-                            thumbnailUrl={urls.get(thumbnailKey(video.id))}
-                            onSelectVideo={onSelectVideo}
+            <div className="flex-1 overflow-auto px-3 pb-3">
+                {groups.map(([folderKey, folderVideos]) => (
+                    <section key={folderKey} data-slot="thumbnail-group" className="pt-3">
+                        <h3
+                            data-slot="thumbnail-group-title"
+                            // Above the cells' NEW badge (z-10) so it does not bleed through the pinned heading.
+                            className="sticky top-0 z-20 flex items-baseline gap-2 py-1.5 mb-1.5 bg-[#181818] border-b border-[#333] text-xs font-semibold text-[#ff8800]"
                         >
-                            <ThumbnailLazyLoader
-                                video={video}
-                                containerRef={containerRef}
-                                cache={urls}
-                                onResolve={cacheUrl}
-                            />
-                        </ThumbnailCell>
-                    ))}
-                </div>
+                            <span className="truncate">{folderKey || "/"}</span>
+                            <span className="font-normal text-[#777]">{folderVideos.length}</span>
+                        </h3>
+                        <div className="grid gap-1.5" style={{
+                            gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
+                        }}>
+                            {folderVideos.map(video => (
+                                <ThumbnailCell
+                                    key={video.id}
+                                    ref={el => {
+                                        if (el) {
+                                            itemRefs.current.set(video.id, el);
+                                        } else {
+                                            itemRefs.current.delete(video.id);
+                                        }
+                                    }}
+                                    video={video}
+                                    selectedVideoId={selectedVideoId}
+                                    unread={unread.has(video.id)}
+                                    thumbnailUrl={urls.get(thumbnailKey(video.id))}
+                                    onSelectVideo={onSelectVideo}
+                                >
+                                    <ThumbnailLazyLoader
+                                        video={video}
+                                        containerRef={containerRef}
+                                        cache={urls}
+                                        onResolve={cacheUrl}
+                                    />
+                                </ThumbnailCell>
+                            ))}
+                        </div>
+                    </section>
+                ))}
             </div>
 
             {/* Slider */}

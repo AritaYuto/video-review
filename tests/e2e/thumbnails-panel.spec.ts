@@ -124,6 +124,32 @@ test.describe("thumbnails float panel", () => {
         await shoot(page, "04-unread-badge");
     });
 
+    test("groups cells by folder and follows the list filter", async ({ page }) => {
+        await login(page);
+        await page.locator(TOGGLE).click();
+        await expect(page.locator(PANEL)).toBeVisible();
+
+        const titles = page.locator(`${PANEL} [data-slot="thumbnail-group-title"]`);
+        await expect(titles.first()).toContainText("01_prototype");
+        expect(await titles.count()).toBeGreaterThan(1);
+        // Each heading's count matches the cards under it.
+        for (const group of await page.locator(`${PANEL} [data-slot="thumbnail-group"]`).all()) {
+            const shown = Number((await group.locator('[data-slot="thumbnail-group-title"]').innerText()).trim().split(/\s+/).pop());
+            expect(await group.locator('[data-slot="thumbnail-card"]').count()).toBe(shown);
+        }
+        await shoot(page, "08-grouped-by-folder");
+
+        // The panel shows the same list the tree does, so the text filter narrows both.
+        // The seed has exactly #010-#019 and no deleted rows in this batch.
+        await page.getByPlaceholder("Filter video...").fill("Archived Playtest #01");
+        const cards = page.locator(`${PANEL} [data-slot="thumbnail-card"]`);
+        await expect(cards).toHaveCount(10);
+        for (const label of await cards.evaluateAll(els => els.map(el => el.getAttribute("aria-label")))) {
+            expect(label).toMatch(/Archived Playtest #01\d/);
+        }
+        await shoot(page, "09-grouped-and-filtered");
+    });
+
     test("keeps the shelf to pictures and opens the detail card on hover", async ({ page }) => {
         await login(page);
         await page.locator(TOGGLE).click();
