@@ -6,6 +6,8 @@ services:
         context: ./
         dockerfile: ./docker/web/Dockerfile
     container_name: videoreview-web
+    # Run as the host user so files generated into the bind mount stay writable on the host.
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "3489:3489"
     environment:
