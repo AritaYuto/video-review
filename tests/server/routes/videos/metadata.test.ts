@@ -102,7 +102,7 @@ describe("videos metadataRouter (DB)", () => {
     });
 
     it("returns 404 when revision is not found", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const res = await app.request(`http://localhost/videos/${randomUUID()}/metadata/upload`, {
             method: "PUT",
@@ -117,7 +117,9 @@ describe("videos metadataRouter (DB)", () => {
     });
 
     it("upserts event kind and replaces events for the same kind", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize)
+            .mockResolvedValueOnce({ type: "api-token", role: "admin" })
+            .mockResolvedValueOnce({ type: "api-token", role: "admin" });
         const kind = `meta-kind-${randomUUID().slice(0, 8)}`;
         createdKindLabels.push(kind);
 
@@ -168,7 +170,7 @@ describe("videos metadataRouter (DB)", () => {
     });
 
     it("inserts events with multiple kinds in a single request", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
         const kindA = `meta-kind-a-${randomUUID().slice(0, 8)}`;
         const kindB = `meta-kind-b-${randomUUID().slice(0, 8)}`;
         createdKindLabels.push(kindA, kindB);

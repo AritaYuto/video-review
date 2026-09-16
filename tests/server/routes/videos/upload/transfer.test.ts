@@ -49,7 +49,7 @@ describe("videos upload transferRouter", () => {
     });
 
     it("returns 400 when session_id is missing", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const res = await transferRouter.request("http://localhost/", {
             method: "PUT",
@@ -59,7 +59,7 @@ describe("videos upload transferRouter", () => {
     });
 
     it("returns 400 when session does not exist", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
         mocks.getSession.mockResolvedValueOnce(null);
 
         const res = await transferRouter.request("http://localhost/?session_id=s2", {
@@ -71,7 +71,7 @@ describe("videos upload transferRouter", () => {
     });
 
     it("uploads multipart payload to storage key from session", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
         mocks.directUploadFromFile.mockResolvedValueOnce(undefined);
         mocks.findFirst.mockResolvedValueOnce(null);
 
