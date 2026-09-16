@@ -79,7 +79,7 @@ describe("videos upload initRouter (DB)", () => {
     });
 
     it("returns 400 when required multipart fields are missing", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const { body, contentType } = multipartBody({
             title: "missing-folder-key",
@@ -96,7 +96,7 @@ describe("videos upload initRouter (DB)", () => {
     });
 
     it("creates draft video and returns upload URL for new title/folder", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const title = `init-title-${randomUUID().slice(0, 8)}`;
         const folderKey = `init-folder-${randomUUID().slice(0, 8)}`;
@@ -171,7 +171,7 @@ describe("videos upload initRouter (DB)", () => {
     });
 
     it("passes vcsWatchPaths from multipart field to createSession", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const title = `init-title-${randomUUID().slice(0, 8)}`;
         const folderKey = `init-folder-${randomUUID().slice(0, 8)}`;

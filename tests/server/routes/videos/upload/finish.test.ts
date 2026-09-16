@@ -83,7 +83,7 @@ describe("videos upload finishRouter (DB)", () => {
     });
 
     it("returns 400 when session_id is missing", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const res = await finishRouter.request("http://localhost/", {
             method: "POST",
@@ -94,7 +94,7 @@ describe("videos upload finishRouter (DB)", () => {
     });
 
     it("returns 400 when upload session does not exist", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const res = await finishRouter.request(`http://localhost/?session_id=${randomUUID()}`, {
             method: "POST",
@@ -105,7 +105,7 @@ describe("videos upload finishRouter (DB)", () => {
     });
 
     it("creates revision, publishes video, and deletes upload session", async () => {
-        vi.mocked(authorize).mockResolvedValueOnce(undefined);
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
 
         const title = `Upload Finish ${randomUUID().slice(0, 8)}`;
         const folderKey = `upload-tests-${randomUUID().slice(0, 8)}`;
