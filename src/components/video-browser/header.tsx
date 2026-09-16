@@ -84,8 +84,7 @@ export default function VideoListPanelHeader(
                 <div className="flex items-center gap-1">
                     <button
                         data-slot="thumbnails-toggle"
-                        // The float panel cannot work under the mobile sidebar's
-                        // modal sheet, so don't offer a button that does nothing.
+                        // The panel does not render under the mobile sidebar sheet.
                         hidden={isMobile}
                         onClick={() => onThumbnailsToggle()}
                         title={t("thumbnails")}

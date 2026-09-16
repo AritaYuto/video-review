@@ -7,8 +7,7 @@ import { VideoWithRevision } from "@/lib/db-types";
 import { useSidebar } from "@/ui/sidebar";
 import VideoThumbnails from "@/components/video-browser/video-thumbnails";
 
-// Any Radix layer that owns Escape while it is open. Dialogs expose role="dialog";
-// popovers, dropdowns and selects all render inside the popper wrapper.
+// Radix layers that own Escape while open: dialogs, and anything in the popper wrapper.
 const OTHER_LAYERS = '[role="dialog"], [data-radix-popper-content-wrapper]';
 
 type Props = {
@@ -30,8 +29,7 @@ export default function VideoThumbnailsPanel({
 }: Props) {
     const panelRef = useRef<HTMLDivElement>(null);
     const { state, isMobile } = useSidebar();
-    // The sidebar keeps its width variable while collapsed off-canvas, so the
-    // offset has to come from its open state rather than from the variable.
+    // --sidebar-width stays set while the sidebar is collapsed off-canvas.
     const offset = state === "collapsed" ? "0px" : "var(--sidebar-width)";
 
     useEffect(() => {
@@ -39,9 +37,7 @@ export default function VideoThumbnailsPanel({
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key !== "Escape") return;
-            // Radix registers its own Escape handler in the capture phase and does
-            // not stop propagation, so without this the panel would close along
-            // with whatever dialog or popover the user actually meant to dismiss.
+            // Radix's Escape handler does not stop propagation; let the topmost layer take it.
             if (document.querySelector(OTHER_LAYERS)) return;
             onClose();
         };
@@ -49,11 +45,8 @@ export default function VideoThumbnailsPanel({
         const onPointerDown = (e: PointerEvent) => {
             const target = e.target as Element | null;
             if (panelRef.current?.contains(target as Node)) return;
-            // Close only for clicks that land in the review area itself. Stating it
-            // positively matters: Radix renders dialogs and popovers in portals at
-            // the document root, so a "not inside the sidebar" test would treat the
-            // search dialog and the date filter as outside clicks and dismiss the
-            // panel -- while filtering is exactly what you do with it open.
+            // Only the review area counts as outside: dialogs and popovers are portaled
+            // to the document root and must not dismiss the panel.
             if (!target?.closest('[data-slot="review-main"]')) return;
             onClose();
         };
@@ -68,12 +61,7 @@ export default function VideoThumbnailsPanel({
 
     const t = useTranslations("video-list-panel");
 
-    // Not supported below the sidebar's mobile breakpoint: there the sidebar is a
-    // modal Sheet at z-50 whose overlay covers this panel and swallows its
-    // clicks, and the only way in is the toggle inside that sheet. Refusing to
-    // render is honest; a panel stranded behind an overlay is not. Covers the
-    // desktop-open-then-resize case too. A full-screen sheet variant is the way
-    // to actually support it.
+    // Below the mobile breakpoint the sidebar is a modal sheet whose overlay would cover this panel.
     if (!open || isMobile) return null;
 
     return (

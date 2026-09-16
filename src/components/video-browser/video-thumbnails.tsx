@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { VideoWithRevision } from "@/lib/db-types";
 import { Slider } from "@/ui/slider";
 import { ZoomInIcon } from "lucide-react";
-import { ThumbnailCell, ThumbnailLazyLoader } from "@/components/video-browser/thumbnail-cell";
+import { ThumbnailCell, ThumbnailLazyLoader, thumbnailKey } from "@/components/video-browser/thumbnail-cell";
 import { useThumbnailGridStore } from "@/stores/thumbnail-grid-store";
 
 type Props = {
@@ -16,16 +16,7 @@ type Props = {
 
 export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoId, onSelectVideo }: Props) {
     const containerRef = useRef<HTMLDivElement | null>(null);
-    // Zoom and the resolved-URL cache live in a store: this component unmounts
-    // whenever the float panel closes.
     const { thumbSize, setThumbSize, urls, cacheUrl } = useThumbnailGridStore();
-
-    // Hide by how much room one cell has, not by column count. The old
-    // column-count thresholds (>=4 hid the title, >=3 the folder) were tuned for
-    // the 26rem sidebar strip; in the float panel four columns is the normal
-    // wide case, so they hid every label exactly when there was room for them.
-    const hideTitle = thumbSize < 110;
-    const hideFolder = thumbSize < 150;
 
     const unread = useMemo(() => new Set(unReadVideoIds), [unReadVideoIds]);
     const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -50,7 +41,7 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
         >
             {/* Grid */}
             <div className="flex-1 overflow-auto p-3">
-                <div className="grid gap-3" style={{
+                <div className="grid gap-1.5" style={{
                     gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
                 }}>
                     {videos.map(video => (
@@ -66,8 +57,7 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
                             video={video}
                             selectedVideoId={selectedVideoId}
                             unread={unread.has(video.id)}
-                            hideTitle={hideTitle}
-                            hideFolder={hideFolder}
+                            thumbnailUrl={urls.get(thumbnailKey(video.id))}
                             onSelectVideo={onSelectVideo}
                         >
                             <ThumbnailLazyLoader
@@ -86,8 +76,7 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
                 <ZoomInIcon></ZoomInIcon>
                 <Slider
                     min={60}
-                    // The source frame is 480px wide, so past ~240 the cell is
-                    // upscaling the PNG rather than showing more of it.
+                    // Source thumbnails are 480px wide; past ~240 the cell only upscales.
                     max={240}
                     step={10}
                     value={[thumbSize]}
