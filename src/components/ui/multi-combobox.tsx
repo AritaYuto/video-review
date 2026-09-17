@@ -49,7 +49,7 @@ export default function MultiComboBox({
                 </label>
             )}
 
-            <Popover>
+            <Popover modal>
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
@@ -80,7 +80,7 @@ export default function MultiComboBox({
                 <PopoverContent className="p-0 w-60 bg-[#202020] border-[#333] text-white">
                     <Command className="bg-[#202020] text-white">
                         <CommandInput placeholder="Search..." />
-                        <CommandList>
+                        <CommandList className="max-h-60 [scrollbar-width:thin] [scrollbar-color:#555_transparent]">
                             <CommandEmpty>No options found.</CommandEmpty>
                             <CommandGroup>
                                 {options.map((option) => (
