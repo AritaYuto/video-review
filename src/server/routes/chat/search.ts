@@ -80,6 +80,7 @@ chatSearchRouter.openapi({
         `  - "先週" / "last week" → videoFrom: the Monday of last week, videoTo: the Sunday of last week`,
         `  - "今月" / "this month" → videoFrom: the 1st of the current month, videoTo: ${today}`,
         `  - "先月" / "last month" → videoFrom: the 1st of last month, videoTo: the last day of last month`,
+        `When listing videos, always include a markdown link to each video using this format: [title](/video-review/review/VIDEO_ID). Replace VIDEO_ID with the actual video UUID.`,
         `Answer concisely and include specific information such as video titles and comment content.`,
     ].join("\n");
 
