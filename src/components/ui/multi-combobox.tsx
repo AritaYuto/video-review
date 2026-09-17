@@ -12,6 +12,7 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
+    CommandList,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 
@@ -79,27 +80,29 @@ export default function MultiComboBox({
                 <PopoverContent className="p-0 w-60 bg-[#202020] border-[#333] text-white">
                     <Command className="bg-[#202020] text-white">
                         <CommandInput placeholder="Search..." />
-                        <CommandEmpty>No options found.</CommandEmpty>
-                        <CommandGroup>
-                            {options.map((option) => (
-                                <CommandItem
-                                    key={option}
-                                    onSelect={() => toggleValue(option)}
-                                    className="text-[#fff] data-[selected=true]:bg-[#eee] data-[selected=true]:text-[#222]"
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            "text-white",
-                                            value.includes(option)
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                        )}
-                                    />
-                                    {option}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
+                        <CommandList>
+                            <CommandEmpty>No options found.</CommandEmpty>
+                            <CommandGroup>
+                                {options.map((option) => (
+                                    <CommandItem
+                                        key={option}
+                                        onSelect={() => toggleValue(option)}
+                                        className="text-[#fff] data-[selected=true]:bg-[#eee] data-[selected=true]:text-[#222]"
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                "text-white",
+                                                value.includes(option)
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                            )}
+                                        />
+                                        {option}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
                     </Command>
                 </PopoverContent>
             </Popover>

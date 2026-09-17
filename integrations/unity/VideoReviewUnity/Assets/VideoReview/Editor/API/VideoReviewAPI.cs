@@ -116,12 +116,26 @@ namespace VideoReview.Editor.API
             );
         }
 
-        public static VideoReviewResponse<VideoReviewAnnotateResult> AnnotateVideoRev(string videoRevID)
+        public static VideoReviewResponse<VideoReviewAnnotateResult> AnnotateVideoRev(string videoRevID, string[] tags = null, string summary = null)
         {
-            return ExecuteObject<VideoReviewAnnotateResult>(
-                "annotate-video-rev",
-                "--video_rev_id", string.IsNullOrWhiteSpace(videoRevID) ? "all" : videoRevID
-            );
+            var args = new List<string>
+            {
+                "--video_rev_id", string.IsNullOrWhiteSpace(videoRevID) ? "all" : videoRevID,
+            };
+
+            if (tags != null && tags.Length > 0)
+            {
+                args.Add("--tags");
+                args.Add(string.Join(",", tags));
+            }
+
+            if (!string.IsNullOrWhiteSpace(summary))
+            {
+                args.Add("--summary");
+                args.Add(summary);
+            }
+
+            return ExecuteObject<VideoReviewAnnotateResult>("annotate-video-rev", args.ToArray());
         }
 
         public static VideoReviewResponse<VideoReviewSimpleMessage> UploadEventContext(string videoRevID, string jsonPath)
