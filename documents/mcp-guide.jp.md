@@ -121,8 +121,29 @@ gemini mcp add --transport http video-review http://localhost:3490/mcp
 | `list_vcs_changes` | リビジョンに紐づく PR と commit。動画の監視パスに対する関連度つき。 |
 | `get_vcs_summary` | その変更の AI 要約。 |
 | `list_tags` | 使われている全タグ。 |
+| `list_folders` | 使われている全フォルダキー。 |
 
 日付は ISO 8601。タグは最新リビジョンのタグ、コメントのユーザーは表示名で照合します。
+
+### 検索ガイド（共有する前知識）
+
+`integrations/mcp/search-guide.md` に、どの質問にどのツールを使うか、日付・タグ・コード変更の扱いのルールを書いてあります。サーバーはこれを 3 つの形で全クライアントに渡すので、アプリ内チャット、Claude Code、bot が同じ振る舞いになります。
+
+- サーバーの `instructions`（接続時にクライアントへ届く。アプリ内チャットはこれをシステムプロンプトにし、実データのタグ一覧・フォルダ一覧を添える）
+- `search-videos` プロンプト（Claude Code では `/mcp__video-review__search-videos` として出る）
+- `video-review://search-guide` リソース
+
+チーム固有の語彙（タグやフォルダの意味、担当）はリポジトリに入れません。Markdown ファイルに書いて、サーバーに場所を教えます。
+
+```env
+VIDEO_REVIEW_MCP_GUIDE_PATH=/srv/videoreview/team-notes.md
+```
+
+同梱ガイドの末尾に「Team notes」見出しで連結されます。ガイドかメモを編集してサーバーを再起動すれば、全クライアントに反映されます。
+
+### Claude Code などのエージェント向け Skill
+
+`.claude/skills/video-review-search/SKILL.md` は、動画に関する質問ではこの MCP サーバーを使うこと、その手順を短く書いた汎用の Skill です。Agent Skills の形式なので Claude Code 以外のツールでも読めます。語彙はガイド側に置き、Skill は汎用のままにしてください。
 
 ---
 

@@ -129,9 +129,37 @@ gemini mcp add --transport http video-review http://localhost:3490/mcp
 | `list_vcs_changes` | Pull requests and commits linked to a revision, with relevance against the video's watched paths. |
 | `get_vcs_summary` | The AI-written summary of those changes. |
 | `list_tags` | Every tag in use. |
+| `list_folders` | Every folder key in use. |
 
 Dates are ISO 8601. Tag and comment-user filters match the latest revision's tags and the comment's
 display name respectively.
+
+### Search guide (shared knowledge)
+
+`integrations/mcp/search-guide.md` tells an assistant which tool answers which question and the
+rules for dates, tags and code changes. The server sends it to every client three ways, so the
+in-app chat, Claude Code and any bot behave the same:
+
+- as the server `instructions` (clients receive it on connect; the in-app chat uses it as the
+  system prompt, together with the live tag and folder lists),
+- as the `search-videos` prompt (Claude Code shows it as `/mcp__video-review__search-videos`),
+- as the `video-review://search-guide` resource.
+
+Team-specific vocabulary (what your tags and folders mean, who owns what) does not belong in the
+repository. Put it in a Markdown file and point the server at it:
+
+```env
+VIDEO_REVIEW_MCP_GUIDE_PATH=/srv/videoreview/team-notes.md
+```
+
+It is appended to the bundled guide under a "Team notes" heading. Edit the guide or the notes,
+restart the server, and every client picks up the change.
+
+### Skill for Claude Code and other agents
+
+`.claude/skills/video-review-search/SKILL.md` is a short, generic skill that tells an agent to use
+this MCP server for video questions and how to work with it. It follows the Agent Skills format,
+so tools other than Claude Code can read it too. Keep it generic; the vocabulary lives in the guide.
 
 ---
 
