@@ -76,6 +76,8 @@ docker exec videoreview-ollama ollama pull llama3.1:8b
 
 ## 6. MCPサーバーのセットアップ
 
+Claude Code / Claude Desktop / Gemini CLI からの接続方法、ツール一覧、検索の評価データセットは [MCP サーバーガイド](../mcp-guide.jp.md) を参照してください。
+
 MCPサーバーはVideoReviewのデータをAIアシスタント（Claude Desktopなど）に公開します。
 
 ### Docker — Claudeプロバイダー

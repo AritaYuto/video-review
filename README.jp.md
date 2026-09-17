@@ -210,6 +210,7 @@ VideoReview に Web の管理画面はありません
 * 🐳 [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.jp.md)
 * 💻 [Local / On‑premise Build Guide](./documents/build.run/local-guide.jp.md)
 * 🤖 [AI & Advanced Build Guide](./documents/build.run/ai-guide.jp.md)
+* 🔎 [MCP サーバーガイド（Claude Code / チャット検索）](./documents/mcp-guide.jp.md)
 * 🛠 [Admin Guide (初期セットアップ / API トークン)](./documents/admin-guide.jp.md)
 
 ## 📄 License

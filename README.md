@@ -209,6 +209,7 @@ For detailed instructions, see:
 * 🐳 [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.md)
 * 💻 [Local / On‑premise Build Guide](./documents/build.run/local-guide.md)
 * 🤖 [AI & Advanced Build Guide](./documents/build.run/ai-guide.md)
+* 🔎 [MCP Server Guide (Claude Code / chat search)](./documents/mcp-guide.md)
 * 🛠 [Admin Guide (initial setup / API token)](./documents/admin-guide.md)
 
 ## 📄 License

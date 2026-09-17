@@ -76,6 +76,8 @@ docker exec videoreview-ollama ollama pull llama3.1:8b
 
 ## 6. MCP Server Setup
 
+See the [MCP Server Guide](../mcp-guide.md) for connecting Claude Code, Claude Desktop and Gemini CLI, the tool list, and the search evaluation dataset.
+
 The MCP server exposes VideoReview data to AI assistants (e.g. Claude Desktop).
 
 ### Docker — Claude provider

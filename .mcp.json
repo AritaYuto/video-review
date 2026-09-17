@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "video-review": {
+            "command": "npx",
+            "args": ["tsx", "integrations/mcp/index.ts"]
+        }
+    }
+}
