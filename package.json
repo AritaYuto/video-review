@@ -18,10 +18,12 @@
         "mcp:build": "npx tsx integrations/mcp/build.ts",
         "mcp:run": "node integrations/mcp/dist/index.js",
         "mcp:dev": "npx tsx integrations/mcp/index.ts",
+        "mcp:eval": "npx tsx integrations/mcp/eval.ts",
         "prisma:deploy": "npx prisma migrate deploy",
         "prisma:generate": "npx prisma generate",
         "prisma:migration": "npx prisma migrate dev --name",
-        "prisma:seed": "npx tsx prisma/seed.ts"
+        "prisma:seed": "npx tsx prisma/seed.ts",
+        "prisma:seed:eval": "npx tsx prisma/seed-eval.ts"
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.39.0",
