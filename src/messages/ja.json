@@ -61,7 +61,7 @@
         "llmUnavailable": "LLM が設定されていません",
         "emptyState": "動画・コメント・イベントについて自然言語で質問できます",
         "loading": "考え中...",
-        "inputPlaceholder": "動画について聞いてみましょう..."
+        "inputPlaceholder": "動画について聞いてみましょう...（Enter で送信）"
     },
     "video-control-panel": {
         "normal": "通常再生",

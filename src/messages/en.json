@@ -61,7 +61,7 @@
         "llmUnavailable": "LLM is not configured",
         "emptyState": "Ask natural-language questions about videos, comments, and events.",
         "loading": "Thinking...",
-        "inputPlaceholder": "Ask about the video..."
+        "inputPlaceholder": "Ask about the videos... (Enter to send)"
     },
     "video-control-panel": {
         "normal": "Normal",

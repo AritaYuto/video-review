@@ -18,9 +18,18 @@ export function ChatMessage({ turn }: { turn: ChatTurn }) {
                 )}
             >
                 {isUser ? turn.content : (
-                    <div className="prose prose-sm prose-invert max-w-none">
+                    <div className="flex flex-col gap-2">
                         <Markdown
                             components={{
+                                p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc pl-5 flex flex-col gap-1">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-5 flex flex-col gap-1">{children}</ol>,
+                                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                                h1: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
+                                h2: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
+                                h3: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
+                                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                code: ({ children }) => <code className="rounded bg-[#1a1a1a] px-1 text-[#ffaa44]">{children}</code>,
                                 a: ({ href, children }) => {
                                     if (href?.startsWith("/") && !href.startsWith("//")) {
                                         return (
