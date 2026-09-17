@@ -1,17 +1,17 @@
 {
     "bootstrap": {
         "title": "管理者の設定",
-        "email": "Email",
-        "password": "Password",
+        "email": "メールアドレス",
+        "password": "パスワード",
         "initialize": "初期設定"
     },
     "video-title": {
-        "noSelection": "No video selected",
+        "noSelection": "未選択",
         "revisionInfo": "Rev: {revision} ({uploadedAt})",
-        "noRevision": "No revision info",
+        "noRevision": "リビジョン情報なし",
         "revisionOption": "rev_{revision} ({date})",
-        "tagsLabel": "Tags",
-        "noTags": "None",
+        "tagsLabel": "タグ",
+        "noTags": "なし",
         "addTag": "タグを追加",
         "tagInputPlaceholder": "タグを入力...",
         "summaryLabel": "要約",
@@ -21,7 +21,7 @@
         "title": "動画ダウンロード",
         "selectRes": "解像度を選択",
         "cancel": "キャンセル",
-        "downloading": "Downloading...",
+        "downloading": "ダウンロード中...",
         "prepare": "ダウンロード"
     },
     "video-upload": {
@@ -31,7 +31,7 @@
         "folderKeyPlaceholder": "フォルダーキー（例: projectA/scene01）",
         "cancel": "キャンセル",
         "upload": "アップロード",
-        "uploading": "Uploading...",
+        "uploading": "アップロード中...",
         "errorUpload": "動画のアップロードに失敗しました。管理者へ連絡してください"
     },
     "video-search": {
@@ -58,9 +58,9 @@
     "chat-search": {
         "title": "チャット検索",
         "clearHistory": "会話をクリア",
-        "llmUnavailable": "LLM is not configured",
+        "llmUnavailable": "LLM が設定されていません",
         "emptyState": "動画・コメント・イベントについて自然言語で質問できます",
-        "loading": "thinking...",
+        "loading": "考え中...",
         "inputPlaceholder": "動画について聞いてみましょう..."
     },
     "video-control-panel": {

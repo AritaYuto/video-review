@@ -27,7 +27,7 @@ export const env = {
     // LLM provider: "claude" | "ollama" | "gemini" (unset = disabled)
     LLM_PROVIDER: process.env.VIDEO_REVIEW_LLM_PROVIDER as "claude" | "ollama" | "gemini" | undefined,
     LLM_API_KEY: process.env.VIDEO_REVIEW_LLM_API_KEY,
-    LOCAL_LLM_URL: process.env.VIDEO_REVIEW_LOCAL_LLM_URL,
+    LLM_BASE_URL: process.env.VIDEO_REVIEW_LLM_BASE_URL,
     LLM_MODEL: process.env.VIDEO_REVIEW_LLM_MODEL,
     // MCP server URL (unset = chat-search disabled)
     MCP_URL: process.env.VIDEO_REVIEW_MCP_URL,

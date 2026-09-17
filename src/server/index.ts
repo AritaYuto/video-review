@@ -26,6 +26,7 @@ import { chatRouter } from "@/server/routes/chat";
 import { chatSearchRouter } from "@/server/routes/chat/search";
 import { thumbnailRouter } from "@/server/routes/thumbnail";
 import { llmStatusRouter } from "@/server/routes/llm/status";
+
 export const app = new Hono().basePath("/api");
 
 // v1 API
