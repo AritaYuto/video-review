@@ -49,8 +49,26 @@ vcsRouter.openapi({
     });
     if (!video) return c.json({ error: "Video not found" }, { status: 404 });
 
-    if(!fromRevisionId || !toRevisionId) {
-        return c.json({ error: "Both 'from' and 'to' revision IDs are required" }, { status: 400 });
+    if (!toRevisionId) {
+        return c.json({ error: "'to' revision ID is required" }, { status: 400 });
+    }
+
+    // A revision with cached changes (e.g. the first revision, which has nothing to compare
+    // against) can be served with 'to' alone; fetching from the provider still needs both ends.
+    if (!fromRevisionId) {
+        const cachedLink = await prisma.vCSRevisionLink.findFirst({
+            where: { videoRevision: { id: toRevisionId, videoId, deleted: false }, fetchedAt: { not: null } },
+            orderBy: { fetchedAt: "desc" },
+        });
+        if (!cachedLink) {
+            return c.json({ error: "'from' revision ID is required unless changes for 'to' are already cached" }, { status: 400 });
+        }
+        return c.json({
+            ...(await buildResponse(cachedLink.mergeResults, cachedLink.commitResults)),
+            range: { from: cachedLink.rangeFrom, to: cachedLink.rangeTo },
+            fromCache: true,
+            fetchedAt: cachedLink.fetchedAt,
+        });
     }
 
     const revisions = await prisma.videoRevision.findMany({ 

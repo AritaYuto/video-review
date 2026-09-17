@@ -181,6 +181,20 @@ describe("GET /videos/:id/vcs-changes", () => {
             expect(body.commits[0].shortHash).toBe("abc1234");
         });
 
+        it("serves cached changes with only 'to' when the revision was fetched before", async () => {
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?to=${rev2Id}`);
+            expect(res.status).toBe(200);
+
+            const body = await res.json() as { pullRequests: { title: string }[]; fromCache: boolean };
+            expect(body.fromCache).toBe(true);
+            expect(body.pullRequests[0].title).toBe("Fix camera shake in cutscene");
+        });
+
+        it("returns 400 with only 'to' when nothing is cached for that revision", async () => {
+            const res = await app.request(`http://localhost/videos/${videoId}/vcs-changes?to=${rev1Id}`);
+            expect(res.status).toBe(400);
+        });
+
         it("returns 404 for unknown video id", async () => {
             vi.stubEnv("VIDEO_REVIEW_VCS_PROVIDER", "github");
             vi.stubEnv("VIDEO_REVIEW_VCS_GITHUB_OWNER", "org");
