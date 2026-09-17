@@ -33,6 +33,39 @@ async function createMcpClient(url: string): Promise<McpClient> {
     return client;
 }
 
+// Fallback when the MCP server predates the bundled guide and sends no instructions.
+const DEFAULT_GUIDE = [
+    "You are an assistant for Video Review. Help the user find videos, comments, and events using the available tools.",
+    "When filtering by date range, always specify both ends of the range.",
+    "When listing videos, link each one as [title](/video-review/review/VIDEO_ID).",
+].join("\n");
+
+async function readTextTool(mcpClient: McpClient, name: string): Promise<string[]> {
+    try {
+        const res = await mcpClient.callTool({ name, arguments: {} });
+        const text = (res.content as { type: string; text?: string }[]).map(c => c.text ?? "").join("");
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string") : [];
+    } catch {
+        return [];
+    }
+}
+
+// The guide comes from the MCP server so all clients share it; the live tag and folder
+// vocabulary is added per request so the model maps the user's wording to real values.
+async function buildSystemPrompt(mcpClient: McpClient): Promise<string> {
+    const guide = mcpClient.getInstructions() ?? DEFAULT_GUIDE;
+    const [tags, folders] = await Promise.all([readTextTool(mcpClient, "list_tags"), readTextTool(mcpClient, "list_folders")]);
+    const today = new Date().toISOString().slice(0, 10);
+    const context = [
+        `Today's date: ${today}`,
+        "Always respond in the same language as the user's message.",
+    ];
+    if (tags.length > 0) context.push(`Existing tags: ${tags.join(", ")}`);
+    if (folders.length > 0) context.push(`Existing folders: ${folders.join(", ")}`);
+    return `${guide.trim()}\n\n# Context\n${context.join("\n")}`;
+}
+
 chatSearchRouter.openapi({
     method: "post",
     summary: "Chat search",
@@ -72,24 +105,6 @@ chatSearchRouter.openapi({
     // body is rejected with 400 even before the auth check above.
     const { message, history } = c.req.valid("json");
 
-    const today = new Date().toISOString().slice(0, 10);
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const system = [
-        `You are an assistant for Video Review.`,
-        `Help the user find videos, comments, and events using the available tools.`,
-        `Always respond in the same language as the user's message (Japanese for Japanese input, English for English input).`,
-        `Today's date: ${today}`,
-        `When filtering by date range, always specify BOTH videoFrom and videoTo (or both "from" and "to") together. Never specify only one side, as that would return unintended results.`,
-        `When the user uses vague time expressions, interpret them as follows and call the tool immediately without asking for clarification:`,
-        `  - "最近" / "recently" / "lately" → videoFrom: ${thirtyDaysAgo}, videoTo: ${today}`,
-        `  - "今週" / "this week" → videoFrom: the Monday of the current week, videoTo: ${today}`,
-        `  - "先週" / "last week" → videoFrom: the Monday of last week, videoTo: the Sunday of last week`,
-        `  - "今月" / "this month" → videoFrom: the 1st of the current month, videoTo: ${today}`,
-        `  - "先月" / "last month" → videoFrom: the 1st of last month, videoTo: the last day of last month`,
-        `When listing videos, always include a markdown link to each video using this format: [title](/video-review/review/VIDEO_ID). Replace VIDEO_ID with the actual video UUID.`,
-        `Answer concisely and include specific information such as video titles and comment content.`,
-    ].join("\n");
-
     const messages: ChatTurn[] = [
         ...history as ChatTurn[],
         { role: "user", content: message },
@@ -98,6 +113,7 @@ chatSearchRouter.openapi({
     let mcpClient: McpClient | null = null;
     try {
         mcpClient = await createMcpClient(env.MCP_URL);
+        const system = await buildSystemPrompt(mcpClient);
         const reply = await llm.completeWithMCP(messages, mcpClient, system);
         return c.json({ reply });
     } catch (err) {

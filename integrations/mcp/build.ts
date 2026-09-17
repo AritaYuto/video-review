@@ -28,3 +28,6 @@ await build({
     ],
     logLevel: "info",
 });
+
+// index.ts reads the guide relative to its own location at runtime, so it must sit next to the bundle.
+fs.copyFileSync(path.join(scriptDir, "search-guide.md"), path.join(outdir, "search-guide.md"));

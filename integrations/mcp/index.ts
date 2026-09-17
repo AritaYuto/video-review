@@ -1,4 +1,5 @@
 import "dotenv/config";
+import fs from "node:fs";
 import http from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -17,8 +18,46 @@ if (!apiToken) {
 
 const client = createClient({ baseUrl, apiToken });
 
+// The search guide ships with the server so every client (in-app chat, Claude Code, bots)
+// gets the same instructions. Teams append their own vocabulary through a local file.
+function loadSearchGuide(): string {
+    const bundled = fs.readFileSync(new URL("./search-guide.md", import.meta.url), "utf8");
+    const extraPath = process.env.VIDEO_REVIEW_MCP_GUIDE_PATH;
+    if (!extraPath) return bundled;
+    try {
+        return `${bundled.trimEnd()}\n\n# Team notes\n\n${fs.readFileSync(extraPath, "utf8").trim()}\n`;
+    } catch (err) {
+        process.stderr.write(`Warning: could not read VIDEO_REVIEW_MCP_GUIDE_PATH (${extraPath}): ${String(err)}\n`);
+        return bundled;
+    }
+}
+
+const searchGuide = loadSearchGuide();
+
 function createServer(): McpServer {
-    const server = new McpServer({ name: "video-review", version: "1.0.0" });
+    const server = new McpServer({ name: "video-review", version: "1.0.0" }, { instructions: searchGuide });
+
+    server.registerResource(
+        "search-guide",
+        "video-review://search-guide",
+        { title: "VideoReview search guide", description: "Which tool answers which question, and the rules for dates, tags and code changes.", mimeType: "text/markdown" },
+        async (uri) => ({ contents: [{ uri: uri.href, mimeType: "text/markdown", text: searchGuide }] }),
+    );
+
+    server.registerPrompt(
+        "search-videos",
+        {
+            title: "Search VideoReview",
+            description: "Answer a question about videos, comments or code changes using the VideoReview tools and the search guide.",
+            argsSchema: { question: z.string().describe("The question to answer, in any language") },
+        },
+        ({ question }) => ({
+            messages: [{
+                role: "user",
+                content: { type: "text", text: `${searchGuide}\n\n---\n\nQuestion: ${question}` },
+            }],
+        }),
+    );
 
     server.registerTool(
         "list_videos",
@@ -195,8 +234,17 @@ function createServer(): McpServer {
     );
 
     server.registerTool(
+        "list_folders",
+        { description: "List all folder keys that videos are organised under (e.g. '05_cutscene', 'eval/battle'). Use to map a folder name the person mentions to a real folder before filtering list_videos by it." },
+        async () => {
+            const data = await client.get("/videos/folders");
+            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+        },
+    );
+
+    server.registerTool(
         "list_tags",
-        { description: "List all tags that exist across all videos in Video Review." },
+        { description: "List all tags that exist across all videos in Video Review. Call this before filtering by a tag the person named, to map their wording to a real tag." },
         async () => {
             const data = await client.get("/videos/tags");
             return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
