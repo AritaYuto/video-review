@@ -7,7 +7,22 @@ export type ChatTurn = {
     content: string;
 };
 
-type OpenAIToolCall = { id: string; function: { name: string; arguments: string } };
+type OpenAIToolCall = { id?: string; function: { name: string; arguments: string } };
+
+// OpenAI-compatible providers may return unparsable arguments or omit tool_call ids
+// (older Ollama builds); treat both as recoverable rather than failing the whole turn.
+function parseToolArguments(raw: string): Record<string, unknown> {
+    try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === "object" && parsed !== null ? parsed as Record<string, unknown> : {};
+    } catch {
+        return {};
+    }
+}
+
+function toolCallId(tc: OpenAIToolCall, index: number): string {
+    return tc.id ?? `call_${index}`;
+}
 type OpenAIMessage = { role: string; content: string | null; tool_calls?: unknown[]; tool_call_id?: string };
 
 export interface LLMClient {
@@ -158,12 +173,12 @@ class OllamaClient implements LLMClient {
 
             ollamaMessages.push({ role: "assistant", content: null, tool_calls: choice.message.tool_calls });
 
-            for (const tc of choice.message.tool_calls) {
-                const args = JSON.parse(tc.function.arguments) as Record<string, unknown>;
+            for (const [index, tc] of choice.message.tool_calls.entries()) {
+                const args = parseToolArguments(tc.function.arguments);
                 const result = await mcpClient.callTool({ name: tc.function.name, arguments: args });
                 const content = result.content as { type: string; text?: string }[];
                 const text = content.map((c) => c.type === "text" ? c.text ?? "" : "").join("");
-                ollamaMessages.push({ role: "tool", content: text, tool_call_id: tc.id });
+                ollamaMessages.push({ role: "tool", content: text, tool_call_id: toolCallId(tc, index) });
             }
         }
 
@@ -231,12 +246,12 @@ class GeminiClient implements LLMClient {
 
             geminiMessages.push({ role: "assistant", content: null, tool_calls: choice.message.tool_calls });
 
-            for (const tc of choice.message.tool_calls) {
-                const args = JSON.parse(tc.function.arguments) as Record<string, unknown>;
+            for (const [index, tc] of choice.message.tool_calls.entries()) {
+                const args = parseToolArguments(tc.function.arguments);
                 const result = await mcpClient.callTool({ name: tc.function.name, arguments: args });
                 const content = result.content as { type: string; text?: string }[];
                 const text = content.map((c) => c.type === "text" ? c.text ?? "" : "").join("");
-                geminiMessages.push({ role: "tool", content: text, tool_call_id: tc.id });
+                geminiMessages.push({ role: "tool", content: text, tool_call_id: toolCallId(tc, index) });
             }
         }
 
@@ -256,7 +271,7 @@ function buildClient(): LLMClient | null {
             return new ClaudeClient(apiKey, model);
         }
         case "ollama": {
-            const baseUrl = env.LOCAL_LLM_URL ?? "http://localhost:11434";
+            const baseUrl = env.LLM_BASE_URL ?? "http://localhost:11434";
             const model = env.LLM_MODEL ?? "llama3.1:8b";
             return new OllamaClient(baseUrl, model);
         }

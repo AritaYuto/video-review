@@ -138,19 +138,24 @@ function createServer(): McpServer {
     return server;
 }
 
-if (process.env.VIDEO_REVIEW_MCP_TRANSPORT === "http") {
+if (process.env.MCP_TRANSPORT === "http") {
     await startHttpServer();
 } else {
     await createServer().connect(new StdioServerTransport());
 }
 
 async function startHttpServer(): Promise<void> {
-    const port = parseInt(process.env.VIDEO_REVIEW_MCP_PORT ?? "3490", 10);
+    const port = parseInt(process.env.MCP_PORT ?? "3490", 10);
 
     const httpServer = http.createServer(async (req, res) => {
         if (req.url === "/mcp") {
+            // Stateless mode: a fresh server per request, released once the response closes.
             const server = createServer();
             const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+            res.on("close", () => {
+                void transport.close();
+                void server.close();
+            });
             await server.connect(transport);
             await transport.handleRequest(req, res);
         } else {

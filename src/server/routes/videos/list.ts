@@ -38,7 +38,7 @@ const QuerySchema = z.object({
             .map((tag) => tag.trim())
             .filter((tag) => tag.length > 0)
         ).optional(),
-    limit: z.string().transform(v => parseInt(v)).optional(),
+    limit: z.coerce.number().int().positive().optional(),
     sortBy: z.enum(["uploadedAt_desc", "uploadedAt_asc", "title_asc"]).optional(),
 });
 
@@ -129,6 +129,7 @@ listRouter.openapi({
         const orderBy: PrismaTypes.VideoOrderByWithRelationInput[] =
             sortBy === "uploadedAt_desc" ? [{ latestRevision: { uploadedAt: "desc" } }] :
             sortBy === "uploadedAt_asc"  ? [{ latestRevision: { uploadedAt: "asc" } }] :
+            sortBy === "title_asc"       ? [{ title: "asc" }] :
             [{ folderKey: "asc" }, { title: "asc" }];
 
         const videos = await prisma.video.findMany({
@@ -238,7 +239,7 @@ listRouter.openapi({
 const SearchByEventQuerySchema = z.object({
     filterText: z.string(),
     kind: z.string().optional(),
-    limit: z.string().transform(v => parseInt(v)).optional(),
+    limit: z.coerce.number().int().positive().optional(),
 });
 
 listRouter.openapi({
@@ -257,7 +258,7 @@ listRouter.openapi({
 
         const matchingEvents = await prisma.videoEvent.findMany({
             where: {
-                data: { contains: filterText },
+                data: { contains: filterText, mode: "insensitive" },
                 ...(kind ? { kind: { label: kind } } : {}),
                 videoRevision: { deleted: false, video: { deleted: false } },
             },

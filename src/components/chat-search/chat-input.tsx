@@ -25,6 +25,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         if (!trimmed || disabled) return;
         onSend(trimmed);
         setValue("");
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

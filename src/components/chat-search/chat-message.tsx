@@ -22,7 +22,7 @@ export function ChatMessage({ turn }: { turn: ChatTurn }) {
                         <Markdown
                             components={{
                                 a: ({ href, children }) => {
-                                    if (href?.startsWith("/")) {
+                                    if (href?.startsWith("/") && !href.startsWith("//")) {
                                         return (
                                             <Link href={href} className="underline text-[#ff8800] hover:text-[#ffaa44]">
                                                 {children}

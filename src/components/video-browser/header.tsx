@@ -31,6 +31,7 @@ export default function VideoListPanelHeader(
     thumbnailsOpen: boolean;
 }) {
     const t = useTranslations("video-list-panel");
+    const tChat = useTranslations("chat-search");
     const { isMobile } = useSidebar();
     const { role } = useAuthStore();
     const { fetchVideos } = useVideoStore();
@@ -91,7 +92,7 @@ export default function VideoListPanelHeader(
                     <button
                         onClick={() => openChat()}
                         disabled={!available}
-                        title={available ? undefined : "LLM is not configured"}
+                        title={available ? undefined : tChat("llmUnavailable")}
                         className={`
                             inline-flex items-center justify-center px-1 leading-none transition-colors
                             ${available ? "hover:text-[#ff5500]" : "opacity-30 cursor-not-allowed"}
