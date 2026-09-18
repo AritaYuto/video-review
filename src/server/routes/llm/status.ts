@@ -60,11 +60,10 @@ llmStatusRouter.openapi({
         model: env.LLM_MODEL ?? null,
     };
 
-    // The internal MCP URL stays server-side; only the address meant for external tools is exposed.
+    // The MCP URL stays server-side; the client only needs to know whether search works.
     const mcp = {
         configured: env.MCP_URL !== undefined,
         reachable: env.MCP_URL ? await isMcpReachable(env.MCP_URL) : false,
-        publicUrl: env.MCP_PUBLIC_URL ?? null,
     };
 
     return c.json({ llm, mcp });

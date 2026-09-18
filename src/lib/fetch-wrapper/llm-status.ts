@@ -1,6 +1,6 @@
 export type LLMStatus = {
     llm: { configured: boolean; provider: string | null; model: string | null };
-    mcp: { configured: boolean; reachable: boolean; publicUrl: string | null };
+    mcp: { configured: boolean; reachable: boolean };
 };
 
 export async function fetchLLMStatus(token: string): Promise<LLMStatus> {
