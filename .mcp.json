@@ -1,8 +1,8 @@
 {
     "mcpServers": {
         "video-review": {
-            "command": "npx",
-            "args": ["tsx", "integrations/mcp/index.ts"]
+            "type": "http",
+            "url": "${VIDEO_REVIEW_MCP_URL:-http://localhost:3490/mcp}"
         }
     }
 }

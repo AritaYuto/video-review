@@ -70,7 +70,7 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved.
 
 ## ✨ Key Features
 
-### 💻 Flexible Deployment: On‑premise or Cloud
+### Flexible Deployment: On‑premise or Cloud
 **Review confidential videos without sending them outside your network.**
 
 VideoReview is designed with on-premise operation in mind, allowing teams to review confidential footage securely inside their internal network.
@@ -81,7 +81,7 @@ Depending on your needs, you can also choose:
 
 ---
 
-### 💬 Actionable Comment Panel
+### Actionable Comment Panel
 **Turn video comments into clear, actionable feedback.**
 
 The comment list is designed with a social‑style, intuitive UI:
@@ -92,7 +92,7 @@ The comment list is designed with a social‑style, intuitive UI:
 
 Badges and color cues highlight what needs action at a glance.
 
-### 🔔 Never Miss Feedback with Slack & Jira
+### Never Miss Feedback with Slack & Jira
 
 **Make feedback visible where your team already works.**
 
@@ -119,7 +119,7 @@ Open the relevant Unity scene or asset directly from a reviewed video,
 so feedback naturally leads into the next step of work.
 
 # ✨ Advanced Features
-### 🔍 Powerful Search for Review Workflow
+### Powerful Search for Review Workflow
 
 Search videos and comments independently:
 
@@ -131,7 +131,7 @@ From day-to-day reviews to later retrospectives, the right info is always close.
 
 <img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="700"></img>
 
-### 🔧 Built for Production Pipelines
+### Built for Production Pipelines
 
 Designed to fit into real production workflows.
 
@@ -149,7 +149,7 @@ go run . upload-video \
   --video_path "/path/to/video.mp4"
 ```
 
-## 🧭 Roadmap
+## Roadmap
 
 VideoReview aims to stay useful in real production environments and will evolve step by step.
 
@@ -162,9 +162,9 @@ Guiding ideas are:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 🐳 Quick Start (Docker)
+### Quick Start (Docker)
 
 ```bash
 
@@ -206,12 +206,11 @@ See the [Admin Guide](./documents/admin-guide.md) for the setup steps and for ho
 ## 📘 More Setup Options
 
 For detailed instructions, see:
-* 🐳 [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.md)
-* 💻 [Local / On‑premise Build Guide](./documents/build.run/local-guide.md)
-* 🤖 [AI & Advanced Build Guide](./documents/build.run/ai-guide.md)
-* 🔎 [MCP Server Guide (Claude Code / chat search)](./documents/mcp-guide.md)
-* 🛠 [Admin Guide (initial setup / API token)](./documents/admin-guide.md)
+* [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.md)
+* [Local / On‑premise Build Guide](./documents/build.run/local-guide.md)
+* [AI Features Guide](./documents/build.run/ai-guide.md)
+* [Admin Guide (initial setup / API token)](./documents/admin-guide.md)
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**.
