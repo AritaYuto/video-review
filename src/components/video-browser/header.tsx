@@ -89,17 +89,16 @@ export default function VideoListPanelHeader(
                         )
                         : (<></>)
                     }
-                    <button
-                        onClick={() => openChat()}
-                        disabled={!available}
-                        title={available ? undefined : tChat("llmUnavailable")}
-                        className={`
-                            inline-flex items-center justify-center px-1 leading-none transition-colors
-                            ${available ? "hover:text-[#ff5500]" : "opacity-30 cursor-not-allowed"}
-                        `}
-                    >
-                        <MessageSquare className="size-4" />
-                    </button>
+                    {/* Hidden rather than disabled: the reason lives in the settings popover (admins). */}
+                    {available && (
+                        <button
+                            onClick={() => openChat()}
+                            title={tChat("title")}
+                            className="inline-flex items-center justify-center px-1 leading-none transition-colors hover:text-[#ff5500]"
+                        >
+                            <MessageSquare className="size-4" />
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-1">

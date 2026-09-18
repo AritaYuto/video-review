@@ -5,6 +5,18 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ChatTurn } from "@/lib/fetch-wrapper/chat-search";
 
+function toInternalPath(href: string | undefined): string | null {
+    if (!href) return null;
+    if (href.startsWith("/") && !href.startsWith("//")) return href;
+    if (typeof window === "undefined") return null;
+    try {
+        const url = new URL(href, window.location.origin);
+        return url.origin === window.location.origin ? `${url.pathname}${url.search}${url.hash}` : null;
+    } catch {
+        return null;
+    }
+}
+
 export function ChatMessage({ turn }: { turn: ChatTurn }) {
     const isUser = turn.role === "user";
     return (
@@ -31,9 +43,12 @@ export function ChatMessage({ turn }: { turn: ChatTurn }) {
                                 strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
                                 code: ({ children }) => <code className="rounded bg-[#1a1a1a] px-1 text-[#ffaa44]">{children}</code>,
                                 a: ({ href, children }) => {
-                                    if (href?.startsWith("/") && !href.startsWith("//")) {
+                                    // Tool results carry absolute URLs so they work outside the app too;
+                                    // inside the app, same-origin ones navigate without a reload.
+                                    const internal = toInternalPath(href);
+                                    if (internal) {
                                         return (
-                                            <Link href={href} className="underline text-[#ff8800] hover:text-[#ffaa44]">
+                                            <Link href={internal} className="underline text-[#ff8800] hover:text-[#ffaa44]">
                                                 {children}
                                             </Link>
                                         );

@@ -67,7 +67,7 @@ videoreview.contact.info@gmail.com
 
 # ✨ Key Features
 
-## 💻 Flexible Deployment: On-premise or Cloud
+## Flexible Deployment: On-premise or Cloud
 VideoReviewはオンプレミス環境での運用を前提に設計しています  
 社内ネットワーク内で動画を完結させることで、機密性の高い映像素材を外部に出さずにレビューすることができます 
 
@@ -79,7 +79,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 
 ---
 
-## 💬 Actionable Comment Panel
+## Actionable Comment Panel
 
 コメント一覧は、SNSライクで直感的なUIを採用しています
 
@@ -90,7 +90,7 @@ VideoReviewはオンプレミス環境での運用を前提に設計していま
 これらはバッジや色分けによって強調され、読む前に一目で分かります
 
 
-## 🔔 Never Miss Feedback with Slack & JIRA
+## Never Miss Feedback with Slack & JIRA
 
 VideoReview は、Slack や Jira と連携することで
 レビュー中に生まれたフィードバックをそのまま普段のワークフローにつなげます  
@@ -119,7 +119,7 @@ Slack へ共有したり、Jira のチケットとして起票することがで
 
 # ✨ Advanced Features
 
-## 🔍 Powerful Search for Review Workflow
+## Powerful Search for Review Workflow
 
 動画とコメントをそれぞれ独立して検索できます
 
@@ -131,7 +131,7 @@ Slack へ共有したり、Jira のチケットとして起票することがで
 
 <img src="https://github.com/user-attachments/assets/2ff99052-bf6f-409a-aab9-e6628444e61a" width="700"></img>
 
-## 🔧 Built for Production Pipelines
+## Built for Production Pipelines
 
 実際の制作パイプラインに組み込めることを前提に設計されています
 
@@ -149,7 +149,7 @@ go run . upload-video \
   --video_path "/path/to/video.mp4"
 ```
 
-## 🧭 Roadmap
+## Roadmap
 
 VideoReview は、制作現場で使われ続けることを前提に  
 少しずつ改善・拡張していく予定です
@@ -163,9 +163,9 @@ VideoReview は、制作現場で使われ続けることを前提に
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 🐳 Quick Start (Docker)
+### Quick Start (Docker)
 
 ```bash
 
@@ -207,13 +207,12 @@ VideoReview に Web の管理画面はありません
 ## 📘 More Setup Options
 
 詳しいビルドオプションなどは、以下のドキュメントを参照してください
-* 🐳 [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.jp.md)
-* 💻 [Local / On‑premise Build Guide](./documents/build.run/local-guide.jp.md)
-* 🤖 [AI & Advanced Build Guide](./documents/build.run/ai-guide.jp.md)
-* 🔎 [MCP サーバーガイド（Claude Code / チャット検索）](./documents/mcp-guide.jp.md)
-* 🛠 [Admin Guide (初期セットアップ / API トークン)](./documents/admin-guide.jp.md)
+* [Docker Prod / Devlopment Build Guide](./documents/build.run/docker-guide.jp.md)
+* [Local / On‑premise Build Guide](./documents/build.run/local-guide.jp.md)
+* [AI Features Guide](./documents/build.run/ai-guide.jp.md)
+* [Admin Guide (初期セットアップ / API トークン)](./documents/admin-guide.jp.md)
 
-## 📄 License
+## License
 
 このプロジェクトは **MIT License** のもとで公開されています  
 詳しくは [LICENSE](./LICENSE) をご確認ください

@@ -1,0 +1,46 @@
+import { describe, expect, it } from "vitest";
+import { Client as McpClient } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { createLLMClient } from "@/server/lib/integration-clients/llm-client";
+import { env } from "@/server/lib/env";
+
+// Talks to the real LLM provider and MCP server configured in the environment.
+// Opt in with LLM_SMOKE=1 (see `npm run llm:check`); `npm test` skips it.
+const enabled = process.env.LLM_SMOKE === "1";
+
+describe.skipIf(!enabled)(`LLM smoke check (${env.LLM_PROVIDER ?? "no provider"})`, () => {
+    it("answers a plain completion", async () => {
+        const client = createLLMClient();
+        expect(client, "VIDEO_REVIEW_LLM_PROVIDER must be set").not.toBeNull();
+
+        const reply = await client!.complete("Reply with the single word OK.");
+        console.log(`[llm:check] complete(): ${JSON.stringify(reply)}`);
+        expect(reply.trim().length).toBeGreaterThan(0);
+    }, 60_000);
+
+    it("calls an MCP tool and answers from its result", async () => {
+        const client = createLLMClient();
+        expect(client).not.toBeNull();
+        expect(env.MCP_URL, "VIDEO_REVIEW_MCP_URL must be set").toBeTruthy();
+
+        const mcp = new McpClient({ name: "llm-smoke", version: "1.0.0" });
+        await mcp.connect(new StreamableHTTPClientTransport(new URL(env.MCP_URL!)));
+        try {
+            const system = [
+                mcp.getInstructions() ?? "",
+                "Answer in one short line. Use the list_videos tool with name='eval/' and tags='boss'.",
+            ].join("\n");
+            const reply = await client!.completeWithMCP(
+                [{ role: "user", content: "Which videos in the eval folder are tagged boss? List their titles." }],
+                mcp,
+                system,
+            );
+            console.log(`[llm:check] completeWithMCP(): ${JSON.stringify(reply)}`);
+            // The eval dataset (npm run prisma:seed:eval) has exactly these two boss videos.
+            expect(reply).toMatch(/Dragon/);
+            expect(reply).toMatch(/Golem/);
+        } finally {
+            await mcp.close();
+        }
+    }, 120_000);
+});

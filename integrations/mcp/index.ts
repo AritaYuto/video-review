@@ -9,6 +9,9 @@ import { createClient } from "./client.js";
 
 const baseUrl = process.env.VIDEO_REVIEW_SERVER_URL ?? "http://localhost:3489";
 const apiToken = process.env.VIDEO_REVIEW_API_TOKEN ?? "";
+// Links in tool results must open in a browser, so they use the address people reach
+// VideoReview at, which can differ from the API address this process calls (e.g. inside Docker).
+const publicUrl = (process.env.VIDEO_REVIEW_PUBLIC_URL ?? baseUrl).replace(/\/$/, "");
 
 if (!apiToken) {
     process.stderr.write(
@@ -17,6 +20,28 @@ if (!apiToken) {
 }
 
 const client = createClient({ baseUrl, apiToken });
+
+type Json = Record<string, unknown>;
+
+function videoUrl(videoId: string): string {
+    return `${publicUrl}/video-review/review/${videoId}`;
+}
+
+function withVideoUrl<T extends Json>(video: T): T & { url: string } {
+    return { ...video, url: videoUrl(String(video.id)) };
+}
+
+function withCommentUrl<T extends Json>(comment: T): T & { url: string } {
+    return { ...comment, url: `${videoUrl(String(comment.videoId))}?comment=${String(comment.id)}` };
+}
+
+function withEventUrl<T extends Json>(videoId: string, event: T): T & { url: string } {
+    return { ...event, url: `${videoUrl(videoId)}?revision=${String(event.videoRevisionId)}&event=${String(event.id)}` };
+}
+
+function text(data: unknown) {
+    return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+}
 
 // The search guide ships with the server so every client (in-app chat, Claude Code, bots)
 // gets the same instructions. Teams append their own vocabulary through a local file.
@@ -87,7 +112,7 @@ function createServer(): McpServer {
         async ({ name, tags, videoFrom, videoTo, includeRevisions, hasComments, commentUser, hasDrawing, hasIssue, commentsFrom, commentsTo, sortBy, limit }) => {
             // The comment filters on /videos only take effect together with hasComment.
             const wantsComments = hasComments || commentUser !== undefined || hasDrawing || hasIssue || commentsFrom !== undefined || commentsTo !== undefined;
-            const data = await client.get("/videos", {
+            const data = await client.get<Json[]>("/videos", {
                 filterTree: name,
                 tags, videoFrom, videoTo, commentsFrom, commentsTo,
                 user: commentUser,
@@ -98,7 +123,7 @@ function createServer(): McpServer {
                 sortBy,
                 limit: limit != null ? String(limit) : undefined,
             });
-            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+            return text(data.map(withVideoUrl));
         },
     );
 
@@ -109,8 +134,8 @@ function createServer(): McpServer {
             inputSchema: { id: z.string().describe("Video UUID") },
         },
         async ({ id }) => {
-            const data = await client.get(`/videos/${id}`);
-            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+            const data = await client.get<Json>(`/videos/${id}`);
+            return text(withVideoUrl(data));
         },
     );
 
@@ -130,14 +155,14 @@ function createServer(): McpServer {
             },
         },
         async ({ videoId, filterText, from, to, hasDrawing, hasIssue, selectRevision, user }) => {
-            const data = await client.get("/comments", {
+            const data = await client.get<Json[]>("/comments", {
                 videoId, filterText, from, to,
                 hasDrawing: hasDrawing ? "true" : undefined,
                 hasIssue: hasIssue ? "true" : undefined,
                 selectRevision: selectRevision != null ? String(selectRevision) : undefined,
                 user,
             });
-            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+            return text(data.map(withCommentUrl));
         },
     );
 
@@ -153,11 +178,11 @@ function createServer(): McpServer {
             },
         },
         async ({ videoId, kind, filterText, selectRevision }) => {
-            const data = await client.get(`/videos/${videoId}/events`, {
+            const data = await client.get<Json[]>(`/videos/${videoId}/events`, {
                 kind, filterText,
                 selectRevision: selectRevision != null ? String(selectRevision) : undefined,
             });
-            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+            return text(data.map(e => withEventUrl(videoId, e)));
         },
     );
 
@@ -172,12 +197,12 @@ function createServer(): McpServer {
             },
         },
         async ({ filterText, kind, limit }) => {
-            const data = await client.get("/videos/search-by-event", {
+            const data = await client.get<Json[]>("/videos/search-by-event", {
                 filterText,
                 kind,
                 limit: limit != null ? String(limit) : undefined,
             });
-            return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+            return text(data.map(withVideoUrl));
         },
     );
 

@@ -153,7 +153,16 @@
         "languageOptionJa": "Japanese",
         "logout": "Logout",
         "editProfile": "Edit Profile",
-        "editPrompt": "Edit Prompt"
+        "editPrompt": "Edit Prompt",
+        "aiSearch": "AI search (chat)",
+        "aiSearchState": {
+            "checking": "Checking",
+            "unknown": "Status unavailable",
+            "noLlm": "Off: LLM provider not configured",
+            "noMcp": "Off: MCP server URL not configured",
+            "mcpUnreachable": "Off: MCP server unreachable",
+            "ok": "On"
+        }
     },
     "calendar-date-radio": {
         "today": "Today",

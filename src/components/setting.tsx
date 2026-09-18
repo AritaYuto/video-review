@@ -8,6 +8,8 @@ import { useLocale } from "@/app/locale-provider";
 import { Switch } from "@/ui/switch";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
+import { useLLMStatusStore } from "@/stores/llm-status-store";
+import { isAdmin } from "@/lib/role";
 import { ControlRow } from "@/ui/control-row";
 import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
@@ -21,7 +23,18 @@ export function SettingPopover() {
     const { locale, setLocale } = useLocale();
     const [ editProfileOpen, setEditProfileOpen] = useState(false);
 
-    const { verifyAuth } = useAuthStore();
+    const { verifyAuth, role } = useAuthStore();
+    const llmStatus = useLLMStatusStore();
+
+    // Why chat search is off, for admins to fix the deployment; viewers just don't see the button.
+    const aiSearchState = (() => {
+        if (!llmStatus.checked) return "checking";
+        if (!llmStatus.status) return "unknown";
+        if (!llmStatus.status.llm.configured) return "noLlm";
+        if (!llmStatus.status.mcp.configured) return "noMcp";
+        if (!llmStatus.status.mcp.reachable) return "mcpUnreachable";
+        return "ok";
+    })();
 
     useEffect(() => {
         void (async () => {
@@ -83,6 +96,15 @@ export function SettingPopover() {
                             />
                         );
                     })}
+
+                    {/* AI search status (admins) */}
+                    {ControlRow(t("aiSearch"), () => {
+                        return (
+                            <span className={`text-xs ${aiSearchState === "ok" ? "text-green-400" : "text-yellow-400"}`}>
+                                {t(`aiSearchState.${aiSearchState}`)}
+                            </span>
+                        );
+                    }, !isLogged || !isAdmin(role))}
 
                     {/* Logout */}
                     {ControlRow(t("logout"), () => {
