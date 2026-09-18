@@ -144,7 +144,7 @@ Build and start it:
 
 ```bash
 npm run mcp:build
-MCP_TRANSPORT=http MCP_PORT=3490 npm run mcp:run
+VIDEO_REVIEW_MCP_TRANSPORT=http VIDEO_REVIEW_MCP_PORT=3490 npm run mcp:run
 ```
 
 ### Check
