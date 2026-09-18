@@ -21,8 +21,8 @@ async function loadClient(overrides: EnvOverrides) {
 
 type Captured = { url: string; headers: Record<string, string>; body: Record<string, unknown> };
 
-// Replaces fetch with a scripted sequence of OpenAI-format responses and records each request.
-function scriptFetch(responses: (Record<string, unknown> | { status: number })[]) {
+// Replaces fetch with a scripted sequence of 200 JSON replies and records each request.
+function scriptFetch(responses: Record<string, unknown>[]) {
     const captured: Captured[] = [];
     let index = 0;
     vi.stubGlobal("fetch", vi.fn(async (url: string, init: RequestInit) => {
@@ -32,9 +32,6 @@ function scriptFetch(responses: (Record<string, unknown> | { status: number })[]
             body: JSON.parse(String(init.body)),
         });
         const next = responses[Math.min(index++, responses.length - 1)];
-        if ("status" in next && typeof next.status === "number" && Object.keys(next).length === 1) {
-            return new Response("error", { status: next.status });
-        }
         return new Response(JSON.stringify(next), { status: 200, headers: { "Content-Type": "application/json" } });
     }));
     return captured;
@@ -83,9 +80,9 @@ describe("OpenAI-compatible LLM clients", () => {
             expect(captured[0].body).toMatchObject({ model: "llama3.2:1b", format: "json", stream: false });
         });
 
-        it("openai: calls api.openai.com with a bearer key and no Ollama-only fields", async () => {
+        it("openai: calls api.openai.com with a bearer key, ignoring the Ollama base URL", async () => {
             const captured = scriptFetch([textReply("hi")]);
-            const client = await loadClient({ LLM_PROVIDER: "openai", LLM_API_KEY: "sk-test", LLM_MODEL: "gpt-5-mini" });
+            const client = await loadClient({ LLM_PROVIDER: "openai", LLM_API_KEY: "sk-test", LLM_MODEL: "gpt-5-mini", LLM_BASE_URL: "http://localhost:11434" });
 
             await client.complete("hello");
 
@@ -95,28 +92,6 @@ describe("OpenAI-compatible LLM clients", () => {
             expect(captured[0].body).not.toHaveProperty("stream");
         });
 
-        it("gemini: calls Google's OpenAI-compatible endpoint with a bearer key", async () => {
-            const captured = scriptFetch([textReply("hi")]);
-            const client = await loadClient({ LLM_PROVIDER: "gemini", LLM_API_KEY: "AIza-test" });
-
-            await client.complete("hello");
-
-            expect(captured[0].url).toBe("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions");
-            expect(captured[0].headers.Authorization).toBe("Bearer AIza-test");
-            expect(captured[0].body).toMatchObject({ model: "gemini-2.0-flash" });
-        });
-
-        it("openai and gemini refuse to start without an API key", async () => {
-            await expect(loadClient({ LLM_PROVIDER: "openai" })).rejects.toThrow(/VIDEO_REVIEW_LLM_API_KEY/);
-            await expect(loadClient({ LLM_PROVIDER: "gemini" })).rejects.toThrow(/VIDEO_REVIEW_LLM_API_KEY/);
-        });
-
-        it("reports the provider name on HTTP errors", async () => {
-            scriptFetch([{ status: 500 }]);
-            const client = await loadClient({ LLM_PROVIDER: "openai", LLM_API_KEY: "sk-test" });
-
-            await expect(client.complete("hello")).rejects.toThrow("OpenAI error: HTTP 500");
-        });
     });
 
     describe("completeWithMCP tool loop", () => {

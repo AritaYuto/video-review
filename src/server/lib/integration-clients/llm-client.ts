@@ -141,7 +141,11 @@ class OpenAICompatibleClient implements LLMClient {
             headers: this.headers(),
             body: JSON.stringify({ model: this.options.model, ...body }),
         });
-        if (!res.ok) throw new Error(`${this.options.label} error: HTTP ${res.status}`);
+        if (!res.ok) {
+            // Providers explain failures in the body (no credits, unknown model); surface it.
+            const detail = (await res.text().catch(() => "")).slice(0, 300);
+            throw new Error(`${this.options.label} error: HTTP ${res.status}${detail ? ` ${detail}` : ""}`);
+        }
         return res;
     }
 
@@ -213,15 +217,14 @@ function buildClient(): LLMClient | null {
     switch (provider) {
         case "claude":
             return new ClaudeClient(requireApiKey("Claude"), env.LLM_MODEL ?? "claude-haiku-4-5-20251001");
-        case "openai": {
-            const baseUrl = (env.LLM_BASE_URL ?? "https://api.openai.com").replace(/\/$/, "");
+        case "openai":
+            // Fixed endpoint: LLM_BASE_URL belongs to Ollama and must not redirect OpenAI calls.
             return new OpenAICompatibleClient({
-                endpoint: `${baseUrl}/v1/chat/completions`,
+                endpoint: "https://api.openai.com/v1/chat/completions",
                 apiKey: requireApiKey("OpenAI"),
                 model: env.LLM_MODEL ?? "gpt-5-mini",
                 label: "OpenAI",
             });
-        }
         case "gemini":
             return new OpenAICompatibleClient({
                 endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
