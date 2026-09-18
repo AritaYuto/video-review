@@ -37,7 +37,7 @@ async function createMcpClient(url: string): Promise<McpClient> {
 const DEFAULT_GUIDE = [
     "You are an assistant for Video Review. Help the user find videos, comments, and events using the available tools.",
     "When filtering by date range, always specify both ends of the range.",
-    "When listing videos, link each one as [title](/video-review/review/VIDEO_ID).",
+    "When listing videos, link each one as [title](url) using the url field from the tool result.",
 ].join("\n");
 
 async function readTextTool(mcpClient: McpClient, name: string): Promise<string[]> {

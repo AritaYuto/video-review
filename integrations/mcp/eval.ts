@@ -60,7 +60,19 @@ function unique(values: string[]): string[] {
     return [...new Set(values)];
 }
 
+const absoluteUrls = (result: unknown): string[] => {
+    const items = result as { url?: string }[];
+    return items.every(i => typeof i.url === "string" && /^https?:\/\//.test(i.url)) ? ["all absolute"] : ["missing or relative url"];
+};
+
 const CASES: EvalCase[] = [
+    {
+        question: "Do tool results carry links that work outside the app?",
+        tool: "list_videos",
+        args: { name: EVAL_FOLDER_PREFIX },
+        expect: ["all absolute"],
+        extract: absoluteUrls,
+    },
     {
         question: "Which videos were uploaded in the last 7 days?",
         tool: "list_videos",

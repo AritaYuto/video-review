@@ -153,7 +153,16 @@
         "languageOptionJa": "日本語 (Japanese)",
         "logout": "ログアウト",
         "editProfile": "プロフィール編集",
-        "editPrompt": "プロンプト編集"
+        "editPrompt": "プロンプト編集",
+        "aiSearch": "AI 検索（チャット）",
+        "aiSearchState": {
+            "checking": "確認中",
+            "unknown": "状態を取得できません",
+            "noLlm": "無効: LLM プロバイダーが未設定",
+            "noMcp": "無効: MCP サーバーの URL が未設定",
+            "mcpUnreachable": "無効: MCP サーバーに接続できません",
+            "ok": "有効"
+        }
     },
     "calendar-date-radio": {
         "today": "今日",
