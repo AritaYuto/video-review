@@ -230,20 +230,12 @@ Video names in the answer are links that open in a browser.
 
 ## 5. Customize the search context
 
-The context the assistant uses for search has two layers.
+General context such as which tool answers which question and how dates are read ships with the server.
+Team-specific context goes into a Markdown file that the MCP server reads.
 
-| | Where | Applies to | Written by |
-|---|---|---|---|
-| MCP-side notes | A Markdown file the MCP server reads | The in-app chat and every agent | Admin |
-| Agent-side notes | The agent's instruction file (a Skill in Claude Code) | That agent only | Each user |
+### Write the notes
 
-General context such as which tool answers which question and how dates are read ships with the server, so both layers are optional.
-
-### MCP-side notes
-
-Team-specific context: what tags mean, who owns which folder, and so on.
-
-Write a Markdown file:
+What tags mean, who owns which folder, how answers should look, how frequent questions are phrased, and so on:
 
 ```markdown
 # Tags
@@ -252,31 +244,22 @@ Write a Markdown file:
 
 # Folders
 - 05_cutscene: owned by the cinematics team
+
+# Answer format
+- One line per video, with the link and the date of the latest revision
+- "Recent" means the last two weeks
+
+# Frequent questions
+- "Waiting for review" means videos without the wip tag and with no comments
 ```
+
+### Set the path and restart
 
 Set the file path in the MCP server's `.env` and restart the MCP server:
 
 ```env
 VIDEO_REVIEW_MCP_GUIDE_PATH=/srv/videoreview/team-notes.md
 ```
-
-### Agent-side notes
-
-A file that tells the agent to use the video-review MCP server for video questions and to read the search context before answering.
-The repository ships that text as `.claude/skills/video-review-search/SKILL.md`.
-
-Claude Code reads it automatically when opened in the repository.
-To use it from another directory, copy it to `~/.claude/skills/`:
-
-```bash
-cp -r .claude/skills/video-review-search ~/.claude/skills/
-```
-
-Codex CLI reads `AGENTS.md` and Gemini CLI reads `GEMINI.md` for the same purpose.
-Copy the body of `SKILL.md` into those files.
-
-Instructions for your own agent only (answer format, how you phrase frequent questions) go into this file.
-Context for the whole team goes into the MCP-side notes.
 
 ---
 
