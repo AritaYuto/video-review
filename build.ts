@@ -27,6 +27,7 @@ async function build() {
     execSync("npm run prisma:generate", { stdio: "inherit" });
     execSync("next build", { stdio: "inherit" });
     execSync("npm run video-processing:build", { stdio: "inherit" });
+    execSync("npm run mcp:build", { stdio: "inherit" });
 }
 
 async function defaultBuild() {
