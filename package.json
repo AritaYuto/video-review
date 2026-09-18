@@ -19,6 +19,7 @@
         "mcp:run": "node integrations/mcp/dist/index.js",
         "mcp:dev": "npx tsx integrations/mcp/index.ts",
         "mcp:eval": "npx tsx integrations/mcp/eval.ts",
+        "llm:check": "set -a && . ./.env && set +a && LLM_SMOKE=1 npx vitest run tests/smoke",
         "prisma:deploy": "npx prisma migrate deploy",
         "prisma:generate": "npx prisma generate",
         "prisma:migration": "npx prisma migrate dev --name",
