@@ -26,6 +26,8 @@ export default defineConfig([
                     { pattern: "^Tabs$", allow: ["layout", "gap-0"] },
                     // The spinner inherits currentColor; the accent is the only colour it takes.
                     { pattern: "^Spinner$", allow: ["layout", "text-primary"] },
+                    // The chat sheet's header is separated from the message list by a rule.
+                    { pattern: "^SheetHeader$", allow: ["layout", "border-b"] },
                 ],
             }],
             "shadcn/no-raw-colors": "warn",

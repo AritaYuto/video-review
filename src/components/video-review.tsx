@@ -14,9 +14,8 @@ import { useTranslations } from "next-intl";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
-import { Badge } from "@/ui/badge";
 import { cn } from "@/lib/utils";
-import { Spinner } from "@/ui/spinner";
+import { LoadingBadge } from "@/components/controls/loading-badge";
 
 export default function VideoReview() {
     const t = useTranslations("video-review");
@@ -298,10 +297,7 @@ export default function VideoReview() {
                 {loading
                     ?
                     <div className="flex-1 flex flex-col items-center justify-center">
-                        <Badge variant="outline">
-                            <Spinner className="text-primary" />
-                            Videos Syncing...
-                        </Badge>
+                        <LoadingBadge>Videos Syncing...</LoadingBadge>
                     </div>
                     :
                     <>

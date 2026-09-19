@@ -122,6 +122,11 @@
   max-width: calc(100vw - var(--panel-offset, 0px));
 }
 
+/* Review screen: player on the left, side panel on the right. */
+@utility review-columns {
+  grid-template-columns: 73% 27%;
+}
+
 /* The player never grows past most of the viewport so the controls stay visible. */
 @utility video-stage {
   max-height: 80vh;

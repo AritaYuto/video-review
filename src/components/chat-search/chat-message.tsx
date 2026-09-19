@@ -23,10 +23,8 @@ export function ChatMessage({ turn }: { turn: ChatTurn }) {
         <div className={cn("flex flex-col gap-1", isUser ? "items-end" : "items-start")}>
             <div
                 className={cn(
-                    "max-w-[85%] rounded-lg px-3 py-2 text-sm break-words",
-                    isUser
-                        ? "bg-[#ff8800] text-black"
-                        : "bg-[#2a2a2a] text-[#ddd]",
+                    "max-w-5/6 rounded-lg px-3 py-2 text-sm break-words",
+                    isUser ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground",
                 )}
             >
                 {isUser ? turn.content : (
@@ -37,24 +35,24 @@ export function ChatMessage({ turn }: { turn: ChatTurn }) {
                                 ul: ({ children }) => <ul className="list-disc pl-5 flex flex-col gap-1">{children}</ul>,
                                 ol: ({ children }) => <ol className="list-decimal pl-5 flex flex-col gap-1">{children}</ol>,
                                 li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                                h1: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
-                                h2: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
-                                h3: ({ children }) => <p className="font-semibold text-[#ff8800] mt-1">{children}</p>,
-                                strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                                code: ({ children }) => <code className="rounded bg-[#1a1a1a] px-1 text-[#ffaa44]">{children}</code>,
+                                h1: ({ children }) => <p className="font-semibold text-primary mt-1">{children}</p>,
+                                h2: ({ children }) => <p className="font-semibold text-primary mt-1">{children}</p>,
+                                h3: ({ children }) => <p className="font-semibold text-primary mt-1">{children}</p>,
+                                strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                                code: ({ children }) => <code className="rounded bg-background px-1 text-primary">{children}</code>,
                                 a: ({ href, children }) => {
                                     // Tool results carry absolute URLs so they work outside the app too;
                                     // inside the app, same-origin ones navigate without a reload.
                                     const internal = toInternalPath(href);
                                     if (internal) {
                                         return (
-                                            <Link href={internal} className="underline text-[#ff8800] hover:text-[#ffaa44]">
+                                            <Link href={internal} className="underline text-primary hover:text-primary-strong">
                                                 {children}
                                             </Link>
                                         );
                                     }
                                     return (
-                                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-[#ff8800] hover:text-[#ffaa44]">
+                                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary-strong">
                                             {children}
                                         </a>
                                     );
