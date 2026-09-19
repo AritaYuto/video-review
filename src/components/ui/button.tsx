@@ -19,8 +19,8 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        // Active state of toggle-like buttons (date presets).
-        success: "bg-success text-primary-foreground hover:bg-success/90",
+        // Selected state of toggle-like buttons (date presets); matches the accent tabs.
+        accent: "bg-primary/20 text-primary hover:bg-primary/30",
         // Icon-only actions in panel headers; data-active marks an engaged filter or toggle.
         toolbar: "text-primary hover:text-primary-strong data-[active=true]:text-success",
         // Small clickable chips under a comment (issue, Slack, like).
