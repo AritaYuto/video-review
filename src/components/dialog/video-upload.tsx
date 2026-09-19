@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/ui/input";
 import * as api from "@/lib/fetch-wrapper"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { FormDialog } from "@/components/dialog/form-dialog";
 import { Upload } from "lucide-react";
 import path from "path";
 import { useTranslations } from "next-intl";
 import { UploadSession } from "@/lib/db-types";
-
-import { DialogClose } from "@radix-ui/react-dialog";
 
 export default function VideoUploadDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     type UploadStep = "input" | "uploading" | "done" | "error";
@@ -114,18 +112,23 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
     }, [step, session]);
 
     return (
-        <Dialog open={open} onOpenChange={() => step === "done" || onClose()}>
-            <DialogContent className="bg-[#202020]">
-                <DialogHeader>
-                    <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
-                </DialogHeader>
-
+        <FormDialog
+            open={open}
+            onClose={() => { if (step !== "done") onClose(); }}
+            title={t("title")}
+            onSubmit={handleUpload}
+            cancelLabel={t("cancel")}
+            submitLabel={step === "uploading" ? t("uploading") : t("upload")}
+            cancelDisabled={step === "uploading"}
+            submitDisabled={!file || step !== "input"}
+            message={message}
+        >
                 <div className="flex flex-col gap-3">
                     <label
                         htmlFor="video-file"
-                        className="flex items-center justify-between w-full p-2 rounded bg-[#303030] border border-[#444] cursor-pointer hover:bg-[#383838]"
+                        className="flex items-center justify-between w-full p-2 rounded-md bg-muted border border-input cursor-pointer hover:bg-accent"
                     >
-                        <span className="text-[#aaa]">
+                        <span className="text-muted-foreground">
                             {file ? file.name : t("selectFile")}
                         </span>
                         <input
@@ -135,16 +138,15 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
                             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                             className="hidden"
                         />
-                        <Upload size={16} className="text-[#666]" />
+                        <Upload size={16} className="text-muted-foreground" />
                     </label>
 
-                    <input
+                    <Input
                         type="text"
                         list="folder-key-options"
                         placeholder={t("folderKeyPlaceholder")}
                         value={selectedFolderKey}
                         onChange={(e) => setSelectedFolderKey(e.target.value)}
-                        className="w-full p-2 rounded bg-[#303030] border border-[#444] text-white text-left"
                     />
 
                     <datalist id="folder-key-options">
@@ -153,30 +155,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
                         ))}
                     </datalist>
                 </div>
-
-                {message && <div className="text-sm text-[#ccc] mt-2">{message}</div>}
-
-                <DialogFooter>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            variant="ghost"
-                            disabled={step === "uploading"}
-                            onClick={onClose}
-                            className="bg-[#333] text-white hover:bg-[#fff]"
-                        >
-                            {t("cancel")}
-                        </Button>
-                        <Button
-                            onClick={handleUpload}
-                            disabled={!file || step !== "input"}
-                            className="bg-[#ff8800] text-white hover:bg-[#ee3300]"
-                        >
-                            {step === "uploading" ? t("uploading") : t("upload")}
-                        </Button>
-                    </div>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        </FormDialog>
     );
 }
 

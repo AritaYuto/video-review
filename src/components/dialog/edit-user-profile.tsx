@@ -115,9 +115,9 @@ export default function EditUserProfileDialog({
 
     return (
         <Dialog open={open} onOpenChange={Close}>
-            <DialogContent className="bg-[#202020]">
+            <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="text-[#ff8800]">
+                    <DialogTitle>
                         {t("title")}
                     </DialogTitle>
                 </DialogHeader>
@@ -133,10 +133,8 @@ export default function EditUserProfileDialog({
                         </Avatar>
 
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center
-                        rounded-full bg-black/50 opacity-0
-                        group-hover:opacity-100 transition">
-                            <span className="text-xs text-white">
+                        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-background/60 opacity-0 group-hover:opacity-100 transition">
+                            <span className="text-xs text-foreground">
                                 {t("change")}
                             </span>
                         </div>
@@ -156,7 +154,7 @@ export default function EditUserProfileDialog({
 
                     {/* Error */}
                     {error && (
-                        <div className="text-sm text-red-400">
+                        <div className="text-sm text-destructive">
                             {error}
                         </div>
                     )}
@@ -166,8 +164,7 @@ export default function EditUserProfileDialog({
                             <Input id="displayName"
                                 type="text"
                                 value={editDisplayName ?? ""}
-                                onChange={(x) => setEditDisplayName(x.target.value)}
-                                className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                                onChange={(x) => setEditDisplayName(x.target.value)} />
                         );
                     })}
 
@@ -189,7 +186,7 @@ export default function EditUserProfileDialog({
                         }, role !== "admin")}
                         <div>
                             {apiToken && (
-                                <div className="mt-3 w-full rounded bg-black/40 p-2 text-xs text-white break-all">
+                                <div className="mt-3 w-full rounded-md bg-background/60 p-2 text-xs break-all">
                                     {apiToken}
                                 </div>
                             )}

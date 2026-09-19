@@ -2,19 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { FormDialog } from "@/components/dialog/form-dialog";
+import { ClearableComboBox, ClearableTextField } from "@/components/controls/clearable-fields";
 import { fetcCommentUsers, fetchAllVideoTags } from "@/lib/fetch-wrapper";
 import { ControlRow } from "@/components/controls/control-row";
-import ComboBox from "@/components/controls/combo-box";
 import { Checkbox } from "@/ui/checkbox";
+import { Input } from "@/ui/input";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import { useVideoDateFilterStore, useVideoCommentsDateFilterStore } from "@/stores/date-filter-store";
-import { Button } from "@/ui/button";
 import { useVideoStore } from "@/stores/video-store";
-import { X } from "lucide-react";
 import CalendarDateRadio from "@/components/controls/calendar-date-radio";
 import MultiComboBox from "@/components/controls/multi-combobox";
-import { Badge } from "@/ui/badge";
 
 export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     const t = useTranslations("video-search");
@@ -63,20 +61,13 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
     }
 
     return (
-        <Dialog open={open} onOpenChange={x => onClose()}>
-            <DialogContent className="bg-[#202020]">
-                <DialogHeader>
-                    <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4 min-w-[360px]">
-
+        <FormDialog open={open} onClose={onClose} title={t("title")} onSubmit={handleSearch} cancelLabel={t("cancel")} submitLabel={t("ok")}>
                     {ControlRow(t("hasComment"), () => {
                         return (
                             <Checkbox
                                 defaultChecked={hasComment}
                                 onCheckedChange={(x) => setHasComment(x as boolean)}
-                                className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
+                                size="lg"
                             />
                         );
                     })}
@@ -86,17 +77,12 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                             <>
                                 {ControlRow(t("userFilter"), () => {
                                     return (
-                                        <div className="flex justify-between">
-                                            <ComboBox
-                                                options={commentUsers}
-                                                setValue={setCommentUser}
-                                                value={user}
-                                                placeholder="Select user..."
-                                                className="mx-2" />
-                                            <Button onClick={handleClearUserFilter} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
-                                                <X />
-                                            </Button>
-                                        </div>
+                                        <ClearableComboBox
+                                            options={commentUsers}
+                                            setValue={setCommentUser}
+                                            value={user}
+                                            placeholder="Select user..."
+                                            onClear={handleClearUserFilter} />
                                     );
                                 })}
 
@@ -121,7 +107,7 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                                         <Checkbox
                                             defaultChecked={hasIssue}
                                             onCheckedChange={(x) => setHasIssue(x as boolean)}
-                                            className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
+                                            size="lg"
                                         />
                                     );
                                 })}
@@ -130,11 +116,11 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                                     (<>
                                         {ControlRow(t("filterIssue"), () => {
                                             return (
-                                                <input
+                                                <Input
                                                     type="text"
                                                     value={filterIssue}
                                                     onChange={(e) => setFilterIssue(e.target.value)}
-                                                    className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white"
+                                                    className="h-8"
                                                     placeholder="Filter..."
                                                 />
                                             );
@@ -146,7 +132,7 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                                         <Checkbox
                                             defaultChecked={hasDrawing}
                                             onCheckedChange={(x) => setHasDrawing(x as boolean)}
-                                            className="border-[#ccc] w-8  h-8 rounded bg-[#181818] border px-2 text-sm text-white"
+                                            size="lg"
                                         />
                                     );
                                 })}
@@ -157,18 +143,11 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
 
                     {ControlRow(t("searchFilter"), () => {
                         return (
-                            <div className="flex justify-between">
-                                <input
-                                    type="text"
-                                    value={filterTree}
-                                    onChange={(e) => setFilterTree(e.target.value)}
-                                    className="border-[#ccc] w-full h-8 rounded bg-[#181818] border px-2 text-sm text-white mx-2"
-                                    placeholder="Filter tree..."
-                                />
-                                <Button onClick={handleClearTreeFilter} variant="outline" className="border-[#ccc] bg-[#181818] border h-8.2">
-                                    <X />
-                                </Button>
-                            </div>
+                            <ClearableTextField
+                                value={filterTree}
+                                onChange={setFilterTree}
+                                onClear={handleClearTreeFilter}
+                                placeholder="Filter tree..." />
                         );
                     })}
 
@@ -190,7 +169,7 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
 
                     {ControlRow("Tags", () => {
                         return (
-                            <div className="mx-2 w-full">
+                            <div className="w-full">
                                 <MultiComboBox
                                     placeholder="Select tags..."
                                     options={allVideoTags ?? []}
@@ -200,27 +179,7 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
                             </div>
                         );
                     })}
-                </div>
-
-                <DialogFooter>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="bg-[#333] text-white hover:bg-[#fff]"
-                        >
-                            {t("cancel")}
-                        </Button>
-                        <Button
-                            onClick={handleSearch}
-                            className="bg-[#ff8800] text-white hover:bg-[#ee3300]"
-                        >
-                            {t("ok")}
-                        </Button>
-                    </div>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        </FormDialog>
     );
 }
 

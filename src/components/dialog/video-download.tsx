@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import { env } from "@/lib/env";
 import ComboBox from "@/components/controls/combo-box";
 import { ControlRow } from "@/components/controls/control-row";
-import { Button } from "@/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { FormDialog } from "@/components/dialog/form-dialog";
 import { downloadVideo } from "@/lib/fetch-wrapper";
 
 export function VideoDownloadDialog({ videoId, videoRevId, open, onClose }: { videoId: string; videoRevId: string; open: boolean; onClose: () => void }) {
@@ -33,46 +32,17 @@ export function VideoDownloadDialog({ videoId, videoRevId, open, onClose }: { vi
     };
 
     return (
-        <Dialog open={open} onOpenChange={() => onClose()}>
-            <DialogContent className="bg-[#202020]">
-                <DialogHeader>
-                    <DialogTitle className="text-[#ff8800]">{t("title")}</DialogTitle>
-                </DialogHeader>
-
-                <div className="flex flex-col gap-3">
+        <FormDialog open={open} onClose={onClose} title={t("title")} onSubmit={handleDownload} cancelLabel={t("cancel")} submitLabel={t("prepare")}>
                     {ControlRow(t("selectRes"), () => {
                         return (
-                            <div className="flex justify-between">
-                                <ComboBox
-                                    options={Object.entries(resolutions).map(([label, value]) => ({ label, value }))}
-                                    setValue={(value) => setSelectedResolution(value)}
-                                    value={selectedResolution}
-                                    placeholder="resolution..."
-                                    className="mx-2" />
-                            </div>
+                            <ComboBox
+                                options={Object.entries(resolutions).map(([label, value]) => ({ label, value }))}
+                                setValue={(value) => setSelectedResolution(value)}
+                                value={selectedResolution}
+                                placeholder="resolution..." />
                         );
                     })}
-                </div>
-
-                <DialogFooter>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="bg-[#333] text-white hover:bg-[#fff]"
-                        >
-                            {t("cancel")}
-                        </Button>
-                        <Button
-                            onClick={handleDownload}
-                            className="bg-[#ff8800] text-white hover:bg-[#ee3300]"
-                        >
-                            {t("prepare")}
-                        </Button>
-                    </div>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        </FormDialog>
     );
 }
 
