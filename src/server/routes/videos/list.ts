@@ -14,6 +14,7 @@ const QuerySchema = z.object({
     commentsTo: z.string().optional(),
     name: z.string().optional(),
     filterTree: z.string().optional(),
+    filterIssue: z.string().optional(),
     user: z.string().optional(),
     hasDrawing: z
         .string()
@@ -79,6 +80,7 @@ export const listRouter = createRouter()
             commentsFrom,
             commentsTo,
             filterTree,
+            filterIssue,
             hasDrawing,
             hasIssue,
             hasComment,
@@ -116,7 +118,11 @@ export const listRouter = createRouter()
             whereVideoComment.issueId = { not: null };
         }
 
-        if (hasComment) {
+        if (filterIssue) {
+            whereVideoComment.issueId = { contains: filterIssue };
+        }
+
+        if (hasComment || filterIssue) {
             whereVideo.comments = { some: whereVideoComment }
         }
 
