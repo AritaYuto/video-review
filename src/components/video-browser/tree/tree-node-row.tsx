@@ -1,5 +1,6 @@
 import { VideoNode } from "@/components/video-browser/tree/types";
 import { Folder, Film } from "lucide-react";
+import { NewBadge } from "@/components/video-browser/new-badge";
 
 
 interface Props {
@@ -28,28 +29,18 @@ export function TreeNodeRow({
             className={[
                 "flex items-center gap-1 px-2 py-1 rounded cursor-pointer select-none truncate",
                 selected
-                    ? "bg-[#555] border-l-2 border-[#ff8800]"
-                    : "hover:bg-[#222]",
+                    ? "bg-sidebar-accent border-l-2 border-primary"
+                    : "hover:bg-accent",
             ].join(" ")}
         >
             <div className="relative">
                 {isFolder ? (
-                    <Folder size={14} className="text-[#ff8800]" />
+                    <Folder size={14} className="text-primary" />
                 ) : (
-                    <Film size={14} className="text-[#ff8800]" />
+                    <Film size={14} className="text-primary" />
                 )}
 
-                {unread && (
-                    <span
-                        className={[
-                            "absolute -top-1 -left-1",
-                            "text-[8px] px-1 py-[1px]",
-                            "bg-red-500 text-white rounded leading-none",
-                        ].join(" ")}
-                    >
-                        NEW
-                    </span>
-                )}
+                {unread && <NewBadge className="absolute -top-1 -left-1" />}
             </div>
 
             <span className="flex items-center gap-1">{name}</span>

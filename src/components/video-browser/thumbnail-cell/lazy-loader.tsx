@@ -41,7 +41,7 @@ export function ThumbnailLazyLoader({ video, containerRef, cache, onResolve }: P
     }, [cached, key]);
 
     return (
-        <div ref={ref} className="bg-[#111]" style={{ aspectRatio: "16 / 9" }}>
+        <div ref={ref} className="bg-background aspect-video">
             {cached ? (
                 <img src={cached} alt="" className="w-full h-full object-cover" />
             ) : isResolving ? (
@@ -49,7 +49,7 @@ export function ThumbnailLazyLoader({ video, containerRef, cache, onResolve }: P
                     <Spinner />
                 </div>
             ) : (
-                <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
+                <div className="flex items-center justify-center text-xs text-muted-foreground w-full h-full">
                     thumbnail
                 </div>
             )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { Button } from "@/ui/button";
 import { useTranslations } from "next-intl";
 import { VideoWithRevision } from "@/lib/db-types";
 import { useSidebar } from "@/ui/sidebar";
@@ -68,21 +69,14 @@ export default function VideoThumbnailsPanel({
         <div
             ref={panelRef}
             data-slot="thumbnails-panel"
-            style={{
-                left: offset,
-                maxWidth: `calc(100vw - ${offset})`,
-            }}
-            className="fixed top-0 bottom-0 z-40 w-[46rem] flex flex-col bg-[#181818] border-r border-[#333] shadow-2xl font-sans text-white"
+            style={{ "--panel-offset": offset } as React.CSSProperties}
+            className="thumbnails-panel fixed top-0 bottom-0 z-40 w-184 flex flex-col bg-sidebar border-r shadow-2xl"
         >
-            <div className="flex items-center justify-between px-3 py-2 border-b border-[#333] text-sm font-semibold text-[#ff8800]">
+            <div className="flex items-center justify-between px-3 py-2 border-b text-sm font-semibold text-primary">
                 <span>{t("thumbnails")}</span>
-                <button
-                    onClick={onClose}
-                    aria-label={t("thumbnailsClose")}
-                    className="inline-flex items-center justify-center hover:text-[#ff5500]"
-                >
+                <Button variant="toolbar" size="icon-sm" onClick={onClose} aria-label={t("thumbnailsClose")}>
                     <X className="size-5" />
-                </button>
+                </Button>
             </div>
 
             <div className="flex-1 min-h-0">

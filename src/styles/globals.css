@@ -39,6 +39,9 @@
   --color-card: var(--card);
   --color-primary-strong: var(--primary-strong);
   --shadow-panel: 0 8px 30px rgb(0 0 0 / 0.4);
+  /* Badge and chip text below Tailwind's xs. */
+  --text-2xs: 0.625rem;
+  --text-3xs: 0.5rem;
   --color-success: var(--success);
   --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) - 4px);
@@ -98,6 +101,27 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Thin themed scrollbars everywhere, instead of per-element inline styles. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--background);
+  }
+}
+
+/* Thumbnail grid whose cell width the zoom slider sets through --thumb-size. */
+@utility thumbnail-grid {
+  grid-template-columns: repeat(auto-fill, minmax(var(--thumb-size, 160px), 1fr));
+}
+
+/* The thumbnails panel floats beside the sidebar; --panel-offset is the sidebar's width. */
+@utility thumbnails-panel {
+  left: var(--panel-offset, 0px);
+  max-width: calc(100vw - var(--panel-offset, 0px));
+}
+
+@utility max-w-screen-gutter {
+  max-width: calc(100vw - 2rem);
 }
 
 /* Optional background picture behind the login panel (see AuthLayout). */

@@ -14,9 +14,15 @@ export default defineConfig([
         // worked off directory by directory. A rule moves to "error" once it reports nothing.
         rules: {
             "shadcn/no-restyle": ["warn", {
-                allow: ["layout"],
+                allow: ["layout", "typography"],
                 // A popover that wraps a Command list has no padding of its own.
-                contracts: [{ pattern: "^PopoverContent$", allow: ["layout", "p-0"] }],
+                contracts: [
+                    { pattern: "^PopoverContent$", allow: ["layout", "p-0"] },
+                    // An icon overlaid inside the field needs room on the left.
+                    { pattern: "^(Input|SidebarInput)$", allow: ["layout", "pl-8"] },
+                    // The hover card must not exceed the viewport; the utility is declared in globals.css.
+                    { pattern: "^HoverCardContent$", allow: ["layout", "max-w-screen-gutter"] },
+                ],
             }],
             "shadcn/no-raw-colors": "warn",
             "shadcn/no-arbitrary-values": "warn",
