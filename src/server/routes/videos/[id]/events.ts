@@ -1,7 +1,8 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
-import { VideoEventSchema, VideoEventKindSchema } from "@/schema/zod";
+import { VideoEventKindSchema } from "@/schema/zod";
+import { VideoEventSchema } from "@/server/lib/openapi/models";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const QuerySchema = z.object({

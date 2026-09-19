@@ -1,7 +1,8 @@
 import { prisma } from "@/server/lib/db";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
-import { VideoSchema, VideoRevisionSchema } from "@/schema/zod"
+import { VideoRevisionSchema } from "@/schema/zod";
+import { VideoSchema } from "@/server/lib/openapi/models";
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
