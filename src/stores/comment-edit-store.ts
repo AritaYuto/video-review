@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import * as api from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import { VideoComment } from "@/lib/db-types";
 import { useCommentStore } from "@/stores/comment-store";
 
@@ -23,12 +23,15 @@ export const useCommentEditStore = create<CommentEditState>((set, get) => ({
         if (!editing) return;
 
         try {
-            const updated = await api.updateComment({
-                id: editing.id,
-                comment: editing.comment,
-                issueId: editing.issueId,
-                drawingPath: editing.drawingPath,
+            const res = await api.comments.index.$patch({
+                json: {
+                    id: editing.id,
+                    comment: editing.comment,
+                    issueId: editing.issueId,
+                    drawingPath: editing.drawingPath,
+                },
             });
+            if (res.status !== 200) throw new Error("Failed to update comment");
 
             useCommentStore.getState().updateComment(get().editingComment!);
             set({ editingComment: null });

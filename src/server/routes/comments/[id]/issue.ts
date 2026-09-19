@@ -3,8 +3,18 @@ import { prisma } from "@/server/lib/db";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { createJiraIssue } from "@/server/lib/issue-tracker/jira";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { VideoCommentSchema } from "@/schema/zod";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+
+// The public origin comes from the browser: the server may sit behind a proxy and not know it.
+const IssueForm = z.object({
+    baseURL: z.string().min(1),
+    issueType: z.string().min(1),
+    reporterEmail: z.string().optional(),
+    // Binary format must be spelled out: zod-openapi cannot map z.file() on its own.
+    file: z.file().optional().openapi({ type: "string", format: "binary" }),
+});
 
 export const issueRouter = new Hono()
     .openapi(createRoute({
@@ -12,45 +22,43 @@ export const issueRouter = new Hono()
         summary: "Create an issue from a comment",
         description: "Creates an issue in the configured tracker from the comment text and links it to the comment.",
         path: "/",
+        request: {
+            body: {
+                content: {
+                    "multipart/form-data": {
+                        schema: IssueForm,
+                    },
+                },
+            },
+        },
         responses: {
             200: {
                 description: "Issue created and linked; returns the updated comment",
+                content: {
+                    "application/json": {
+                        schema: VideoCommentSchema,
+                    },
+                },
             },
-            400: {
-                description: "Invalid parameters",
-            },
-            401: {
-                description: "Unauthorized",
-            },
-            404: {
-                description: "Comment not found",
-            },
-            500: {
-                description: "Issue tracker not configured or rejected the request",
-            },
+            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            404: errorResponse("Comment not found"),
+            500: errorResponse("Issue tracker not configured or rejected the request"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["viewer", "admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
             return c.json({ error: "unauthorized" }, 401);
         }
 
         try {
             const id = c.req.param("id");
-            const formData = await c.req.formData();
-            // The public origin comes from the browser: the server may sit behind a proxy and not know it.
-            const baseURL = formData.get("baseURL") as string | null;
-            const issueType = formData.get("issueType") as string | null;
-            const reporterEmail = formData.get("reporterEmail") as string | null;
-            const file = formData.get("file") as File | null;
-
-            if (!baseURL || !issueType) {
-                return c.json({ error: "missing baseURL or issueType" }, 400);
-            }
+            const { baseURL, issueType, reporterEmail, file } = c.req.valid("form");
 
             const comment = await prisma.videoComment.findUnique({ where: { id } });
             if (!comment) {
@@ -62,7 +70,7 @@ export const issueRouter = new Hono()
                 summary: comment.comment,
                 description: `Video Review LINK\n${videoReviewURL}`,
                 issueType,
-                reporterEmail: reporterEmail ?? undefined,
+                reporterEmail,
                 attachment: file,
             });
 
@@ -73,7 +81,7 @@ export const issueRouter = new Hono()
             return c.json(updated, 200);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
             return c.json({ error: "internal error" }, 500);
         }

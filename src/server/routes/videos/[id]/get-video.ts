@@ -22,7 +22,7 @@ export const getVideoRouter = new Hono()
                 description: "Get video",
                 content: {
                     "application/json": {
-                        schema: z.VideoSchema,
+                        schema: z.VideoSchema.extend({ revisions: z.VideoRevisionSchema.array() }),
                     },
                 },
             },

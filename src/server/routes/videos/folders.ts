@@ -1,5 +1,5 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
 
 export const foldersRouter = new Hono()
     .openapi(createRoute({
@@ -10,6 +10,11 @@ export const foldersRouter = new Hono()
         responses: {
             200: {
                 description: "List of folder keys",
+                content: {
+                    "application/json": {
+                        schema: z.array(z.string()),
+                    },
+                },
             },
             500: {
                 description: "Internal Server Error",

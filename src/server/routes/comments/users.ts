@@ -22,6 +22,11 @@ export const usersRouter = new Hono()
         responses: {
             200: {
                 description: "get users",
+                content: {
+                    "application/json": {
+                        schema: z.array(z.object({ userName: z.string(), userEmail: z.string() })),
+                    },
+                },
             },
         },
     }), async (c) => {
@@ -54,5 +59,5 @@ export const usersRouter = new Hono()
             distinct: ["userName", "userEmail"],
             select: { userName: true, userEmail: true },
         });
-        return c.json(users);
+        return c.json(users, 200);
     });

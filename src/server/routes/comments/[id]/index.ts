@@ -2,6 +2,8 @@ import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
 import { externalLinksRouter } from "@/server/routes/comments/[id]/external-links";
 import { issueRouter } from "@/server/routes/comments/[id]/issue";
+import { VideoCommentSchema } from "@/schema/zod";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 export const byIdRouter = new Hono()
     .openapi(createRoute({
@@ -12,10 +14,14 @@ export const byIdRouter = new Hono()
         responses: {
             200: {
                 description: "Comment retrieved successfully",
+                content: {
+                    "application/json": {
+                        schema: VideoCommentSchema,
+                    },
+                },
             },
-            404: {
-                description: "Comment not found",
-            },
+            404: errorResponse("Comment not found"),
+            500: errorResponse("Failed to fetch comment"),
         },
     }), async (c) => {
         try {
@@ -30,7 +36,7 @@ export const byIdRouter = new Hono()
                 return c.json({ error: "comment not found" }, 404);
             }
 
-            return c.json(comment, { status: 200 });
+            return c.json(comment, 200);
         } catch (err) {
             return c.json({ error: "failed to fetch comment" }, 500);
         }

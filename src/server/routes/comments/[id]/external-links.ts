@@ -1,6 +1,7 @@
 import { env } from "@/server/lib/env";
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 export const externalLinksRouter = new Hono()
     .openapi(createRoute({
@@ -9,11 +10,15 @@ export const externalLinksRouter = new Hono()
         path: "/",
         responses: {
             200: {
-                description: "Get external links",
+                description: "External links keyed by provider",
+                content: {
+                    "application/json": {
+                        schema: z.record(z.string(), z.string()),
+                    },
+                },
             },
-            404: {
-                description: "Comment not found",
-            },
+            404: errorResponse("Comment not found"),
+            500: errorResponse("Failed to fetch external links"),
         },
     }), async (c) => {
         try {
@@ -77,7 +82,7 @@ export const externalLinksRouter = new Hono()
 
             console.debug("[external-links] resolved", externalLinks);
 
-            return c.json(externalLinks, { status: 200 });
+            return c.json(externalLinks, 200);
 
         } catch (err) {
             console.error("[external-links] exception", err);

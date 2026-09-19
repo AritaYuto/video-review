@@ -22,7 +22,7 @@ export const revisionsRouter = new Hono()
                 description: "Get revisions",
                 content: {
                     "application/json": {
-                        schema: z.VideoRevisionSchema,
+                        schema: z.VideoRevisionSchema.array(),
                     },
                 },
             },

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/ui/input";
-import * as api from "@/lib/fetch-wrapper"
+import * as wrapper from "@/lib/fetch-wrapper"
+import { api } from "@/lib/api-client";
 import { FormDialog } from "@/components/dialog/form-dialog";
 import { Upload } from "lucide-react";
 import path from "path";
@@ -23,8 +24,8 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
     useEffect(() => {
         void (async () => {
             try {
-                const keys = await api.getVideoFolderKeys();
-                setFolderKeys(keys);
+                const res = await api.videos.folders.$get();
+                if (res.status === 200) setFolderKeys(await res.json());
             } catch {
 
             }
@@ -52,7 +53,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
         try {
             setMessage("");
 
-            const init = await api.uploadVideoInit({
+            const init = await wrapper.uploadVideoInit({
                 title,
                 folderKey: selectedFolderKey,
             });
@@ -60,7 +61,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             setSession(init.session);
             setStep("uploading");
 
-            api.uploadVideo({
+            wrapper.uploadVideo({
                 url: init.url,
                 session: init.session,
                 file,
@@ -79,14 +80,14 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
 
         const timer = setInterval(async () => {
             try {
-                const res = await api.checkUploadStatus({
+                const res = await wrapper.checkUploadStatus({
                     session_id: session.id,
                 });
 
                 if (cancelled) return;
 
                 if (res.status === "uploaded") {
-                    await api.uploadVideoFinish({
+                    await wrapper.uploadVideoFinish({
                         session_id: session.id,
                     });
                 }

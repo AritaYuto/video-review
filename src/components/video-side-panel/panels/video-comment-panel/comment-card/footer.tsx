@@ -5,7 +5,7 @@ import { faThumbsUp, faComment, faPalette } from "@fortawesome/free-solid-svg-ic
 import { useCommentStore } from "@/stores/comment-store";
 import { VideoComment } from "@/lib/db-types";
 import { TimelineCardFooter } from "@/components/video-side-panel/timeline-card";
-import * as api from "@/lib/fetch-wrapper"
+import { api } from "@/lib/api-client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -24,14 +24,15 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
             return;
         }
 
-        const res = await api.fetchExternalLink(props.comment.id);
-        if (!res.ok) {
+        const res = await api.comments[":id"]["external-links"].$get({ param: { id: props.comment.id } });
+        if (res.status !== 200) {
             return;
         }
 
-        setExternalLinks(res.data);
-        if (res.data[type]) {
-            window.open(res.data[type], "_blank", "noreferrer");
+        const links = await res.json();
+        setExternalLinks(links);
+        if (links[type]) {
+            window.open(links[type], "_blank", "noreferrer");
         }
     }
 

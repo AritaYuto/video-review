@@ -97,7 +97,7 @@ export default function VcsChangesContent(props: {
         commits.maybe.length === 0 &&
         commits.unlikely.length === 0;
 
-    const toDate = data?.range.to ? new Date(data.range.to) : (selectedRevision?.uploadedAt ?? null);
+    const toDate = data?.range.to ? new Date(data.range.to) : (selectedRevision ? new Date(selectedRevision.uploadedAt) : null);
     const fromDate = data?.range.from ? new Date(data.range.from) : null;
     const days = toDate ? diffDays(fromDate, toDate) : null;
 

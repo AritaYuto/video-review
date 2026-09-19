@@ -6,6 +6,8 @@ import { lastUpdatedRouter } from "@/server/routes/comments/last-updated";
 import { usersRouter } from "@/server/routes/comments/users";
 import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
+import { VideoCommentSchema } from "@/schema/zod";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const QuerySchema = z.object({
     videoId: z.string().optional(),
@@ -19,6 +21,26 @@ const QuerySchema = z.object({
     filterText: z.string().optional(),
 });
 
+const CreateCommentBody = z.object({
+    videoId: z.string().min(1),
+    videoRevNum: z.number().int(),
+    userName: z.string(),
+    userEmail: z.string(),
+    comment: z.string().min(1),
+    time: z.number(),
+    issueId: z.string().nullable().optional(),
+});
+
+const UpdateCommentBody = z.object({
+    id: z.string().min(1),
+    comment: z.string().optional(),
+    issueId: z.string().nullable().optional(),
+    drawingPath: z.string().nullable().optional(),
+    thumbsUp: z.boolean().optional(),
+    deleted: z.boolean().optional(),
+    notifiedProviders: z.string().array().optional(),
+});
+
 export const commentsRouter = new Hono()
     .openapi(createRoute({
         method: "get",
@@ -29,7 +51,13 @@ export const commentsRouter = new Hono()
         responses: {
             200: {
                 description: "Comments retrieved successfully",
-            }
+                content: {
+                    "application/json": {
+                        schema: VideoCommentSchema.array(),
+                    },
+                },
+            },
+            500: errorResponse("Failed to fetch comments"),
         },
     }), async (c) => {
         try {
@@ -87,14 +115,38 @@ export const commentsRouter = new Hono()
                 orderBy: { time: "asc" }
             });
 
-            return c.json(comments, { status: 200 });
+            return c.json(comments, 200);
         } catch {
             return c.json({ error: "failed to fetch comments" }, 500);
         }
     })
-    .post("/", async (c) => {
+    .openapi(createRoute({
+        method: "post",
+        summary: "Create comment",
+        path: "/",
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: CreateCommentBody,
+                    },
+                },
+            },
+        },
+        responses: {
+            201: {
+                description: "Comment created",
+                content: {
+                    "application/json": {
+                        schema: VideoCommentSchema,
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            500: errorResponse("Failed to create comment"),
+        },
+    }), async (c) => {
         try {
-            const data = await c.req.json();
             const {
                 videoId,
                 videoRevNum,
@@ -103,12 +155,7 @@ export const commentsRouter = new Hono()
                 time,
                 issueId,
                 userEmail,
-            } = data;
-
-            // 400
-            if (!videoId || !comment) {
-                return c.json({ error: "missing required fields" }, 400);
-            }
+            } = c.req.valid("json");
 
             const result = await prisma.videoComment.create({
                 data: {
@@ -122,22 +169,41 @@ export const commentsRouter = new Hono()
                 },
             });
 
-            return c.json(result, { status: 201 });
+            return c.json(result, 201);
         } catch {
             return c.json({ error: "failed to create comment" }, 500);
         }
     })
-    .patch("/", async (c) => {
+    .openapi(createRoute({
+        method: "patch",
+        summary: "Update comment",
+        path: "/",
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: UpdateCommentBody,
+                    },
+                },
+            },
+        },
+        responses: {
+            200: {
+                description: "Comment updated",
+                content: {
+                    "application/json": {
+                        schema: VideoCommentSchema,
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            500: errorResponse("Failed to update comment"),
+        },
+    }), async (c) => {
         try {
-            const data = await c.req.json();
-            const { id, comment, deleted, issueId, drawingPath, thumbsUp, notifiedProviders } = data;
+            const { id, comment, deleted, issueId, drawingPath, thumbsUp, notifiedProviders } = c.req.valid("json");
 
-            // 400
-            if (!id) {
-                return c.json({ error: "missing id" }, 400);
-            }
-
-            const updateData: any = {
+            const updateData: PrismaTypes.VideoCommentUpdateInput = {
                 updatedAt: new Date(),
             };
 
@@ -165,7 +231,7 @@ export const commentsRouter = new Hono()
                 data: updateData
             });
 
-            return c.json(updated, { status: 200 });
+            return c.json(updated, 200);
         } catch {
             return c.json({ error: "failed to update comment" }, 500);
         }

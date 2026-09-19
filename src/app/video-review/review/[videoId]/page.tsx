@@ -4,7 +4,7 @@ import { useVideoReviewStore } from "@/stores/video-review-store";
 import { useVideoStore } from "@/stores/video-store";
 import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
-import * as api from '@/lib/fetch-wrapper'
+import { api } from "@/lib/api-client";
 import { fetchVideoEvents } from "@/lib/fetch-wrapper/events";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
@@ -38,8 +38,9 @@ export default function VideoReviewPage() {
         if (!videoId) return;
         void (async () => {
             try {
-                const video = await api.getVideoFromId(videoId as string);
-                await selectVideo(video);
+                const res = await api.videos[":id"].$get({ param: { id: videoId as string } });
+                if (res.status !== 200) throw new Error("Failed to fetch video");
+                await selectVideo(await res.json());
 
                 const revisionParam = searchParams.get("revision");
                 if (revisionParam) {
@@ -75,7 +76,9 @@ export default function VideoReviewPage() {
             setTimelineTime(parseFloat(duration));
         } else if (commentId) {
             setTimeout(async () => {
-                const comment = await api.getComment(commentId as string);
+                const res = await api.comments[":id"].$get({ param: { id: commentId as string } });
+                if (res.status !== 200) throw new Error("Failed to fetch comment");
+                const comment = await res.json();
                 setTimelineTime(comment.time);
                 setSelectComment(comment);
             }, 100);

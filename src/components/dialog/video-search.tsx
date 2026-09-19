@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FormDialog } from "@/components/dialog/form-dialog";
 import { ClearableComboBox, ClearableTextField } from "@/components/controls/clearable-fields";
-import { fetcCommentUsers, fetchAllVideoTags } from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import { ControlRow } from "@/components/controls/control-row";
 import { Checkbox } from "@/ui/checkbox";
 import { Input } from "@/ui/input";
@@ -41,7 +41,8 @@ export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: (
 
     useEffect(() => {
         void (async () => {
-            const users = await fetcCommentUsers({ hasDrawing });
+            const res = await api.comments.users.$get({ query: { hasDrawing: hasDrawing ? "true" : undefined } });
+            const users = res.status === 200 ? await res.json() : [];
             setCommentUsers(users.map((u) => ({ label: u.userName, value: u.userName })));
         })();
     }, [open]);
