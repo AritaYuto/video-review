@@ -73,13 +73,7 @@ export const useCommentStore = create<CommentState>((set, get) => ({
         const comment = get().comments.find((c) => c.id === id);
         if (!comment) return;
 
-        const issueId = await api.createJiraIssue(
-            id,
-            email,
-            issueType,
-            screenshot
-        )
-        const updated = await api.updateComment({ id, issueId: issueId });
+        const updated = await api.createCommentIssue({ id, reporterEmail: email, issueType, screenshot });
         set({
             comments: get().comments.map((c) => (c.id === id ? updated : c)),
         });

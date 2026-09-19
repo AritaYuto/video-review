@@ -1,4 +1,3 @@
-export * from "@/lib/fetch-wrapper/integrations/jira";
 export * from "@/lib/fetch-wrapper/vcs";
 export * from "@/lib/fetch-wrapper/auth";
 export * from "@/lib/fetch-wrapper/comments";

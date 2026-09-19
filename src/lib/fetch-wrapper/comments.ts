@@ -73,6 +73,35 @@ export async function updateComment(data: {
     return res.json();
 }
 
+export async function createCommentIssue(data: {
+    id: string;
+    reporterEmail: string;
+    issueType: string;
+    screenshot: Blob | null;
+}): Promise<VideoComment> {
+    const token = useAuthStore.getState().token;
+    const form = new FormData();
+    form.append("baseURL", window.location.origin);
+    form.append("issueType", data.issueType);
+    form.append("reporterEmail", data.reporterEmail);
+    if (data.screenshot) {
+        form.append("file", new File([data.screenshot], "screenshot.png"));
+    }
+
+    const res = await fetch(`/api/v1/comments/${data.id}/issue`, {
+        method: "POST",
+        body: form,
+        headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+        useAuthStore.getState().logout();
+        throw new Error("unauthorized");
+    }
+    if (!res.ok) throw new Error("Failed to create issue");
+    return res.json();
+}
+
 export async function incrementThumbsUpCount(id: string) {
     const res = await fetch("/api/v1/comments", {
         method: "PATCH",
