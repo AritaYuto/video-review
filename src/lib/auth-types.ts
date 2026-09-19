@@ -1,5 +1,7 @@
 import { Role } from "@/lib/role";
 
+export type LoginType = "guest" | "jira" | "user";
+
 export interface LoginRequest {
     displayName: string;
     email: string;

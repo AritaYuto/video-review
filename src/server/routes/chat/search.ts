@@ -1,4 +1,4 @@
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { Client as McpClient } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -7,8 +7,6 @@ import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { createLLMClient, ChatTurn } from "@/server/lib/integration-clients/llm-client";
 import { env } from "@/server/lib/env";
-
-export const chatSearchRouter = new Hono();
 
 // Bounds keep a single request from pushing arbitrary amounts of text into a paid LLM call.
 const MAX_MESSAGE_LENGTH = 4000;
@@ -66,67 +64,68 @@ async function buildSystemPrompt(mcpClient: McpClient): Promise<string> {
     return `${guide.trim()}\n\n# Context\n${context.join("\n")}`;
 }
 
-chatSearchRouter.openapi({
-    method: "post",
-    summary: "Chat search",
-    description: "Search and analyze videos using natural language.",
-    path: "/",
-    request: {
-        body: {
-            content: { "application/json": { schema: BodySchema } },
+export const chatSearchRouter = new Hono()
+    .openapi(createRoute({
+        method: "post",
+        summary: "Chat search",
+        description: "Search and analyze videos using natural language.",
+        path: "/",
+        request: {
+            body: {
+                content: { "application/json": { schema: BodySchema } },
+            },
         },
-    },
-    responses: {
-        200: { description: "Chat reply" },
-        400: { description: "Bad request" },
-        401: { description: "Unauthorized" },
-        502: { description: "LLM request failed" },
-        503: { description: "LLM or MCP not configured or MCP unreachable" },
-    },
-}, async (c) => {
-    try {
-        await authorize(c.req.raw, ["viewer", "admin"]);
-    } catch (e) {
-        if (e instanceof ServerError) {
-            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+        responses: {
+            200: { description: "Chat reply" },
+            400: { description: "Bad request" },
+            401: { description: "Unauthorized" },
+            502: { description: "LLM request failed" },
+            503: { description: "LLM or MCP not configured or MCP unreachable" },
+        },
+    }), async (c) => {
+        try {
+            await authorize(c.req.raw, ["viewer", "admin"]);
+        } catch (e) {
+            if (e instanceof ServerError) {
+                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+            }
+            return c.json({ error: "unauthorized" }, 401);
         }
-        return c.json({ error: "unauthorized" }, 401);
-    }
 
-    const llm = createLLMClient();
-    if (!llm) {
-        return c.json({ error: "LLM is not configured" }, 503);
-    }
-    if (!env.MCP_URL) {
-        return c.json({ error: "MCP is not configured" }, 503);
-    }
-
-    // Body validation runs before the handler (declared in request.body), so a malformed
-    // body is rejected with 400 even before the auth check above.
-    const { message, history } = c.req.valid("json");
-
-    const messages: ChatTurn[] = [
-        ...history as ChatTurn[],
-        { role: "user", content: message },
-    ];
-
-    let mcpClient: McpClient | null = null;
-    try {
-        mcpClient = await createMcpClient(env.MCP_URL);
-        const system = await buildSystemPrompt(mcpClient);
-        const reply = await llm.completeWithMCP(messages, mcpClient, system);
-        return c.json({ reply });
-    } catch (err) {
-        if (err instanceof ServerError) {
-            return c.json({ error: err.message }, err.status as ContentfulStatusCode);
+        const llm = createLLMClient();
+        if (!llm) {
+            return c.json({ error: "LLM is not configured" }, 503);
         }
-        const msg = String(err);
-        if (msg.includes("max turns exceeded")) {
-            return c.json({ reply: "The query required too many steps to process. Try narrowing it down." });
+        if (!env.MCP_URL) {
+            return c.json({ error: "MCP is not configured" }, 503);
         }
-        console.error("[chat/search]", err);
-        return c.json({ error: "LLM request failed" }, 502);
-    } finally {
-        await mcpClient?.close?.();
-    }
-});
+
+        // Body validation runs before the handler (declared in request.body), so a malformed
+        // body is rejected with 400 even before the auth check above.
+        const { message, history } = c.req.valid("json");
+
+        const messages: ChatTurn[] = [
+            ...history as ChatTurn[],
+            { role: "user", content: message },
+        ];
+
+        let mcpClient: McpClient | null = null;
+        try {
+            mcpClient = await createMcpClient(env.MCP_URL);
+            const system = await buildSystemPrompt(mcpClient);
+            const reply = await llm.completeWithMCP(messages, mcpClient, system);
+            return c.json({ reply });
+        } catch (err) {
+            if (err instanceof ServerError) {
+                return c.json({ error: err.message }, err.status as ContentfulStatusCode);
+            }
+            const msg = String(err);
+            if (msg.includes("max turns exceeded")) {
+                return c.json({ reply: "The query required too many steps to process. Try narrowing it down." });
+            }
+            console.error("[chat/search]", err);
+            return c.json({ error: "LLM request failed" }, 502);
+        } finally {
+            await mcpClient?.close?.();
+        }
+    });

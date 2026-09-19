@@ -1,64 +1,63 @@
 import { verifyToken } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
 
-export const verifyRouter = new Hono();
-
-verifyRouter.openapi({
-    method: "post",
-    summary: "Verify token",
-    description: "Verifies a JWT token.",
-    path: "/",
-    requestBody: {
-        required: true,
-        content: {
-            "application/json": {
-                schema: {
-                    type: "object",
-                    properties: {
-                        token: {
-                            type: "string",
-                            description: "JWT token to verify",
+export const verifyRouter = new Hono()
+    .openapi(createRoute({
+        method: "post",
+        summary: "Verify token",
+        description: "Verifies a JWT token.",
+        path: "/",
+        requestBody: {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            token: {
+                                type: "string",
+                                description: "JWT token to verify",
+                            },
                         },
+                        required: ["token"],
                     },
-                    required: ["token"],
                 },
             },
         },
-    },
-    responses: {
-        200: {
-            description: "Token is valid",
+        responses: {
+            200: {
+                description: "Token is valid",
+            },
+            400: {
+                description: "Invalid parameters",
+            },
+            401: {
+                description: "Unauthorized",
+            },
         },
-        400: {
-            description: "Invalid parameters",
-        },
-        401: {
-            description: "Unauthorized",
-        },
-    },
-}, async (c) => {
-    try {
-        const { token } = await c.req.json();
-
-        if (!token) {
-            return c.json({ error: "missing token" }, 400);
-        }
-
+    }), async (c) => {
         try {
-            const decoded = await verifyToken(token);
-            return c.json(
-                { valid: true, decoded },
-                { status: 200 }
-            );
-        } catch (e) {
-            if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as any);
-            } else {
-                return c.json({ error: "invalid token" }, 401);
+            const { token } = await c.req.json();
+
+            if (!token) {
+                return c.json({ error: "missing token" }, 400);
             }
+
+            try {
+                const decoded = await verifyToken(token);
+                return c.json(
+                    { valid: true, decoded },
+                    { status: 200 }
+                );
+            } catch (e) {
+                if (e instanceof ServerError) {
+                    return c.json({ error: e.message }, e.status as any);
+                } else {
+                    return c.json({ error: "invalid token" }, 401);
+                }
+            }
+        } catch {
+            return c.json({ error: "failed to verify token" }, 500);
         }
-    } catch {
-        return c.json({ error: "failed to verify token" }, 500);
-    }
-});
+    });

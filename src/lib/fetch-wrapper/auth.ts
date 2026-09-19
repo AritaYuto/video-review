@@ -1,5 +1,7 @@
 import { Role } from "../role";
-export type LoginType = "guest" | "jira" | "user";
+import { LoginType } from "@/lib/auth-types";
+
+export type { LoginType };
 
 export async function login(type: LoginType, payload: Record<string, any>):
     Promise<{ token: string; id: string; email: string | null; displayName: string, role: Role }> 

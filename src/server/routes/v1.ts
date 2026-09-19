@@ -1,0 +1,32 @@
+import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { mediaRouter } from "@/server/routes/media";
+import { readStatusRouter } from "@/server/routes/read-status";
+import { commentsRouter } from "@/server/routes/comments";
+import { authRouter } from "@/server/routes/auth";
+import { adminRouter } from "@/server/routes/admin";
+import { videosRouter } from "@/server/routes/videos";
+import { drawingRouter } from "@/server/routes/drawing";
+import { uploadStatusRouter } from "@/server/routes/upload-status";
+import { avatarRouter } from "@/server/routes/avatar";
+import { userRouter } from "@/server/routes/user";
+import { chatRouter } from "@/server/routes/chat";
+import { chatSearchRouter } from "@/server/routes/chat/search";
+import { thumbnailRouter } from "@/server/routes/thumbnail";
+import { llmStatusRouter } from "@/server/routes/llm/status";
+
+// One router per API version; the client in src/lib/api-client.ts mirrors these mounts.
+export const v1Router = new Hono();
+v1Router.route("/media", mediaRouter);
+v1Router.route("/read-status", readStatusRouter);
+v1Router.route("/comments", commentsRouter);
+v1Router.route("/auth", authRouter);
+v1Router.route("/admin", adminRouter);
+v1Router.route("/videos", videosRouter);
+v1Router.route("/drawing", drawingRouter);
+v1Router.route("/upload-status", uploadStatusRouter);
+v1Router.route("/avatar", avatarRouter);
+v1Router.route("/user", userRouter);
+v1Router.route("/chat", chatRouter);
+v1Router.route("/llm/status", llmStatusRouter);
+v1Router.route("/chat/search", chatSearchRouter);
+v1Router.route("/thumbnail", thumbnailRouter);

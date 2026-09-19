@@ -1,41 +1,39 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
 import { externalLinksRouter } from "@/server/routes/comments/[id]/external-links";
 import { issueRouter } from "@/server/routes/comments/[id]/issue";
 
-export const byIdRouter = new Hono();
-
-byIdRouter.openapi({
-    method: "get",
-    summary: "Get comment by ID",
-    description: "Retrieves a comment by its ID.",
-    path: "/",
-    responses: {
-        200: {
-            description: "Comment retrieved successfully",
+export const byIdRouter = new Hono()
+    .openapi(createRoute({
+        method: "get",
+        summary: "Get comment by ID",
+        description: "Retrieves a comment by its ID.",
+        path: "/",
+        responses: {
+            200: {
+                description: "Comment retrieved successfully",
+            },
+            404: {
+                description: "Comment not found",
+            },
         },
-        404: {
-            description: "Comment not found",
-        },
-    },
-}, async (c) => {
-    try {
-        const id = c.req.param("id");
+    }), async (c) => {
+        try {
+            const id = c.req.param("id");
 
-        const comment = await prisma.videoComment.findUnique({
-            where: { id },
-        });
+            const comment = await prisma.videoComment.findUnique({
+                where: { id },
+            });
 
-        // 404
-        if (!comment) {
-            return c.json({ error: "comment not found" }, 404);
+            // 404
+            if (!comment) {
+                return c.json({ error: "comment not found" }, 404);
+            }
+
+            return c.json(comment, { status: 200 });
+        } catch (err) {
+            return c.json({ error: "failed to fetch comment" }, 500);
         }
-
-        return c.json(comment, { status: 200 });
-    } catch (err) {
-        return c.json({ error: "failed to fetch comment" }, 500);
-    }
-});
-
-byIdRouter.route("external-links", externalLinksRouter);
-byIdRouter.route("issue", issueRouter);
+    })
+    .route("external-links", externalLinksRouter)
+    .route("issue", issueRouter);
