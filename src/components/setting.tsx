@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faRightFromBracket, faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faRightFromBracket, faUserEdit, faUserShield } from "@fortawesome/free-solid-svg-icons";
 import { Popover, PopoverTrigger, PopoverContent } from "@/ui/popover";
 import { useLocale } from "@/app/locale-provider";
 import { Switch } from "@/ui/switch";
@@ -13,6 +13,7 @@ import { isAdmin } from "@/lib/role";
 import { ControlRow } from "@/components/controls/control-row";
 import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
+import AdminSettingsDialog from "@/components/dialog/admin-settings";
 import { Separator } from "@/ui/separator";
 import { env } from "@/lib/env";
 
@@ -22,6 +23,7 @@ export function SettingPopover() {
     const [ isLogged, setLogged ] = useState(false);
     const { locale, setLocale } = useLocale();
     const [ editProfileOpen, setEditProfileOpen] = useState(false);
+    const [ adminSettingsOpen, setAdminSettingsOpen ] = useState(false);
 
     const { verifyAuth, role } = useAuthStore();
     const llmStatus = useLLMStatusStore();
@@ -73,6 +75,15 @@ export function SettingPopover() {
                         );
                     }, !isLogged)}
 
+                    {/* Administration (admins) */}
+                    {ControlRow(t("administration"), () => {
+                        return (
+                            <Button variant="ghost" size="icon-round" aria-label={t("administration")} onClick={() => { setAdminSettingsOpen(true); }}>
+                                <FontAwesomeIcon icon={faUserShield} />
+                            </Button>
+                        );
+                    }, !isLogged || !isAdmin(role))}
+
                     {/* Language setting */}
                     {ControlRow(t("language"), () => {
                         return (
@@ -104,6 +115,7 @@ export function SettingPopover() {
                     }, !isLogged)}
 
                     <EditUserProfileDialog open={editProfileOpen} onClose={() => { setEditProfileOpen(false) }} />
+                    <AdminSettingsDialog open={adminSettingsOpen} onClose={() => { setAdminSettingsOpen(false) }} />
                 </div>
             </PopoverContent>
         </Popover>

@@ -154,6 +154,7 @@
         "languageOptionJa": "Japanese",
         "logout": "Logout",
         "editProfile": "Edit Profile",
+        "administration": "Administration",
         "editPrompt": "Edit Prompt",
         "aiSearch": "AI search (chat)",
         "aiSearchState": {
@@ -189,5 +190,15 @@
         "passwordMismatch": "New passwords do not match",
         "currentPasswordRequired": "Enter your current password",
         "currentPasswordWrong": "Current password is incorrect"
+    },
+    "admin-settings": {
+        "title": "Administration",
+        "sections": {
+            "users": "Users",
+            "apiToken": "API Token",
+            "integrations": "Integrations",
+            "maintenance": "Maintenance"
+        },
+        "empty": "Nothing to configure here yet."
     }
 }
