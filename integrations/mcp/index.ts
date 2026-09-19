@@ -279,14 +279,20 @@ function createServer(): McpServer {
     return server;
 }
 
-if (process.env.MCP_TRANSPORT === "http") {
+// The bare names stay accepted so deployments that predate the VIDEO_REVIEW_ prefix keep working.
+const transport = process.env.VIDEO_REVIEW_MCP_TRANSPORT ?? process.env.MCP_TRANSPORT;
+const portValue = process.env.VIDEO_REVIEW_MCP_PORT ?? process.env.MCP_PORT;
+
+if (transport === "http") {
     await startHttpServer();
 } else {
     await createServer().connect(new StdioServerTransport());
+    // Without this line a misspelled transport looks like a healthy start that never opens a port.
+    process.stderr.write("MCP server ready on stdio (set VIDEO_REVIEW_MCP_TRANSPORT=http to listen on a port).\n");
 }
 
 async function startHttpServer(): Promise<void> {
-    const port = parseInt(process.env.MCP_PORT ?? "3490", 10);
+    const port = parseInt(portValue ?? "3490", 10);
 
     const httpServer = http.createServer(async (req, res) => {
         if (req.url === "/mcp") {

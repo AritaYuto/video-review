@@ -13,8 +13,8 @@ FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV MCP_TRANSPORT=http
-ENV MCP_PORT=3490
+ENV VIDEO_REVIEW_MCP_TRANSPORT=http
+ENV VIDEO_REVIEW_MCP_PORT=3490
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/integrations/mcp/dist ./integrations/mcp/dist

@@ -144,7 +144,7 @@ VIDEO_REVIEW_SERVER_URL=http://localhost:3489
 
 ```bash
 npm run mcp:build
-MCP_TRANSPORT=http MCP_PORT=3490 npm run mcp:run
+VIDEO_REVIEW_MCP_TRANSPORT=http VIDEO_REVIEW_MCP_PORT=3490 npm run mcp:run
 ```
 
 ### 確認する

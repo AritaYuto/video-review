@@ -229,7 +229,7 @@ function buildClient(): LLMClient | null {
             return new OpenAICompatibleClient({
                 endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
                 apiKey: requireApiKey("Gemini"),
-                model: env.LLM_MODEL ?? "gemini-2.0-flash",
+                model: env.LLM_MODEL ?? "gemini-3.6-flash",
                 label: "Gemini",
             });
         case "ollama": {
