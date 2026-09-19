@@ -1,7 +1,8 @@
 import { prisma } from "@/server/lib/db";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
-import * as z from "@/schema/zod"
+import { VideoRevisionSchema } from "@/schema/zod";
+import { VideoSchema } from "@/server/lib/openapi/models";
 
 export const getVideoRouter = createRouter()
     .openapi(createRoute({
@@ -23,7 +24,7 @@ export const getVideoRouter = createRouter()
                 description: "Get video",
                 content: {
                     "application/json": {
-                        schema: z.VideoSchema.extend({ revisions: z.VideoRevisionSchema.array() }),
+                        schema: VideoSchema.extend({ revisions: VideoRevisionSchema.array() }),
                     },
                 },
             },
