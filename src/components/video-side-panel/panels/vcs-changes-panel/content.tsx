@@ -6,8 +6,8 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/ui/button";
 import { useVideoStore } from "@/stores/video-store";
 import { useVcsChangesStore } from "@/stores/vcs-changes-store";
-import { PrCard } from "@/components/video-side-panel/panels/vcs-changes-panel/change-card";
-import type { VcsPullRequest } from "@/lib/vcs-types";
+import { CommitCard, PrCard } from "@/components/video-side-panel/panels/vcs-changes-panel/change-card";
+import type { VcsCommit, VcsPullRequest } from "@/lib/vcs-types";
 
 function diffDays(from: Date | null, to: Date): number {
     if (!from) return 0;
@@ -79,8 +79,12 @@ export default function VcsChangesContent(props: {
         () => partition(data?.pullRequests ?? []),
         [data],
     );
+    const commits = useMemo<ReturnType<typeof partition<VcsCommit>>>(
+        () => partition(data?.commits ?? []),
+        [data],
+    );
 
-    const unlikelyCount = prs.unlikely.length;
+    const unlikelyCount = prs.unlikely.length + commits.unlikely.length;
 
     /*
      * When vcsWatchPaths is empty, all items score "high" by design.
@@ -89,7 +93,9 @@ export default function VcsChangesContent(props: {
     const allHigh =
         data != null &&
         prs.maybe.length === 0 &&
-        prs.unlikely.length === 0;
+        prs.unlikely.length === 0 &&
+        commits.maybe.length === 0 &&
+        commits.unlikely.length === 0;
 
     const toDate = data?.range.to ? new Date(data.range.to) : (selectedRevision?.uploadedAt ?? null);
     const fromDate = data?.range.from ? new Date(data.range.from) : null;
@@ -165,6 +171,20 @@ export default function VcsChangesContent(props: {
                                     ))}
                                     {showUnlikely && prs.unlikely.map((pr) => (
                                         <PrCard key={pr.id} pr={pr} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {(commits.high.length > 0 || commits.maybe.length > 0 || (showUnlikely && commits.unlikely.length > 0)) && (
+                            <div>
+                                <SectionHeader label={t("section-commits")} high={commits.high.length} maybe={commits.maybe.length} />
+                                <div className="flex flex-col gap-2">
+                                    {[...commits.high, ...commits.maybe].map((commit) => (
+                                        <CommitCard key={commit.hash} commit={commit} />
+                                    ))}
+                                    {showUnlikely && commits.unlikely.map((commit) => (
+                                        <CommitCard key={commit.hash} commit={commit} />
                                     ))}
                                 </div>
                             </div>
