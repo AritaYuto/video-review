@@ -50,10 +50,7 @@ export default function VideoListPanel() {
 
     return (
         <>
-            <Sidebar
-                style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-                className="bg-[#181818] border-[#333] "
-            >
+            <Sidebar>
                 <VideoListPanelHeader
                     onSearchDialogShow={() => setSearchDialogOpen(true)}
                     onUploadDialogShow={() => setUploadDialogOpen(true)}
@@ -61,7 +58,7 @@ export default function VideoListPanel() {
                     thumbnailsOpen={thumbnailsOpen}
                 />
 
-                <SidebarContent className="font-sans text-white bg-[#181818] border-[#333]">
+                <SidebarContent>
                     <VideoFoldersTree
                         videos={videos}
                         unReadVideoIds={unReadVideoIds}
@@ -72,7 +69,7 @@ export default function VideoListPanel() {
                     />
                 </SidebarContent>
 
-                <SidebarFooter className="bg-[#181818] border-[#333]">
+                <SidebarFooter>
                     <SettingPopover />
                 </SidebarFooter>
 

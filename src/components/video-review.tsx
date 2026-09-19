@@ -14,8 +14,8 @@ import { useTranslations } from "next-intl";
 import { fetchMediaUrl } from "@/lib/fetch-wrapper";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
-import { Badge } from "@/ui/badge";
-import { Spinner } from "@/ui/spinner";
+import { cn } from "@/lib/utils";
+import { LoadingBadge } from "@/components/controls/loading-badge";
 
 export default function VideoReview() {
     const t = useTranslations("video-review");
@@ -293,14 +293,11 @@ export default function VideoReview() {
 
     return (
         <>
-            <div className={`flex flex-col h-full w-full border-r border-[#333]`}>
+            <div className="flex flex-col h-full w-full border-r">
                 {loading
                     ?
-                    <div className="flex-1 flex flex-col items-center justify-center bg-[#181818]">
-                        <Badge className="bg-[#181818]">
-                            <Spinner className="text-[#ff9a1a]" />
-                            Videos Syncing...
-                        </Badge>
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        <LoadingBadge>Videos Syncing...</LoadingBadge>
                     </div>
                     :
                     <>
@@ -313,15 +310,14 @@ export default function VideoReview() {
                                             ref={videoRef}
                                             src={playbackUrl ?? undefined}
                                             onClick={togglePlay}
-                                            className="max-h-[80vh] max-w-full rounded cursor-pointer object-contain"
+                                            className="video-stage max-w-full rounded cursor-pointer object-contain"
                                         />
                                         <canvas
                                             ref={canvasRef}
-                                            className="absolute top-0 left-0 w-full h-full"
-                                            style={{
-                                                pointerEvents: canvasEditing ? "auto" : "none",
-                                                cursor: canvasEditing ? "crosshair" : "default",
-                                            }}
+                                            className={cn(
+                                                "absolute top-0 left-0 w-full h-full",
+                                                canvasEditing ? "pointer-events-auto cursor-crosshair" : "pointer-events-none",
+                                            )}
                                         />
                                         <CanvasControlPanel />
                                     </div>
@@ -331,7 +327,7 @@ export default function VideoReview() {
                                 <VideoControlPanel />
                             </>
                         ) : (
-                            <div className="flex-1 flex items-center justify-center text-[#555]">
+                            <div className="flex-1 flex items-center justify-center text-muted-foreground">
                                 {t("noVideoSelected")}
                             </div>
                         )}

@@ -47,8 +47,7 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
     return (
         <div
             ref={containerRef}
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="font-sans text-white bg-[#181818] w-full h-full flex flex-col"
+            className="bg-sidebar w-full h-full flex flex-col"
         >
             {/* Grid */}
             <div className="flex-1 overflow-auto px-3 pb-3">
@@ -57,14 +56,12 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
                         <h3
                             data-slot="thumbnail-group-title"
                             // Above the cells' NEW badge (z-10) so it does not bleed through the pinned heading.
-                            className="sticky top-0 z-20 flex items-baseline gap-2 py-1.5 mb-1.5 bg-[#181818] border-b border-[#333] text-xs font-semibold text-[#ff8800]"
+                            className="sticky top-0 z-20 flex items-baseline gap-2 py-1.5 mb-1.5 bg-sidebar border-b text-xs font-semibold text-primary"
                         >
                             <span className="truncate">{folderKey || "/"}</span>
-                            <span className="font-normal text-[#777]">{folderVideos.length}</span>
+                            <span className="font-normal text-muted-foreground">{folderVideos.length}</span>
                         </h3>
-                        <div className="grid gap-1.5" style={{
-                            gridTemplateColumns: `repeat(auto-fill, minmax(${thumbSize}px, 1fr))`,
-                        }}>
+                        <div className="grid gap-1.5 thumbnail-grid" style={{ "--thumb-size": `${thumbSize}px` } as React.CSSProperties}>
                             {folderVideos.map(video => (
                                 <ThumbnailCell
                                     key={video.id}
@@ -95,7 +92,7 @@ export default function VideoThumbnails({ videos, unReadVideoIds, selectedVideoI
             </div>
 
             {/* Slider */}
-            <div className="flex items-center gap-3 px-3 py-3 border-t border-[#333] bg-[#141414]">
+            <div className="flex items-center gap-3 px-3 py-3 border-t bg-background">
                 <ZoomInIcon></ZoomInIcon>
                 <Slider
                     min={60}

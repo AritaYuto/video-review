@@ -3,6 +3,7 @@ import { VideoWithRevision } from "@/lib/db-types";
 import { cn } from "@/lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { ThumbnailDetailCard } from "@/components/video-browser/thumbnail-cell/detail-card";
+import { NewBadge } from "@/components/video-browser/new-badge";
 
 type Props = {
     video: VideoWithRevision;
@@ -30,9 +31,9 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, Props>(
                         tabIndex={0}
                         aria-label={video.title}
                         className={cn(
-                            "relative rounded-sm overflow-hidden ring-1 cursor-pointer transition-[box-shadow]",
-                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#888]",
-                            isSelected ? "ring-2 ring-[#ff8800]" : "ring-[#2a2a2a] hover:ring-[#888]"
+                            "relative rounded-sm overflow-hidden ring-1 cursor-pointer transition-shadow",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground",
+                            isSelected ? "ring-2 ring-primary" : "ring-accent hover:ring-muted-foreground"
                         )}
                         onClick={select}
                         // HoverCardTrigger preventDefaults touchstart, which cancels the synthesized click.
@@ -43,11 +44,7 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, Props>(
                             select();
                         }}
                     >
-                        {unread && (
-                            <span className="absolute top-1 left-1 z-10 text-[8px] px-1 py-[1px] bg-red-500 text-white rounded leading-none">
-                                NEW
-                            </span>
-                        )}
+                        {unread && <NewBadge className="absolute top-1 left-1 z-10" />}
                         {children}
                     </div>
                 </HoverCardTrigger>
@@ -58,9 +55,11 @@ export const ThumbnailCell = forwardRef<HTMLDivElement, Props>(
                     sideOffset={8}
                     collisionPadding={12}
                     onClick={select}
-                    className="w-[34rem] max-w-[calc(100vw-2rem)] flex gap-3 p-3 bg-[#202020] border-[#555] font-sans text-white cursor-pointer"
+                    className="w-136 max-w-screen-gutter cursor-pointer"
                 >
-                    <ThumbnailDetailCard video={video} thumbnailUrl={thumbnailUrl} />
+                    <div className="flex gap-3">
+                        <ThumbnailDetailCard video={video} thumbnailUrl={thumbnailUrl} />
+                    </div>
                 </HoverCardContent>
             </HoverCard>
         );

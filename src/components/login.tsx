@@ -10,6 +10,7 @@ import { Label } from "@/ui/label";
 import { Input } from "@/ui/input";
 import { Button } from "@/ui/button";
 import { env } from "@/lib/env";
+import { AuthCard, AuthLayout } from "@/components/auth/auth-layout";
 
 export default function Login() {
     const t = useTranslations("login");
@@ -39,101 +40,67 @@ export default function Login() {
         }
     };
 
-    const bg = env.PUBLIC_LOGIN_BG_URL
-        ? `url('${env.PUBLIC_LOGIN_BG_URL}')`
-        : "none";
-
     return (
-        <div
-            className="flex items-center justify-center w-screen h-screen bg-[#181818]"
-            style={{
-                backgroundImage: bg,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-            }}
-        >
-            {/* Login Panel */}
-            <div style={{minHeight:"400px"}} className="w-100 p-8 rounded-xl bg-[#202020]/80 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-sm border border-[#333]">
-                <h1 className="text-lg mb-6 font-semibold text-center text-[#ff8800]">
-                    {env.PUBLIC_VIDEO_REVIEW_TITLE}
-                </h1>
-                <Tabs defaultValue={type} onValueChange={(val) => setType(val as api.LoginType)}
-                    className={[
-                        "px-4 py-1.5 text-sm rounded-full",
-                        "data-[state=active]:bg-[#ff8800]",
-                        "data-[state=active]:text-black",
-                        "data-[state=inactive]:text-gray-300",
-                        "transition"
-                    ].join(" ")}>
+        <AuthLayout title={env.PUBLIC_VIDEO_REVIEW_TITLE} backgroundImageUrl={env.PUBLIC_LOGIN_BG_URL}>
+                <Tabs defaultValue={type} onValueChange={(val) => setType(val as api.LoginType)}>
                     <TabsList>
                         <TabsTrigger value="guest">Guest</TabsTrigger>
                         <TabsTrigger value="jira">JIRA</TabsTrigger>
                         <TabsTrigger value="user">Email & Password</TabsTrigger>
                     </TabsList>
                     <TabsContent value="guest">
-                        <div className="login-card rounded-2xl bg-[#1f1f1f] p-3 shadow-xl">
-                            <div className="h-[30px]"></div>
-                            <div className="grid gap-3">
+                        <AuthCard>
+                            <div className="h-8"></div>
+                            <div className="grid gap-3 mb-4">
                                 <Label htmlFor="displayName">{t("displayName")}</Label>
                                 <Input id="displayName"
                                     type="text"
                                     value={displayName ?? ""}
-                                    onChange={(x) => setDisplayName(x.target.value)}
-                                    className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                                    onChange={(x) => setDisplayName(x.target.value)} />
                             </div>
                             <ButtonLogin exec={handleLogin} title={t("ok")} />
-                        </div>
+                        </AuthCard>
                     </TabsContent>
                     <TabsContent value="jira">
-                        <div className="login-card rounded-2xl bg-[#1f1f1f] p-3 shadow-xl">
-                            <div className="h-[30px]"></div>
-                            <div className="grid gap-3">
+                        <AuthCard>
+                            <div className="h-8"></div>
+                            <div className="grid gap-3 mb-4">
                                 <Label htmlFor="email">{t("email")}</Label>
                                 <Input id="email"
                                     type="email"
                                     value={email ?? ""}
-                                    onChange={(x) => setEmail(x.target.value)}
-                                    className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                                    onChange={(x) => setEmail(x.target.value)} />
                             </div>
                             <ButtonLogin exec={handleLogin} title={t("ok")} />
-                        </div>
+                        </AuthCard>
                     </TabsContent>
                     <TabsContent value="user">
-                        <div className="login-card rounded-2xl bg-[#1f1f1f] p-3 shadow-xl">
-                            <div className="grid gap-3">
+                        <AuthCard>
+                            <div className="grid gap-3 mb-4">
                                 <Label htmlFor="email">{t("email")}</Label>
                                 <Input type="email"
                                     value={email ?? ""}
-                                    onChange={(x) => setEmail(x.target.value)}
-                                    className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                                    onChange={(x) => setEmail(x.target.value)} />
                             </div>
-                            <div className="grid gap-3">
+                            <div className="grid gap-3 mb-4">
                                 <Label htmlFor="password">{t("password")}</Label>
                                 <Input type="password"
                                     onKeyDown={(x) => x.key === "Enter" && handleLogin()}
                                     value={password ?? ""}
-                                    onChange={(x) => setPassword(x.target.value)}
-                                    className="w-full p-2 mb-4 rounded bg-[#303030] border border-[#444] focus:border-[#ff8800] outline-none transition" />
+                                    onChange={(x) => setPassword(x.target.value)} />
                             </div>
                             <ButtonLogin exec={handleLogin} title={t("ok")} />
-                        </div>
-
+                        </AuthCard>
                     </TabsContent>
                 </Tabs>
-            </div>
-        </div >
+        </AuthLayout>
     );
 }
 
 function ButtonLogin({ exec, title }: { exec: () => void; title: string }) {
     return (
-        <>
-            <Button
-                onClick={exec}
-                className="w-full py-2 rounded font-medium bg-[#ff8800] text-white hover:bg-[#ffaa33] transition"
-            >
-                {title}
-            </Button>
-        </>
+        <Button onClick={exec} className="w-full">
+            {title}
+        </Button>
     );
 }

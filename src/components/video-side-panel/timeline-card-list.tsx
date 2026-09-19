@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card } from "@/ui/card";
+import { TimelineCard, type TimelineCardState } from "@/components/video-side-panel/timeline-card";
 
 export default function TimelineCardList<T>(props: {
     items: T[];
@@ -9,7 +9,7 @@ export default function TimelineCardList<T>(props: {
     itemCardRef: React.RefObject<Record<string, HTMLDivElement | null>>;
     // The key must be stable because panel content uses refs for timeline sync scrolling.
     getKey: (item: T) => string;
-    getCardClassName?: (item: T) => string;
+    getCardState?: (item: T) => TimelineCardState;
     onClick?: (item: T) => void;
     renderHeader?: (item: T) => React.ReactNode;
     renderContent: (item: T) => React.ReactNode;
@@ -21,19 +21,19 @@ export default function TimelineCardList<T>(props: {
                 const key = props.getKey(item);
 
                 return (
-                    <Card
+                    <TimelineCard
                         ref={el => {
                             // Panels read back these refs to scroll the active/selected card into view.
                             props.itemCardRef.current[key] = el;
                         }}
                         key={key}
-                        className={`bg-[#222] border border-[#333] text-white hover:bg-[#252525] transition cursor-pointer ${props.getCardClassName?.(item) ?? ""}`}
+                        state={props.getCardState?.(item)}
                         onClick={() => { props.onClick?.(item) }}
                     >
                         {props.renderHeader?.(item)}
                         {props.renderContent(item)}
                         {props.renderFooter?.(item)}
-                    </Card>
+                    </TimelineCard>
                 );
             })}
         </div>

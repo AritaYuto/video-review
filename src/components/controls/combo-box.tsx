@@ -29,20 +29,19 @@ export default function ComboBox<T>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button className={`${className} bg-[#181818] text-[#888]`} variant="outline" role="combobox" aria-expanded={open} >
-                    {currentItem ? currentItem.label : placeholder ?? ""}
+                <Button className={className} variant="outline" role="combobox" aria-expanded={open}>
+                    {currentItem ? currentItem.label : <span className="text-muted-foreground">{placeholder ?? ""}</span>}
                     <ChevronsUpDown className="opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0 ">
-                <Command className={`bg-[#181818] text-[#999]`}>
+                <Command>
                     <CommandInput placeholder={placeholder ?? ""}/>
                     <CommandList >
                         <CommandEmpty>Not found.</CommandEmpty>
                         <CommandGroup >
                             {options.map((option) => (
                                 <CommandItem
-                                    className={`text-[#fff] data-[selected=true]:bg-[#eee] data-[selected=true]:text-[#222]`}
                                     key={String(option.label)}
                                     value={String(option.value)}
                                     onSelect={() => {

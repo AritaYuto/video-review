@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { withRetry } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingBadge } from "@/components/controls/loading-badge";
 import { checkStatus } from "@/lib/fetch-wrapper/admin";
 
 export default function Home() {
@@ -52,12 +51,9 @@ export default function Home() {
 
     if (!warmupDB) {
         return (
-            <div className="flex flex-col h-full w-full bg-[#181818]">
+            <div className="flex flex-col h-full w-full">
                 <div className="flex-1 flex items-center justify-center">
-                    <Badge className="bg-[#181818]">
-                        <Spinner className="text-[#ff9a1a] bg-[#181818]"/>
-                        Database is preparing...
-                    </Badge>
+                    <LoadingBadge>Database is preparing...</LoadingBadge>
                 </div>
             </div>
         );

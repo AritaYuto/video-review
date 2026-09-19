@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLLMStatusStore } from "@/stores/llm-status-store";
 import { isAdmin } from "@/lib/role";
-import { ControlRow } from "@/ui/control-row";
+import { ControlRow } from "@/components/controls/control-row";
 import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
 import { Separator } from "@/ui/separator";
@@ -51,34 +51,23 @@ export function SettingPopover() {
             <PopoverTrigger asChild>
                 <div className="absolute bottom-4 left-4 flex gap-2 opacity-40 hover:opacity-100 transition">
                     <Button size="icon" variant="ghost" className="relative">
-                        <FontAwesomeIcon
-                            icon={faGear}
-                            className="text-[#ff8800]"
-                        />
+                        <FontAwesomeIcon icon={faGear} className="text-primary" />
                     </Button>
                 </div>
             </PopoverTrigger>
 
-            <PopoverContent
-                align="end"
-                className="w-full bg-[#1f1f1f] border border-[#333] text-white"
-            >
-                <div className="space-y-2 min-w-[360px]">
-                    <div className="text-m font-medium text-gray-200">
+            <PopoverContent align="end" className="w-full">
+                <div className="space-y-2 min-w-90">
+                    <div className="text-base font-medium">
                         {t("title")}
                     </div>
 
-                    <Separator className="bg-gray-100"/>
+                    <Separator />
 
                     {/* Edit profile */}
                     {ControlRow(t("editProfile"), () => {
                         return (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => { setEditProfileOpen(true); }}
-                                className="text-white hover:bg-[#d4d4d4] rounded-full w-8 h-8"
-                            >
+                            <Button variant="ghost" size="icon-round" onClick={() => { setEditProfileOpen(true); }}>
                                 <FontAwesomeIcon icon={faUserEdit} />
                             </Button>
                         );
@@ -88,7 +77,6 @@ export function SettingPopover() {
                     {ControlRow(t("language"), () => {
                         return (
                             <Switch
-                                className="border-white"
                                 checked={locale === "ja"}
                                 onCheckedChange={(x) =>
                                     setLocale(x ? "ja" : "en")
@@ -100,7 +88,7 @@ export function SettingPopover() {
                     {/* AI search status (admins) */}
                     {ControlRow(t("aiSearch"), () => {
                         return (
-                            <span className={`text-xs ${aiSearchState === "ok" ? "text-green-400" : "text-yellow-400"}`}>
+                            <span className={`text-xs ${aiSearchState === "ok" ? "text-success" : "text-warning"}`}>
                                 {t(`aiSearchState.${aiSearchState}`)}
                             </span>
                         );
@@ -109,14 +97,7 @@ export function SettingPopover() {
                     {/* Logout */}
                     {ControlRow(t("logout"), () => {
                         return (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    useAuthStore.getState().logout();
-                                }}
-                                className="text-white hover:bg-[#d4d4d4] rounded-full w-8 h-8"
-                            >
+                            <Button variant="ghost" size="icon-round" onClick={() => useAuthStore.getState().logout()}>
                                 <FontAwesomeIcon icon={faRightFromBracket} />
                             </Button>
                         );

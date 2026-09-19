@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/ui/button";
+import { Textarea } from "@/ui/textarea";
 
 interface ChatInputProps {
     onSend: (message: string) => void;
@@ -39,8 +41,8 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     };
 
     return (
-        <div className="flex items-end gap-2 border-t border-[#333] p-3">
-            <textarea
+        <div className="flex items-end gap-2 border-t p-3">
+            <Textarea
                 ref={textareaRef}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -48,21 +50,16 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
                 disabled={disabled}
                 rows={1}
                 placeholder={t("inputPlaceholder")}
-                className="flex-1 resize-none bg-[#222] text-sm text-white placeholder-[#555] border border-[#444] rounded px-3 py-2 outline-none focus:border-[#ff8800] disabled:opacity-40"
-                style={{ maxHeight: "120px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
+                className="flex-1 min-h-9 max-h-30 overflow-y-auto resize-none"
                 onInput={(e) => {
                     const el = e.currentTarget;
                     el.style.height = "auto";
                     el.style.height = `${el.scrollHeight}px`;
                 }}
             />
-            <button
-                onClick={handleSend}
-                disabled={!value.trim() || disabled}
-                className="mb-0.5 flex items-center justify-center size-8 rounded text-[#ff8800] hover:text-[#ffaa44] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-                <SendHorizontal className="size-4" />
-            </button>
+            <Button variant="toolbar" size="icon-sm" onClick={handleSend} disabled={!value.trim() || disabled} className="mb-0.5">
+                <SendHorizontal />
+            </Button>
         </div>
     );
 }

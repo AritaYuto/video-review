@@ -2,6 +2,7 @@
 
 import { Button } from "@/ui/button";
 import { Textarea } from "@/ui/textarea";
+import { Input } from "@/ui/input";
 import { useEffect, useState } from "react";
 import { useVideoPlayerStore } from "@/stores/video-player-store";
 import { useTranslations } from "next-intl";
@@ -43,19 +44,17 @@ export default function CommentConfirmed(props: {
     }, [props.comment, props.issueId]);
 
     return (
-        <div className="p-4 border-t border-[#333] bg-[#1c1c1c]">
+        <div className="p-4 border-t bg-background">
             <Textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 onFocus={() => setIsPlaying(false)}
                 placeholder={t("editComment")}
-                className="bg-[#222] border-[#333] text-white resize-none h-20 mb-2"
+                className="h-20 mb-2 resize-none"
             />
-            <input
+            <Input
                 disabled={isGuest(role)}
-                className={
-                    `bg-zinc-800 p-2 rounded text-white w-full mb-2 transition ${isGuest(role) ? "bg-zinc-900 text-zinc-500 border border-zinc-700 cursor-not-allowed opacity-70" : ""}`
-                }
+                className="mb-2"
                 value={issueId ?? ""}
                 onChange={(e) => setIssueId(e.target.value)}
                 onFocus={() => setIsPlaying(false)}
@@ -63,26 +62,15 @@ export default function CommentConfirmed(props: {
             />
             {props.confirmedLabel === "commentUpdate" ? (
                 <div className="flex gap-2">
-                    <Button
-                        onClick={() => handleConfirmed()}
-                        className="flex-1 bg-[#ff3300] hover:bg-[#ff9a1a] text-black font-semibold"
-                    >
+                    <Button variant="destructive" onClick={() => handleConfirmed()} className="flex-1">
                         {t(props.confirmedLabel)}
                     </Button>
-                    <Button
-                        onClick={() => handleCancel()}
-                        variant="secondary"
-                        className="flex-1 bg-zinc-700 text-white hover:bg-zinc-600"
-                    >
+                    <Button variant="secondary" onClick={() => handleCancel()} className="flex-1">
                         {t("cancel")}
                     </Button>
                 </div>
             ) : (
-                <Button
-                    disabled={!canAddComment()}
-                    onClick={() => handleConfirmed()}
-                    className="w-full bg-[#ff8800] hover:bg-[#ff9a1a] text-black font-semibold"
-                >
+                <Button disabled={!canAddComment()} onClick={() => handleConfirmed()} className="w-full">
                     {t(props.confirmedLabel)}
                 </Button>
             )}

@@ -60,7 +60,7 @@ export function PreviewVideo({ filePath, posterUrl, onDuration }: Props) {
     }
 
     return (
-        <div className="flex items-center justify-center text-xs text-[#666] w-full h-full">
+        <div className="flex items-center justify-center text-xs text-muted-foreground w-full h-full">
             thumbnail
         </div>
     );

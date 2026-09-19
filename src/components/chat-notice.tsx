@@ -21,7 +21,7 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
     
     const toastData = ret.data.toastData;
     toast.custom(() => (
-        <div className="flex gap-3 rounded-md bg-zinc-900 p-3 text-white shadow">
+        <div className="flex gap-3 rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
             <img
                 src={URL.createObjectURL(screenshot)}
                 className="h-16 w-16 rounded object-cover"

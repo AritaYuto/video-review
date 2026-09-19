@@ -4,7 +4,7 @@ import { Button } from '@/ui/button';
 import { ButtonGroup } from '@/ui/button-group';
 import { DateRange } from 'react-day-picker';
 import { useTranslations } from 'next-intl';
-import CalendarPopover from '@/ui/calendar-popover';
+import CalendarPopover from '@/components/controls/calendar-popover';
 import { X } from 'lucide-react';
 
 // Prop-driven and store-agnostic: the current mode drives the active highlight,
@@ -35,23 +35,21 @@ export default function CalendarDateRadio({
     const recentDay: number = 3;
 
     return (
-        <div className={`${className}`}>
+        <div className={className}>
             <ButtonGroup>
                 <Button
-                    className={`text-white bg-[#333] hover:bg-[#fff] ${mode === "today" ? "bg-[#32cd32]" : ""}`}
-                    variant="outline" size="sm"
+                    variant={mode === "today" ? "success" : "secondary"} size="sm"
                     onClick={onToday}>
                     {t("today")}
                 </Button>
                 <Button
-                    className={`text-white bg-[#333] hover:bg-[#fff] ${mode === "recent" ? "bg-[#32cd32]" : ""}`}
-                    variant="outline" size="sm"
+                    variant={mode === "recent" ? "success" : "secondary"} size="sm"
                     onClick={() => onRecent(recentDay)}>
                     {t("recent", { days: recentDay })}
                 </Button>
                 {!collapseCalendarBtn && <>
                     <CalendarPopover
-                        className="border-[#ccc] bg-[#181818] border h-8.2 mx-2"
+                        className="mx-2"
                         mode={mode}
                         range={range}
                         onToday={onToday}
@@ -59,9 +57,7 @@ export default function CalendarDateRadio({
                         onSetRange={onSetRange}
                         onClear={onClear} />
                 </>}
-                <Button
-                    className={`text-white bg-[#333] hover:bg-[#fff]`}
-                    variant="outline" size="sm" onClick={onClear}>
+                <Button variant="secondary" size="sm" onClick={onClear}>
                     <X />
                 </Button>
             </ButtonGroup>

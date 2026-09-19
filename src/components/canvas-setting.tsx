@@ -22,11 +22,11 @@ export function CanvasSettingsPopover({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button size="icon" variant="ghost">
+                <Button size="icon-sm" variant="ghost">
                     <FontAwesomeIcon icon={faGear} />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 bg-[#1f1f1f] border border-[#333] text-white">
+            <PopoverContent className="w-64">
                 <div className="space-y-4">
                     <div>
                         <label className="text-sm font-medium">{t("lineWidth")}</label>
@@ -38,11 +38,11 @@ export function CanvasSettingsPopover({
                             onValueChange={(v) => setLineWidth(v[0])}
                             className="mt-2"
                         />
-                        <div className="text-xs text-gray-200 mt-1">{lineWidth}px</div>
+                        <div className="text-xs text-muted-foreground mt-1">{lineWidth}px</div>
                     </div>
                     <div>
                         <label className="text-sm font-medium">{t("color")}</label>
-                        <div className="mt-2 rounded overflow-hidden border border-[#444]">
+                        <div className="mt-2 rounded overflow-hidden border border-input">
                             <ChromePicker
 
                                 color={color}

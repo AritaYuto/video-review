@@ -4,8 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faThumbsUp, faComment, faPalette } from "@fortawesome/free-solid-svg-icons";
 import { useCommentStore } from "@/stores/comment-store";
 import { VideoComment } from "@/lib/db-types";
-import { CardFooter } from "@/ui/card";
-import { Badge } from "@/ui/badge";
+import { TimelineCardFooter } from "@/components/video-side-panel/timeline-card";
 import * as api from "@/lib/fetch-wrapper"
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -42,56 +41,37 @@ export default function CommentCardFooter(props: { comment: VideoComment }) {
     const hasDrawing = props.comment.drawingPath !== "" && props.comment.drawingPath !== null;
 
     return (
-        <CardFooter className="flex justify-end px-2">
-            <div>
-                <div className="flex w-full gap-1">
-                    {hasIssueId && (
-                        <Badge className="bg-white hover:bg-[#333]">
-                            <button
-                                onClick={async () => await openExternalLink("jira")}
-                                className="flex items-center gap-1 hover:text-[#ff8800] transition text-[#4ea7ff] text-xs hover:underline hover:text-[#ff8800]"
-                            >
-                                {props.comment.issueId}
-                            </button>
-                        </Badge>
-                    )}
-                    {hasSlackMessage && (
-                        <Badge className="bg-white hover:bg-[#333]">
-                            <button
-                                onClick={async () => await openExternalLink("slack")}
-                                className="flex items-center gap-1 text-black hover:text-[#ff8800] transition"
-                            >
-                                <FontAwesomeIcon icon={faComment}/>
-                                <span className="text-xs">Slack</span>
-                            </button>
-                        </Badge>
-                    )}
-
-                    {hasDrawing && (
-                        <Badge className="bg-white hover:bg-[#333]">
-                            <button className="flex items-center gap-1 text-black hover:text-[#ff8800] transition">
-                            <FontAwesomeIcon icon={faPalette} size="xl"/>
-                            </button>
-                        </Badge>
-                    )}
-
-
-                    <Badge className="bg-white hover:bg-[#333]">
-                        {/* 👍 like button */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleLike(props.comment.id);
-                            }}
-                            className="flex items-center gap-1 text-black hover:text-[#ff8800] transition"
-                        >
-                            <FontAwesomeIcon icon={faThumbsUp} />
-                            <span className="text-xs">{props.comment.thumbsUp ?? 0}</span>
-                        </button>
-                    </Badge>
-                </div>
+        <TimelineCardFooter>
+            <div className="flex gap-1">
+                {hasIssueId && (
+                    <Button variant="chip" size="chip" className="group" onClick={async () => await openExternalLink("jira")}>
+                        <span className="text-info group-hover:text-primary group-hover:underline">{props.comment.issueId}</span>
+                    </Button>
+                )}
+                {hasSlackMessage && (
+                    <Button variant="chip" size="chip" onClick={async () => await openExternalLink("slack")}>
+                        <FontAwesomeIcon icon={faComment} />
+                        Slack
+                    </Button>
+                )}
+                {hasDrawing && (
+                    <Button variant="chip" size="chip">
+                        <FontAwesomeIcon icon={faPalette} />
+                    </Button>
+                )}
+                <Button
+                    variant="chip"
+                    size="chip"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(props.comment.id);
+                    }}
+                >
+                    <FontAwesomeIcon icon={faThumbsUp} />
+                    {props.comment.thumbsUp ?? 0}
+                </Button>
             </div>
-        </CardFooter>
+        </TimelineCardFooter>
     );
 }
 

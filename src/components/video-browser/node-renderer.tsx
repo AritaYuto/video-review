@@ -30,6 +30,7 @@ export function NodeRenderer({
             type={node.data.type}
             unread={node.data.unread}
             selected={isSelected}
+            // eslint-disable-next-line shadcn/no-inline-styles -- react-arborist positions rows through this style object
             style={computedStyle}
             onClick={() => node.toggle()}
         />

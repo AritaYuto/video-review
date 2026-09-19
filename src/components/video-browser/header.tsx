@@ -1,23 +1,19 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Plus, Search, LayoutGrid, MessageSquare } from "lucide-react";
+import { X, Plus, LayoutGrid, MessageSquare } from "lucide-react";
+import { Button } from "@/ui/button";
+import { SidebarSearchInput } from "@/components/controls/sidebar-search-input";
 import { useAuthStore } from "@/stores/auth-store";
 import { useTranslations } from "next-intl";
 import { isGuest } from "@/lib/role";
-import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarHeader,
-    SidebarInput,
-    useSidebar,
-} from "@/ui/sidebar"
+import { SidebarGroup, SidebarHeader, useSidebar } from "@/ui/sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import { useVideoDateFilterStore } from "@/stores/date-filter-store";
 import { useVideoStore } from "@/stores/video-store";
-import CalendarDateRadio from "@/ui/calendar-date-radio";
+import CalendarDateRadio from "@/components/controls/calendar-date-radio";
 import { Separator } from "../ui/separator";
 import { useLLMStatusStore } from "@/stores/llm-status-store";
 import { useChatSearchStore } from "@/stores/chat-search-store";
@@ -59,78 +55,49 @@ export default function VideoListPanelHeader(
     }
 
     return (
-        <SidebarHeader
-            style={{ color: "#ff8800" }}
-            className="border-b p-3 font-semibold text-sm bg-[#181818] border-[#333]"
-        >
-            <div className="flex justify-between">
-                <div>
+        <SidebarHeader>
+            <div className="flex justify-between text-primary font-semibold text-sm">
+                <div className="flex items-center">
                     <span>{t("title")}</span>
-                    <button
-                        onClick={() => onSearchDialogShow()}
-                        className={`
-                            inline-flex items-center justify-center
-                            text-lg px-1 leading-none hover:text-[#ff5500]
-                            ${filtering ? "text-[#15fa34ff]" : ""}
-                        `}
-                    >
+                    <Button variant="toolbar" size="icon-sm" data-active={filtering} onClick={() => onSearchDialogShow()}>
                         <FontAwesomeIcon icon={faSearch} />
-                    </button>
-                    {filtering
-                        ? (
-                            <>
-                                <button
-                                    onClick={() => handleClear()}
-                                    className="inline-flex items-center justify-center hover:text-[#ff5500]"
-                                >
-                                    <X className="size-5" />
-                                </button>
-                            </>
-                        )
-                        : (<></>)
-                    }
+                    </Button>
+                    {filtering && (
+                        <Button variant="toolbar" size="icon-sm" onClick={() => handleClear()}>
+                            <X className="size-5" />
+                        </Button>
+                    )}
                     {/* Hidden rather than disabled: the reason lives in the settings popover (admins). */}
                     {available && (
-                        <button
-                            onClick={() => openChat()}
-                            title={tChat("title")}
-                            className="inline-flex items-center justify-center px-1 leading-none transition-colors hover:text-[#ff5500]"
-                        >
-                            <MessageSquare className="size-4" />
-                        </button>
+                        <Button variant="toolbar" size="icon-sm" title={tChat("title")} onClick={() => openChat()}>
+                            <MessageSquare />
+                        </Button>
                     )}
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <button
+                    <Button
+                        variant="toolbar"
+                        size="icon-sm"
                         data-slot="thumbnails-toggle"
+                        data-active={thumbnailsOpen}
                         // The panel does not render under the mobile sidebar sheet.
                         hidden={isMobile}
                         onClick={() => onThumbnailsToggle()}
                         title={t("thumbnails")}
-                        className={`
-                            inline-flex items-center justify-center
-                            leading-none hover:text-[#ff5500]
-                            ${thumbnailsOpen ? "text-[#15fa34ff]" : ""}
-                        `}
                     >
                         <LayoutGrid className="size-5" />
-                    </button>
-
-                    <button
-                        hidden={isGuest(role)}
-                        onClick={() => onUploadDialogShow()}
-                        className="text-lg leading-none hover:text-[#fbba5e]"
-                    >
-                        <Plus />
-                    </button>
+                    </Button>
+                    <Button variant="toolbar" size="icon-sm" hidden={isGuest(role)} onClick={() => onUploadDialogShow()}>
+                        <Plus className="size-5" />
+                    </Button>
                 </div>
             </div>
-            <Separator className="bg-[#333]" />
+            <Separator />
 
             <ChatSearchPanel />
 
-            <SidebarGroup className="py-0">
+            <SidebarGroup>
                 <CalendarDateRadio
                     mode={videoDate.mode}
                     range={videoDate.mode === "range" && videoDate.from && videoDate.to
@@ -142,15 +109,9 @@ export default function VideoListPanelHeader(
                     onClear={videoDate.clear}
                     className="size-10" />
 
-                <SidebarGroupContent className="relative mt-1">
-                    <SidebarInput
-                        value={filterTree}
-                        onChange={(e) => setFilterTree(e.target.value)}
-                        placeholder="Filter video..."
-                        className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white" />
-                    <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
-                </SidebarGroupContent>
+                <SidebarSearchInput value={filterTree} onChange={setFilterTree} placeholder="Filter video..." />
             </SidebarGroup>
+            <Separator />
         </SidebarHeader>
     );
 }

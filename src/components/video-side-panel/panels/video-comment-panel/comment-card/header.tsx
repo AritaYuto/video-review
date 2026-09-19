@@ -26,7 +26,7 @@ import { VideoComment } from "@/lib/db-types";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import { ShareLinkDialog } from "@/components/dialog/share-link";
 import { useEffect, useMemo, useState } from "react";
-import { CardHeader } from "@/ui/card";
+import { TimelineCardHeader } from "@/components/video-side-panel/timeline-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useTranslations } from "next-intl";
 import { isViewer } from "@/lib/role";
@@ -53,7 +53,7 @@ function DropdownMenu_SharedLink() {
 
     return (
         <>
-            <DropdownMenuItem className="gap-2"
+            <DropdownMenuItem
                 onClick={() => { setOpen(true) }}
                 onSelect={(e) => { e.preventDefault() }}>
                 <FontAwesomeIcon icon={faLink} />
@@ -79,7 +79,7 @@ function DropdownMenu_CreateIssue(props: { disabled: boolean, comment: VideoComm
     const icon = props.translateID === "commentItemTask" ? faListCheck : faBug;
 
     return (
-        <DropdownMenuItem disabled={props.disabled} className="gap-2" onClick={async () => {
+        <DropdownMenuItem disabled={props.disabled} onClick={async () => {
             if (issueType === undefined || email === null) return;
             const screenshot = await captureFrame(videoRefElement)
             await issueLinkedComment(props.comment.id, email, issueType, screenshot);
@@ -96,7 +96,7 @@ function DropdownMenu_Edit(props: { comment: VideoComment }) {
     const { setEditing } = useCommentEditStore();
 
     return (
-        <DropdownMenuItem className="gap-2" onClick={() => setEditing(props.comment)}>
+        <DropdownMenuItem onClick={() => setEditing(props.comment)}>
             <FontAwesomeIcon icon={faPen} />
             {t("commentItemEdit")}
         </DropdownMenuItem>
@@ -109,7 +109,7 @@ function DropdownMenu_Delete(props: { comment: VideoComment }) {
     const { deleteComment } = useCommentStore();
 
     return (
-        <DropdownMenuItem className="gap-2 text-red-400" onClick={async () => await deleteComment(props.comment.id)}>
+        <DropdownMenuItem variant="destructive" onClick={async () => await deleteComment(props.comment.id)}>
             <FontAwesomeIcon icon={faTrash} />
             {t("commentItemRemove")}
         </DropdownMenuItem>
@@ -130,7 +130,7 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
     }, [props.comment.userEmail]);
 
     return (
-        <CardHeader className="flex flex-row items-center justify-between px-3 pb-1">
+        <TimelineCardHeader>
             <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
                     {icon(props.comment.userEmail) ? (<><AvatarImage src={icon(props.comment.userEmail)} /></>) : (<><AvatarFallback/></>)}
@@ -138,7 +138,7 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
                 </Avatar>
                 <div className="flex flex-col leading-none">
                     <span className="text-sm font-medium">{props.comment.userName}</span>
-                    <span className="text-xs text-[#888]">
+                    <span className="text-xs text-muted-foreground">
                         {formatDate(props.comment.createdAt)} : Rev.{props.comment.videoRevNum}
                     </span>
                 </div>
@@ -146,15 +146,11 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
 
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-[#aaa] hover:bg-[#7d7d7d] w-8 h-8"
-                    >
+                    <Button variant="ghost" size="icon-sm">
                         <FontAwesomeIcon icon={faEllipsisV} />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-[#181818] text-white border-[#333]">
+                <DropdownMenuContent>
                     <DropdownMenu_SharedLink />
                     <DropdownMenu_CreateIssue disabled={(props.comment.issueId !== "" && props.comment.issueId !== null) || !isViewer(role)} comment={props.comment} translateID="commentItemTask" />
                     <DropdownMenu_CreateIssue disabled={(props.comment.issueId !== "" && props.comment.issueId !== null) || !isViewer(role)} comment={props.comment} translateID="commentItemBug" />
@@ -162,6 +158,6 @@ export default function CommentCardHeader(props: { comment: VideoComment }) {
                     <DropdownMenu_Delete comment={props.comment} />
                 </DropdownMenuContent>
             </DropdownMenu>
-        </CardHeader>
+        </TimelineCardHeader>
     );
 }

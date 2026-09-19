@@ -3,6 +3,7 @@ import { useCommentStore } from "@/stores/comment-store";
 import { useVideoReviewStore } from "@/stores/video-review-store";
 import { useMemo } from "react";
 import { Slider } from "@/ui/slider";
+import { cn } from "@/lib/utils";
 
 export default function VideoTimelineBar() {
     const { displayComments } = useCommentStore();
@@ -53,16 +54,11 @@ export default function VideoTimelineBar() {
                             e.stopPropagation();
                             setCurrentTime(t);
                         }}
-                        className={`absolute ${Math.abs(currentTime - t) < 0.5 ? "bg-[#ffd37b]" : "bg-[#ff8800]"}`}
-                        style={{
-                            left: `${(t / duration) * 100}%`,
-                            top: "-10px",
-                            transform: "translateX(-50%)",
-                            width: "5px",
-                            height: "25px",
-                            borderRadius: "2px",
-                            cursor: "pointer",
-                        }}
+                        className={cn(
+                            "absolute left-(--marker-left) -top-2.5 -translate-x-1/2 w-1.25 h-6.25 rounded-xs cursor-pointer",
+                            Math.abs(currentTime - t) < 0.5 ? "bg-foreground" : "bg-primary",
+                        )}
+                        style={{ "--marker-left": `${(t / duration) * 100}%` } as React.CSSProperties}
                     />
                 ))}
         </div>

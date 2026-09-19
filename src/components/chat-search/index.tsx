@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { X, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/ui/button";
 import { useTranslations } from "next-intl";
 import { useChatSearchStore } from "@/stores/chat-search-store";
 import { useLLMStatusStore } from "@/stores/llm-status-store";
@@ -26,45 +27,28 @@ export function ChatSearchPanel() {
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) close(); }}>
-            <SheetContent
-                side="right"
-                className="w-100 sm:w-120 bg-[#181818] border-l border-[#333] p-0 flex flex-col"
-            >
-                <SheetHeader className="flex flex-row items-center justify-between px-4 py-3 border-b border-[#333] shrink-0">
-                    <SheetTitle className="text-[#ff8800] text-sm font-semibold">
-                        {t("title")}
-                    </SheetTitle>
-                    <div className="flex items-center gap-2">
-                        {history.length > 0 && (
-                            <button
-                                onClick={clear}
-                                className="text-[#666] hover:text-[#aaa] transition-colors"
-                                title={t("clearHistory")}
-                            >
-                                <Trash2 className="size-4" />
-                            </button>
-                        )}
-                        <button
-                            onClick={close}
-                            className="text-[#666] hover:text-[#aaa] transition-colors"
-                        >
-                            <X className="size-4" />
-                        </button>
-                    </div>
+            <SheetContent side="right" className="w-100">
+                <SheetHeader className="flex flex-row items-center justify-between py-2 border-b shrink-0">
+                    <SheetTitle className="text-sm">{t("title")}</SheetTitle>
+                    {history.length > 0 && (
+                        // Keep clear of the sheet's own close button in the corner.
+                        <Button variant="ghost" size="icon-sm" onClick={clear} title={t("clearHistory")} className="mr-8">
+                            <Trash2 />
+                        </Button>
+                    )}
                 </SheetHeader>
 
                 {!available ? (
                     <div className="flex-1 flex items-center justify-center p-6 text-center">
-                        <p className="text-[#666] text-sm">
+                        <p className="text-muted-foreground text-sm">
                             {t("llmUnavailable")}
-                            
                         </p>
                     </div>
                 ) : (
                     <>
-                        <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}>
+                        <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
                             {history.length === 0 && (
-                                <p className="text-[#555] text-xs text-center mt-4">
+                                <p className="text-muted-foreground text-xs text-center mt-4">
                                     {t("emptyState")}
                                 </p>
                             )}
@@ -73,13 +57,13 @@ export function ChatSearchPanel() {
                             ))}
                             {isLoading && (
                                 <div className="flex items-start">
-                                    <div className="bg-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-[#666]">
+                                    <div className="bg-accent rounded-lg px-3 py-2 text-sm text-muted-foreground">
                                         {t("loading")}
                                     </div>
                                 </div>
                             )}
                             {error && (
-                                <div className="text-xs text-red-400 text-center">{error}</div>
+                                <div className="text-xs text-destructive text-center">{error}</div>
                             )}
                             <div ref={bottomRef} />
                         </div>

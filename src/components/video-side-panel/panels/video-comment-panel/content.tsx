@@ -122,12 +122,10 @@ export default function VideoCommentContent(props: {
     }, [dateFilter.mode, dateFilter.from, dateFilter.to, dateFilter.days, filterText]);
 
     return (
-        <div 
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r">
+        <div className="bg-sidebar w-full h-full flex flex-col border-r">
             <CommentCard comments={comments} containerRef={containerRef} commentCardRef={commentCardRefs} />
 
-            <Separator className="bg-[#333]" />
+            <Separator />
             <CommentConfirmed
                 confirmedLabel={editingComment ? "commentUpdate" : "commentAdd"}
                 comment={editingComment ? editingComment.comment : ""}

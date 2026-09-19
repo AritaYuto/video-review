@@ -31,24 +31,11 @@ export default function EventCard(props: {
             containerRef={props.containerRef}
             itemCardRef={props.eventCardRef}
             getKey={(event) => event.id}
-            getCardClassName={(event) => {
-                const isSelected = props.selectedEventId === event.id;
-                const isActive = activeEventIds.has(event.id);
-                const hasLink = event.links.length > 0;
-
-                if (isSelected) {
-                    return "border-[#ff8800] bg-[#3a2b00]";
-                }
-
-                if (isActive) {
-                    return "border-[#ffffff]";
-                }
-
-                if (hasLink) {
-                    return "border-[#4aa3ff]";
-                }
-
-                return "";
+            getCardState={(event) => {
+                if (props.selectedEventId === event.id) return "selected";
+                if (activeEventIds.has(event.id)) return "active";
+                if (event.links.length > 0) return "link";
+                return "none";
             }}
             onClick={(event) => { props.onSelectEvent(event) }}
             renderHeader={(event) => <EventCardHeader event={event} />}

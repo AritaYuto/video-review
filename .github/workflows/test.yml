@@ -11,6 +11,20 @@ permissions:
   checks: write
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint UI code
+        run: npm run lint
+
   hono-test:
     runs-on: ubuntu-latest
     services:

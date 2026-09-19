@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { SidebarTrigger } from "@/ui/sidebar";
 import { Separator } from "@/ui/separator";
 import { Badge } from "@/ui/badge";
+import { Input } from "@/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faPlus } from "@fortawesome/free-solid-svg-icons";
 
@@ -47,7 +49,7 @@ export default function VideoTitle() {
         <div className="py-1 px-2 mb-2 flex items-center justify-between">
             <div className="min-w-0">
                 <div className="flex items-center justify-between">
-                    <h2 className="flex items-center gap-1 px-2 text-lg font-semibold text-[#ff8800] tracking-wide">
+                    <h2 className="flex items-center gap-1 px-2 text-lg font-semibold text-primary tracking-wide">
                         <SidebarTrigger className="-ml-1" />
                         <Separator
                             orientation="vertical"
@@ -56,26 +58,30 @@ export default function VideoTitle() {
                         <span className="truncate">{selectedVideo?.title ?? t("noSelection")}</span>
                     </h2>
                     {revisions.length > 1 && (
-                        <select
-                            className="bg-[#202020] border border-[#333] text-sm rounded px-2 py-1 text-[#eee] hover:border-[#ff8800] transition"
+                        <Select
                             value={selectedRevision?.id ?? ""}
-                            onChange={(e) => {
-                                const rev = revisions.find((r) => r.id === e.target.value);
+                            onValueChange={(id) => {
+                                const rev = revisions.find((r) => r.id === id);
                                 if (rev) selectVideoRevision(rev);
                             }}
                         >
-                            {revisions.map((r) => (
-                                <option key={r.id} value={r.id}>
-                                    {t("revisionOption", {
-                                        revision: r.revision,
-                                        date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
-                                    })}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger size="sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {revisions.map((r) => (
+                                    <SelectItem key={r.id} value={r.id}>
+                                        {t("revisionOption", {
+                                            revision: r.revision,
+                                            date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
+                                        })}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     )}
                 </div>
-                <p className="text-xs text-[#999] mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                     {selectedRevision
                         ? t("revisionInfo", {
                             revision: selectedRevision.revision,
@@ -88,28 +94,24 @@ export default function VideoTitle() {
                 {selectedRevision && (
                     <div className="px-2 mt-2">
                         <div className="flex flex-wrap items-center gap-1">
-                            <span className="text-[11px] text-[#888]">
+                            <span className="text-xs text-muted-foreground">
                                 {t("tagsLabel")}:
                             </span>
                             {currentTags.map((tag) => (
-                                <Badge
-                                    key={tag}
-                                    variant="outline"
-                                    className="border-[#333] bg-[#202020] text-[#eee] gap-1 pr-1"
-                                >
+                                <Badge key={tag} variant="outline">
                                     {tag}
                                     <button
                                         onClick={() => void removeTag(tag)}
-                                        className="text-[#666] hover:text-[#ff4444] transition"
+                                        className="text-muted-foreground hover:text-destructive transition"
                                     >
-                                        <FontAwesomeIcon icon={faXmark} className="text-[10px]" />
+                                        <FontAwesomeIcon icon={faXmark} className="text-2xs" />
                                     </button>
                                 </Badge>
                             ))}
 
                             {inputVisible ? (
                                 <div className="relative">
-                                    <input
+                                    <Input
                                         ref={inputRef}
                                         autoFocus
                                         value={inputValue}
@@ -126,16 +128,16 @@ export default function VideoTitle() {
                                                 setInputVisible(false);
                                             }
                                         }}
-                                        className="bg-[#2a2a2a] border border-[#555] text-[#eee] text-xs rounded px-2 py-0.5 w-28 outline-none focus:border-[#ff8800]"
+                                        className="h-7 w-28 text-xs md:text-xs"
                                         placeholder={t("tagInputPlaceholder")}
                                     />
                                     {suggestions.length > 0 && inputValue && (
-                                        <div className="absolute top-full left-0 mt-1 z-50 bg-[#2a2a2a] border border-[#444] rounded shadow-lg min-w-30">
+                                        <div className="absolute top-full left-0 mt-1 z-50 bg-popover border rounded shadow-lg min-w-30">
                                             {suggestions.slice(0, 6).map((s) => (
                                                 <button
                                                     key={s}
                                                     onMouseDown={(e) => { e.preventDefault(); void addTag(s); }}
-                                                    className="w-full text-left text-xs text-[#eee] px-2 py-1 hover:bg-[#ff8800] hover:text-black transition"
+                                                    className="w-full text-left text-xs px-2 py-1 hover:bg-primary hover:text-primary-foreground transition"
                                                 >
                                                     {s}
                                                 </button>
@@ -146,10 +148,10 @@ export default function VideoTitle() {
                             ) : (
                                 <button
                                     onClick={() => setInputVisible(true)}
-                                    className="text-[#555] hover:text-[#ff8800] transition"
+                                    className="text-muted-foreground hover:text-primary transition"
                                     title={t("addTag")}
                                 >
-                                    <FontAwesomeIcon icon={faPlus} className="text-[10px]" />
+                                    <FontAwesomeIcon icon={faPlus} className="text-2xs" />
                                 </button>
                             )}
                         </div>
