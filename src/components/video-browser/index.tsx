@@ -11,7 +11,7 @@ import VideoThumbnailsPanel from "@/components/video-browser/video-thumbnails-pa
 import VideoFoldersTree from "@/components/video-browser/video-folders-tree";
 import { useVideoStore } from "@/stores/video-store";
 import { useAuthStore } from "@/stores/auth-store";
-import { hasUnreadVideoComment } from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 
 export default function VideoListPanel() {
     const router = useRouter();
@@ -36,8 +36,10 @@ export default function VideoListPanel() {
 
         let cancelled = false;
 
-        hasUnreadVideoComment(userId).then((ids) => {
-            if (!cancelled) setUnReadVideoIds(ids);
+        api.readStatus.unread.$get({ query: { userId } }).then(async (res) => {
+            if (res.status !== 200) throw new Error("failed to get unread comment info");
+            const { unreadVideoIds } = await res.json();
+            if (!cancelled) setUnReadVideoIds(unreadVideoIds);
         }).catch((reason) => {
             cancelled = true;
             console.error(reason);

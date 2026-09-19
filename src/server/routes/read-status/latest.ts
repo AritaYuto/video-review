@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 export const latestRouter = new Hono()
     .openapi(createRoute({
@@ -7,32 +8,22 @@ export const latestRouter = new Hono()
         summary: "Get latest comment",
         description: "Returns the latest comment of a video by its ID.",
         path: "/",
-        parameters: [
-            {
-                name: "videoId",
-                in: "query",
-                required: true,
-                schema: { type: "string" },
-                description: "ID of the video to retrieve the latest comment for",
-            },
-        ],
+        request: { query: z.object({ videoId: z.string().min(1) }) },
         responses: {
             200: {
                 description: "Get latest comment",
+                content: {
+                    "application/json": {
+                        schema: z.object({ latestCommentId: z.string().nullable() }),
+                    },
+                },
             },
-            400: {
-                description: "Missing videoId",
-            },
+            400: errorResponse("Missing videoId"),
+            500: errorResponse("Failed to fetch latest comment"),
         },
     }), async (c) => {
         try {
-            const { searchParams } = new URL(c.req.url);
-            const videoId = searchParams.get("videoId");
-
-            // 400
-            if (!videoId) {
-                return c.json({ error: "missing videoId" }, 400);
-            }
+            const { videoId } = c.req.valid("query");
 
             const latest = await prisma.$queryRaw<
                 { latestCommentId: string | null }[]
@@ -47,10 +38,7 @@ export const latestRouter = new Hono()
             const latestCommentId =
                 latest.length > 0 ? latest[0].latestCommentId : null;
 
-            return c.json(
-                { latestCommentId },
-                { status: 200 }
-            );
+            return c.json({ latestCommentId }, 200);
         } catch {
             return c.json({ error: "failed to fetch latest comment" }, 500);
         }

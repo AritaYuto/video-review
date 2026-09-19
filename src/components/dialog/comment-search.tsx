@@ -9,7 +9,7 @@ import { useCommentSearchStore } from "@/stores/comment-search-store";
 import { useCommentSearchDateFilterStore } from "@/stores/date-filter-store";
 import { Checkbox } from "@/ui/checkbox";
 import { useVideoStore } from "@/stores/video-store";
-import { fetcCommentUsers } from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import CalendarDateRadio from "@/components/controls/calendar-date-radio";
 import { useCommentStore } from "@/stores/comment-store";
 
@@ -36,7 +36,10 @@ export function CommentSearchDialog({ open, onClose }: { open: boolean; onClose:
 
     useEffect(() => {
         void (async () => {
-            const users = await fetcCommentUsers({ videoId: selectedRevision?.videoId, hasDrawing });
+            const res = await api.comments.users.$get({
+                query: { videoId: selectedRevision?.videoId, hasDrawing: hasDrawing ? "true" : undefined },
+            });
+            const users = res.status === 200 ? await res.json() : [];
             setCommentUsers(users.map((u) => ({ label: u.userName, value: u.userName })));
         })();
     }, [open]);

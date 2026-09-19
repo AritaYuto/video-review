@@ -10,7 +10,6 @@ import { useCommentEditStore } from "@/stores/comment-edit-store";
 import CommentConfirmed from "@/components/video-side-panel/panels/video-comment-panel/comment-confirmed";
 import { useDrawingStore } from "@/stores/drawing-store";
 import { RefObject, useEffect, useRef } from "react";
-import { readVideoComment } from "@/lib/fetch-wrapper";
 import CommentCard from "@/components/video-side-panel/panels/video-comment-panel/comment-card";
 import { useCommentSearchStore } from "@/stores/comment-search-store";
 import { useCommentSearchDateFilterStore } from "@/stores/date-filter-store";
@@ -23,7 +22,7 @@ export default function VideoCommentContent(props: {
     const commentCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const { displayName, email, userId } = useAuthStore();
     const { selectedVideo, selectedRevision } = useVideoStore();
-    const { setDisplayComments, comments, addComment, fetchComments } = useCommentStore();
+    const { setDisplayComments, comments, addComment, fetchComments, markRead } = useCommentStore();
     const { filterText } = useCommentSearchStore();
     const dateFilter = useCommentSearchDateFilterStore();
     const { canvasSave } = useDrawingStore();
@@ -39,7 +38,7 @@ export default function VideoCommentContent(props: {
 
     useEffect(() => {
         if (!userId || !selectedVideo) return;
-        readVideoComment(userId, selectedVideo.id);
+        markRead(userId, selectedVideo.id);
     }, [comments]);
 
     const handleCommentConfirmed = async (comment: string, issueId: string | null) => {
@@ -61,7 +60,6 @@ export default function VideoCommentContent(props: {
                     issueId: issueId,
                     time: currentTime,
                     userEmail: email ?? "",
-                    thumbsUp: 0,
                 })
                 await handlePostCommentToChat(id);
             }

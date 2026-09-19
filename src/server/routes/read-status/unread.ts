@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 export const unreadRouter = new Hono()
     .openapi(createRoute({
@@ -7,32 +8,22 @@ export const unreadRouter = new Hono()
         summary: "Get unread videos",
         description: "Returns the list of unread video IDs for a user.",
         path: "/",
-        parameters: [
-            {
-                name: "userId",
-                in: "query",
-                required: true,
-                schema: { type: "string" },
-                description: "ID of the user to retrieve unread videos for",
-            },
-        ],
+        request: { query: z.object({ userId: z.string().min(1) }) },
         responses: {
             200: {
                 description: "Get unread videos",
+                content: {
+                    "application/json": {
+                        schema: z.object({ unreadVideoIds: z.string().array() }),
+                    },
+                },
             },
-            400: {
-                description: "Missing userId",
-            },
+            400: errorResponse("Missing userId"),
+            500: errorResponse("Failed to fetch unread video ids"),
         },
     }), async (c) => {
         try {
-            const { searchParams } = new URL(c.req.url);
-            const userId = searchParams.get("userId");
-
-            // 400
-            if (!userId) {
-                return c.json({ error: "missing userId" }, 400);
-            }
+            const { userId } = c.req.valid("query");
 
             const unreadVideoIds = await prisma.$queryRaw<{ videoId: string }[]>`
             WITH latest AS (
@@ -62,7 +53,7 @@ export const unreadRouter = new Hono()
 
             return c.json({
                 unreadVideoIds: unreadVideoIds.map((x) => x.videoId),
-            }, { status: 200 });
+            }, 200);
 
         } catch {
             return c.json({ error: "failed to fetch unread video ids" }, 500);

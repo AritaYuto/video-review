@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 export const updateStatusRouter = new Hono()
     .openapi(createRoute({
@@ -7,27 +8,15 @@ export const updateStatusRouter = new Hono()
         summary: "Update read status",
         description: "Updates the read status of a video for a user.",
         path: "/",
-        requestBody: {
-            required: true,
-            content: {
-                "application/json": {
-                    schema: {
-                        type: "object",
-                        properties: {
-                            userId: {
-                                type: "string",
-                                description: "ID of the user",
-                            },
-                            videoId: {
-                                type: "string",
-                                description: "ID of the video",
-                            },
-                            lastReadCommentId: {
-                                type: "string",
-                                description: "ID of the last read comment",
-                            },
-                        },
-                        required: ["userId", "videoId", "lastReadCommentId"],
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            userId: z.string().min(1),
+                            videoId: z.string().min(1),
+                            lastReadCommentId: z.string().min(1),
+                        }),
                     },
                 },
             },
@@ -35,18 +24,18 @@ export const updateStatusRouter = new Hono()
         responses: {
             200: {
                 description: "Update read status",
+                content: {
+                    "application/json": {
+                        schema: z.object({ ok: z.boolean() }),
+                    },
+                },
             },
-            400: {
-                description: "Invalid request body",
-            },
+            400: errorResponse("Invalid request body"),
+            500: errorResponse("Failed to update read status"),
         },
     }), async (c) => {
         try {
-            const { userId, videoId, lastReadCommentId } = await c.req.json();
-
-            if (!userId || !videoId || !lastReadCommentId) {
-                return c.json({ error: "invalid request body" }, 400);
-            }
+            const { userId, videoId, lastReadCommentId } = c.req.valid("json");
 
             const user = await prisma.user.findUnique({
                 where: { id: userId },
@@ -54,7 +43,7 @@ export const updateStatusRouter = new Hono()
             });
 
             if (!user) {
-                return c.json({ ok: true });
+                return c.json({ ok: true }, 200);
             }
 
             await prisma.userVideoReadStatus.upsert({
@@ -71,7 +60,7 @@ export const updateStatusRouter = new Hono()
                 },
             });
 
-            return c.json({ ok: true });
+            return c.json({ ok: true }, 200);
         } catch {
             return c.json({ error: "failed to update read status" }, 500);
         }

@@ -2,7 +2,8 @@
 
 import { useCommentStore } from "@/stores/comment-store";
 import { toast } from "sonner";
-import * as api from "@/lib/fetch-wrapper";
+import * as wrapper from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 
 export async function chatToast(commentId: string, screenshot: Blob | null): Promise<boolean> {
     if (screenshot === null) {
@@ -14,7 +15,7 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
          return false;
     }
 
-    const ret = await api.chat(commentId, screenshot);
+    const ret = await wrapper.chat(commentId, screenshot);
     if(!ret.ok || ret.data.notifiedProviders.length === 0) {
         return false;
     }
@@ -36,10 +37,10 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
             </div>
         </div>
     ));
-    const updatedComment = await api.updateComment({
-        id: commentId,
-        notifiedProviders: ret.data.notifiedProviders,
+    const res = await api.comments.index.$patch({
+        json: { id: commentId, notifiedProviders: ret.data.notifiedProviders },
     });
-    useCommentStore.getState().updateComment(updatedComment);
+    if (res.status !== 200) throw new Error("Failed to update comment");
+    useCommentStore.getState().updateComment(await res.json());
     return true;
 }

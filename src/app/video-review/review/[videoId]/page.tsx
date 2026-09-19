@@ -5,7 +5,6 @@ import { useVideoStore } from "@/stores/video-store";
 import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { api } from "@/lib/api-client";
-import * as wrapper from "@/lib/fetch-wrapper";
 import { fetchVideoEvents } from "@/lib/fetch-wrapper/events";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
@@ -77,7 +76,9 @@ export default function VideoReviewPage() {
             setTimelineTime(parseFloat(duration));
         } else if (commentId) {
             setTimeout(async () => {
-                const comment = await wrapper.getComment(commentId as string);
+                const res = await api.comments[":id"].$get({ param: { id: commentId as string } });
+                if (res.status !== 200) throw new Error("Failed to fetch comment");
+                const comment = await res.json();
                 setTimelineTime(comment.time);
                 setSelectComment(comment);
             }, 100);

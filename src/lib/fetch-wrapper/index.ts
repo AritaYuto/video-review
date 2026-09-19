@@ -1,6 +1,5 @@
 export * from "@/lib/fetch-wrapper/vcs";
 export * from "@/lib/fetch-wrapper/auth";
-export * from "@/lib/fetch-wrapper/comments";
 export * from "@/lib/fetch-wrapper/events";
 export * from "@/lib/fetch-wrapper/media";
 export * from "@/lib/fetch-wrapper/upload";
