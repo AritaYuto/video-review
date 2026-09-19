@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
 import { createVCSProviderFromEnv } from "@/server/lib/vcs/from-env";
 import type { Relevance, PullRequest, Commit } from "@/server/lib/vcs/types";
@@ -21,7 +22,7 @@ const QueryVcsSummarySchema = z.object({
 type MergeResult  = { cachedMergeId: string;  relevance: string; relevanceReason: string };
 type CommitResult = { cachedCommitId: string; relevance: string; relevanceReason: string };
 
-export const vcsRouter = new Hono()
+export const vcsRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get VCS changes between video revisions",

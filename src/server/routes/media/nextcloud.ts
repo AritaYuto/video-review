@@ -1,8 +1,9 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { NextCloudDriver } from "@/server/lib/storage/drivers/nextcloud";
 
-export const nextCloudRouter = new Hono()
+export const nextCloudRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get media from Nextcloud",

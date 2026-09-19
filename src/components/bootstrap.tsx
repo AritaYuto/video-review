@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
-import * as wrapper from "@/lib/fetch-wrapper";
 import { api } from "@/lib/api-client";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
@@ -24,8 +23,10 @@ export default function Bootstrap() {
         }
 
         try {
-            const data = await wrapper.login("user", { email, password: pass });
-            setAuth(data.id, data.email, data.role, data.token, data.displayName);
+            const login = await api.auth.login.user.$post({ json: { email, password: pass } });
+            if (login.status !== 200) throw new Error("Failed to login");
+            const data = await login.json();
+            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName);
             location.href = "/";
         } catch (e) {
             alert(t("loginFailedMsg"));

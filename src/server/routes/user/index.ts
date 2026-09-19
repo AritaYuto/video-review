@@ -1,6 +1,9 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import bcrypt from "bcrypt";
+import { UserSchema } from "@/schema/zod";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const UpdateProfileBody = z.object({
     userId: z.string().optional(),
@@ -9,7 +12,7 @@ const UpdateProfileBody = z.object({
     pass: z.string().min(6).optional(),
 });
 
-export const userRouter = new Hono()
+export const userRouter = createRouter()
     .openapi(createRoute({
         method: "patch",
         summary: "Update Profile",
@@ -26,16 +29,15 @@ export const userRouter = new Hono()
         responses: {
             200: {
                 description: "Profile update successfully",
+                content: {
+                    "application/json": {
+                        schema: UserSchema,
+                    },
+                },
             },
-            400: {
-                description: "Invalid parameters",
-            },
-            403: {
-                description: "Forbidden",
-            },
-            410: {
-                description: "invalid userid",
-            },
+            400: errorResponse("Invalid parameters"),
+            403: errorResponse("Forbidden"),
+            410: errorResponse("invalid userid"),
         },
     }), async (c) => {
         const body = c.req.valid("json");
@@ -76,5 +78,5 @@ export const userRouter = new Hono()
 
             return user;
         });
-        return c.json(updated, { status: 200 });
+        return c.json(updated, 200);
     });

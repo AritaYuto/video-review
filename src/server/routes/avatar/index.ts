@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { avatarIntegration, avatarLocal } from "@/server/lib/avatar";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/lib/db";
@@ -6,7 +7,7 @@ import { VideoReviewStorage } from "@/server/lib/storage";
 import { Readable } from "stream";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { v4 as uuidv4 } from 'uuid';
 
 const GetQuerySchema = z.object({
@@ -15,9 +16,11 @@ const GetQuerySchema = z.object({
 
 const UploadBodySchema = z.object({
     email: z.string().optional(),
+    // Binary format must be spelled out: zod-openapi cannot map z.file() on its own.
+    file: z.file().optional().openapi({ type: "string", format: "binary" }),
 });
 
-export const avatarRouter = new Hono()
+export const avatarRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get avatar",
@@ -26,21 +29,26 @@ export const avatarRouter = new Hono()
         responses: {
             200: {
                 description: "Avatar retrieved successfully",
-            }
+                content: {
+                    "application/json": {
+                        schema: z.object({ avatarUrl: z.string().optional() }),
+                    },
+                },
+            },
         },
     }), async (c) => {
         try {
             const { email } = c.req.valid("query");
 
             if (!email) {
-                return c.json({ avatarUrl: undefined });
+                return c.json({ avatarUrl: undefined }, 200);
             }
 
             const avatarUrl = await avatarLocal(email);
-            return c.json({ avatarUrl });
+            return c.json({ avatarUrl }, 200);
 
         } catch {
-            return c.json({ avatarUrl: undefined });
+            return c.json({ avatarUrl: undefined }, 200);
         }
     })
     .openapi(createRoute({
@@ -87,7 +95,16 @@ export const avatarRouter = new Hono()
         responses: {
             200: {
                 description: "Icon upload successful",
-            }
+                content: {
+                    "application/json": {
+                        schema: z.object({ ok: z.boolean() }),
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Failed to upload avatar"),
         },
     }), async (c) => {
         try {
@@ -95,9 +112,9 @@ export const avatarRouter = new Hono()
                 await authorize(c.req.raw, ["viewer", "admin"]);
             } catch (e) {
                 if (e instanceof ServerError) {
-                    return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                    return c.json({ error: e.message }, e.status as 401 | 403 | 500);
                 }
-                return c.json({ error: "unauthorized" }, { status: 401 });
+                return c.json({ error: "unauthorized" }, 401);
             }
 
             const body = await c.req.parseBody();
@@ -119,7 +136,7 @@ export const avatarRouter = new Hono()
                 where: { email },
                 data: { avatarPath: storageKey },
             });
-            return c.json({ ok: true });
+            return c.json({ ok: true }, 200);
         } catch (e) {
             return c.json({ error: "failed to upload avatar" }, 500);
         }

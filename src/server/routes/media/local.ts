@@ -1,10 +1,11 @@
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { LocalDriver } from "@/server/lib/storage/drivers/local";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import fs from "fs";
 import path from "path";
 
-export const localRouter = new Hono()
+export const localRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get media from local storage",

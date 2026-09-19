@@ -1,7 +1,10 @@
 "use client";
 import { create } from "zustand";
-import { fetchLLMStatus, LLMStatus } from "@/lib/fetch-wrapper/llm-status";
+import type { InferResponseType } from "hono/client";
+import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
+
+export type LLMStatus = InferResponseType<typeof api.llmStatus.index.$get, 200>;
 
 interface LLMStatusState {
     available: boolean;
@@ -22,7 +25,9 @@ export const useLLMStatusStore = create<LLMStatusState>()((set) => ({
             return;
         }
         try {
-            const status = await fetchLLMStatus(token);
+            const res = await api.llmStatus.index.$get();
+            if (res.status !== 200) throw new Error("Failed to fetch LLM status");
+            const status = await res.json();
             const available = status.llm.configured && status.mcp.configured && status.mcp.reachable;
             set({ available, status, checked: true });
         } catch {

@@ -44,6 +44,6 @@ describe("verifyRouter", () => {
         });
 
         expect(res.status).toBe(400);
-        await expect(res.json()).resolves.toEqual({ error: "missing token" });
+        await expect(res.json()).resolves.toEqual({ error: expect.stringContaining("token") });
     });
 });

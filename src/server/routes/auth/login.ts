@@ -1,6 +1,8 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { loginUser, loginAsGuest, loginWithJira } from "@/server/lib/login";
 import { ServerError } from "@/server/lib/server-error";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const loginUserSchema = z.object({
     email: z.email(),
@@ -15,7 +17,15 @@ const loginJIRASchema = z.object({
     email: z.email(),
 });
 
-export const loginRouter = new Hono()
+const LoginResponseSchema = z.object({
+    token: z.string(),
+    id: z.string(),
+    email: z.string().nullable().optional(),
+    displayName: z.string(),
+    role: z.enum(["guest", "viewer", "admin"]),
+});
+
+export const loginRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Login as admin",
@@ -32,9 +42,17 @@ export const loginRouter = new Hono()
             },
         },
         responses: {
-            200: { description: "login successful" },
-            400: { description: "Invalid parameters" },
-            401: { description: "Unauthorized" },
+            200: {
+                description: "login successful",
+                content: {
+                    "application/json": {
+                        schema: LoginResponseSchema,
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
+            500: errorResponse("Login failed"),
         },
     }), async (c) => {
         try{
@@ -43,10 +61,10 @@ export const loginRouter = new Hono()
                 ...body,
                 displayName: "",
             });
-            return c.json(response);
+            return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as any);
+                return c.json({ error: e.message }, e.status as 400 | 401 | 500);
             } else {
                 return c.json({ error: "failed to login" }, 500);
             }
@@ -68,9 +86,17 @@ export const loginRouter = new Hono()
             },
         },
         responses: {
-            200: { description: "login successful" },
-            400: { description: "Invalid parameters" },
-            401: { description: "Unauthorized" },
+            200: {
+                description: "login successful",
+                content: {
+                    "application/json": {
+                        schema: LoginResponseSchema,
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
+            500: errorResponse("Login failed"),
         },
     }), async (c) => {
         try{
@@ -80,10 +106,10 @@ export const loginRouter = new Hono()
                 email: "",
                 password: "",
             });
-            return c.json(response);
+            return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as any);
+                return c.json({ error: e.message }, e.status as 400 | 401 | 500);
             } else {
                 return c.json({ error: "failed to login" }, 500);
             }
@@ -105,9 +131,17 @@ export const loginRouter = new Hono()
             },
         },
         responses: {
-            200: { description: "login successful" },
-            400: { description: "Invalid parameters" },
-            401: { description: "Unauthorized" },
+            200: {
+                description: "login successful",
+                content: {
+                    "application/json": {
+                        schema: LoginResponseSchema,
+                    },
+                },
+            },
+            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
+            500: errorResponse("Login failed"),
         },
     }), async (c) => {
         try{
@@ -117,10 +151,10 @@ export const loginRouter = new Hono()
                 displayName: "",
                 password: "",
             });
-            return c.json(response);
+            return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as any);
+                return c.json({ error: e.message }, e.status as 400 | 401 | 500);
             } else {
                 return c.json({ error: "failed to login" }, 500);
             }

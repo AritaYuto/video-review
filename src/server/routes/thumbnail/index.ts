@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
@@ -15,7 +16,7 @@ const TransferBodySchema = z.object({
     }),
 });
 
-export const thumbnailRouter = new Hono()
+export const thumbnailRouter = createRouter()
     .openapi(createRoute({
         method: "put",
         summary: "Upload thumbnail",

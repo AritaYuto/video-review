@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
@@ -7,12 +8,19 @@ import { prisma } from "@/server/lib/db";
 import { formatVideoRes } from "@/server/lib/utils/format-video-res";
 import { env } from "@/lib/env";
 
-export const downloadRouter = new Hono()
+export const downloadRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Download media",
         description: "Returns the media file for download.",
         path: "/",
+        request: {
+            query: z.object({
+                videoId: z.string().min(1),
+                videoRevId: z.string().min(1),
+                width: z.string().optional(),
+            }),
+        },
         responses: {
             200: {
                 description: "Download media",
@@ -37,16 +45,9 @@ export const downloadRouter = new Hono()
             return c.json({ error: "unauthorized" }, { status: 401 });
         }
 
-        const { searchParams } = new URL(c.req.url);
-        const videoRevId = searchParams.get("videoRevId");
-        const videoId = searchParams.get("videoId");
-        const width = searchParams.get("width");
+        const { videoId, videoRevId, width } = c.req.valid("query");
 
         console.log(`Received download request for videoId: ${videoId}, videoRevId: ${videoRevId}, width: ${width}`);
-
-        if (!videoId || !videoRevId) {
-            return c.json({ error: "Missing parameters" }, { status: 400 });
-        }
 
         const videoRev = await prisma.videoRevision.findFirst({
             where: { 

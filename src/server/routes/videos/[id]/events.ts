@@ -1,5 +1,8 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
+import { VideoEventSchema, VideoEventKindSchema } from "@/schema/zod";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const QuerySchema = z.object({
     selectRevision: z.string().transform(v => parseInt(v)).optional(),
@@ -8,7 +11,7 @@ const QuerySchema = z.object({
     hasLink: z.string().transform(v => v === "true").optional(),
 });
 
-export const eventsRouter = new Hono()
+export const eventsRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get video events",
@@ -18,7 +21,13 @@ export const eventsRouter = new Hono()
         responses: {
             200: {
                 description: "Events retrieved successfully",
-            }
+                content: {
+                    "application/json": {
+                        schema: VideoEventSchema.extend({ kind: VideoEventKindSchema.pick({ label: true }) }).array(),
+                    },
+                },
+            },
+            500: errorResponse("Failed to fetch events"),
         },
     }), async (c) => {
         try {
@@ -47,7 +56,7 @@ export const eventsRouter = new Hono()
                 ],
             });
 
-            return c.json(events, { status: 200 });
+            return c.json(events, 200);
         } catch {
             return c.json({ error: "failed to fetch events" }, 500);
         }

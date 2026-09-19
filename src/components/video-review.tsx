@@ -11,7 +11,7 @@ import CanvasControlPanel from "@/components/canvas-control-panel";
 import { VideoComment } from "@/lib/db-types";
 import { useDrawingStore } from "@/stores/drawing-store";
 import { useTranslations } from "next-intl";
-import { fetchMediaUrl } from "@/lib/fetch-wrapper";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
@@ -109,12 +109,11 @@ export default function VideoReview() {
                 if (!path) continue;
 
                 if (commentDrawingCache.current.has(path)) continue;
-                const res = await fetchMediaUrl(path);
-                if (canceled || !res.ok) return;
-
+                const url = await resolveMediaUrl(path);
+                if (canceled || !url) return;
 
                 const img = new Image();
-                img.src = res.data;
+                img.src = url;
                 img.onload = () => {
                     if (canceled) return;
                     commentDrawingCache.current.set(path, img);
@@ -187,9 +186,9 @@ export default function VideoReview() {
 
         let canceled = false;
         void (async () => {
-            const res = await fetchMediaUrl(selectedRevision.filePath);
-            if (res.ok && !canceled) {
-                setPlaybackUrl(res.data);
+            const url = await resolveMediaUrl(selectedRevision.filePath);
+            if (url && !canceled) {
+                setPlaybackUrl(url);
             }
         })();
 

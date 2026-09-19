@@ -1,7 +1,12 @@
 "use client";
 import { create } from "zustand";
-import { ChatTurn, sendChatSearch } from "@/lib/fetch-wrapper/chat-search";
+import { api } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
+
+export type ChatTurn = {
+    role: "user" | "assistant";
+    content: string;
+};
 
 interface ChatSearchState {
     isOpen: boolean;
@@ -32,7 +37,11 @@ export const useChatSearchStore = create<ChatSearchState>()((set, get) => ({
         set((s) => ({ history: [...s.history, userTurn], isLoading: true, error: null }));
 
         try {
-            const { reply } = await sendChatSearch(message, get().history.slice(0, -1), token);
+            const res = await api.chatSearch.index.$post({ json: { message, history: get().history.slice(0, -1) } });
+            if (res.status === 503) throw new Error("LLM is not configured");
+            if (res.status === 502) throw new Error("LLM request failed");
+            if (res.status !== 200) throw new Error("Chat search failed");
+            const { reply } = await res.json();
             const assistantTurn: ChatTurn = { role: "assistant", content: reply };
             set((s) => ({ history: [...s.history, assistantTurn], isLoading: false }));
         } catch (err) {

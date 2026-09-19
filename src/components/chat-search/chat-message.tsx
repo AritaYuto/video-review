@@ -3,7 +3,7 @@
 import Markdown from "react-markdown";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ChatTurn } from "@/lib/fetch-wrapper/chat-search";
+import { ChatTurn } from "@/stores/chat-search-store";
 
 function toInternalPath(href: string | undefined): string | null {
     if (!href) return null;

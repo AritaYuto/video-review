@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { VideoSchema, VideoRevisionSchema } from "@/schema/zod"
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
@@ -46,7 +47,7 @@ const SearchByEventQuerySchema = z.object({
     limit: z.coerce.number().int().positive().optional(),
 });
 
-export const listRouter = new Hono()
+export const listRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Returns a list of videos",
@@ -234,12 +235,17 @@ export const listRouter = new Hono()
         path: "/event-kinds",
         responses: {
             200: {
-                description: "",
+                description: "Event kind labels",
+                content: {
+                    "application/json": {
+                        schema: z.object({ items: z.string().array() }),
+                    },
+                },
             }
         },
     }), async (c) => {
         const items = await prisma.videoEventKind.findMany({ select: { label: true } })
-        return c.json({ items: items.map(x => x.label) });
+        return c.json({ items: items.map(x => x.label) }, 200);
     })
     .openapi(createRoute({
         method: "get",

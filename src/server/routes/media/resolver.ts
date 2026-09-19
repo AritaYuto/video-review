@@ -1,7 +1,9 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { VideoReviewStorage } from "@/server/lib/storage";
 
-export const resolverRouter = new Hono()
+export const resolverRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Resolve media URL",
@@ -10,13 +12,14 @@ export const resolverRouter = new Hono()
         responses: {
             200: {
                 description: "Get media URL",
+                content: {
+                    "application/json": {
+                        schema: z.object({ url: z.string() }),
+                    },
+                },
             },
-            400: {
-                description: "Invalid path",
-            },
-            404: {
-                description: "File not found",
-            },
+            400: errorResponse("Invalid path"),
+            404: errorResponse("File not found"),
         },
     }), async (c) => {
         const key = c.req.param("path");

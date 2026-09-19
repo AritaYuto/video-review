@@ -1,8 +1,9 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import * as z from "@/schema/zod"
 
-export const getVideoRouter = new Hono()
+export const getVideoRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get video",

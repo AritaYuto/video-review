@@ -1,7 +1,8 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 
-export const foldersRouter = new Hono()
+export const foldersRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get all folder keys",

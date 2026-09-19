@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
-import * as api from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
+import { LoginType } from "@/lib/auth-types";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/ui/tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
@@ -20,7 +21,7 @@ export default function Login() {
     const cacheEmail = useAuthStore((e) => e.email);
     const { setAuth } = useAuthStore();
 
-    const [type, setType] = useState<api.LoginType>(env.PUBLIC_LOGIN_DEFAULT_TYPE);
+    const [type, setType] = useState<LoginType>(env.PUBLIC_LOGIN_DEFAULT_TYPE);
     const [email, setEmail] = useState<string | null>(null);
     const [password, setPassword] = useState("");
     const [displayName, setDisplayName] = useState("");
@@ -32,8 +33,13 @@ export default function Login() {
 
     const handleLogin = async () => {
         try {
-            const data = await api.login(type, { email, displayName, password });
-            setAuth(data.id, data.email, data.role, data.token, data.displayName);
+            const res =
+                type === "user" ? await api.auth.login.user.$post({ json: { email: email ?? "", password } }) :
+                type === "jira" ? await api.auth.login.jira.$post({ json: { email: email ?? "" } }) :
+                await api.auth.login.guest.$post({ json: { displayName } });
+            if (res.status !== 200) throw new Error("Failed to login");
+            const data = await res.json();
+            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName);
             router.push("/video-review/review");
         } catch (e) {
             alert(t("loginFailedMsg"));
@@ -42,7 +48,7 @@ export default function Login() {
 
     return (
         <AuthLayout title={env.PUBLIC_VIDEO_REVIEW_TITLE} backgroundImageUrl={env.PUBLIC_LOGIN_BG_URL}>
-                <Tabs defaultValue={type} onValueChange={(val) => setType(val as api.LoginType)}>
+                <Tabs defaultValue={type} onValueChange={(val) => setType(val as LoginType)}>
                     <TabsList>
                         <TabsTrigger value="guest">Guest</TabsTrigger>
                         <TabsTrigger value="jira">JIRA</TabsTrigger>

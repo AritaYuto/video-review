@@ -2,8 +2,33 @@
 
 import { useCommentStore } from "@/stores/comment-store";
 import { toast } from "sonner";
-import * as wrapper from "@/lib/fetch-wrapper";
 import { api } from "@/lib/api-client";
+import { useAuthStore } from "@/stores/auth-store";
+import { useVideoStore } from "@/stores/video-store";
+
+async function postToChat(commentId: string, screenshot: Blob) {
+    const comment = useCommentStore.getState().comments.find(c => c.id === commentId);
+    const video = useVideoStore.getState().selectedVideo;
+    if (!comment || !video) return null;
+
+    const { displayName, email } = useAuthStore.getState();
+    const res = await api.chat.index.$post({
+        form: {
+            baseURL: window.location.origin,
+            commentId: comment.id,
+            commentText: comment.comment,
+            videoId: comment.videoId,
+            videoTitle: video.title,
+            folderKey: video.folderKey,
+            scenePath: video.scenePath ?? undefined,
+            userName: displayName ?? undefined,
+            email: email ?? undefined,
+            screenshot: new File([screenshot], "screenshot.png"),
+        },
+    });
+    if (res.status !== 200) return null;
+    return res.json();
+}
 
 export async function chatToast(commentId: string, screenshot: Blob | null): Promise<boolean> {
     if (screenshot === null) {
@@ -15,12 +40,12 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
          return false;
     }
 
-    const ret = await wrapper.chat(commentId, screenshot);
-    if(!ret.ok || ret.data.notifiedProviders.length === 0) {
+    const ret = await postToChat(commentId, screenshot);
+    if (!ret || ret.notifiedProviders.length === 0) {
         return false;
     }
-    
-    const toastData = ret.data.toastData;
+
+    const toastData = ret.toastData;
     toast.custom(() => (
         <div className="flex gap-3 rounded-md border bg-popover p-3 text-popover-foreground shadow-md">
             <img
@@ -38,7 +63,7 @@ export async function chatToast(commentId: string, screenshot: Blob | null): Pro
         </div>
     ));
     const res = await api.comments.index.$patch({
-        json: { id: commentId, notifiedProviders: ret.data.notifiedProviders },
+        json: { id: commentId, notifiedProviders: ret.notifiedProviders },
     });
     if (res.status !== 200) throw new Error("Failed to update comment");
     useCommentStore.getState().updateComment(await res.json());

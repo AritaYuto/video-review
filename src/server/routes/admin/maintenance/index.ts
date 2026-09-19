@@ -3,7 +3,8 @@ import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { authorize, getJwtSecret } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import { hash, randomBytes } from "crypto";
@@ -21,7 +22,7 @@ const PurgeQuerySchema = z.object({
     revision: z.string().transform(v => parseInt(v)).optional(),
 });
 
-export const maintenanceRouter = new Hono()
+export const maintenanceRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Update video delete flag",

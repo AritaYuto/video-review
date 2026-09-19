@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { VideoWithRevision } from "@/lib/db-types";
-import { fetchMediaUrl } from "@/lib/fetch-wrapper";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { Spinner } from "@/components/ui/spinner";
 
 export const thumbnailKey = (videoId: string) => `thumbnails/${videoId}/thumb.png`;
@@ -26,8 +26,8 @@ export function ThumbnailLazyLoader({ video, containerRef, cache, onResolve }: P
                 if (!entries[0].isIntersecting) return;
 
                 setIsResolving(true);
-                fetchMediaUrl(key)
-                    .then(ret => onResolve?.(key, ret.ok ? ret.data : undefined))
+                resolveMediaUrl(key)
+                    .then(url => onResolve?.(key, url))
                     .finally(() => {
                         setIsResolving(false);
                         observer.disconnect();
