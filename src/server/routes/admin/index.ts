@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { maintenanceRouter } from "@/server/routes/admin/maintenance";
 import { createVCSProviderFromEnv } from "@/server/lib/vcs/from-env";
 import { listUTCDays, upsertMerge, upsertCommit } from "@/server/lib/vcs/cache";
@@ -32,7 +33,7 @@ const WarmCacheBody = z.object({
     refresh: z.boolean().optional(),
 });
 
-export const adminRouter = new Hono()
+export const adminRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "boostrap",

@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
@@ -8,7 +9,7 @@ const BodySchema = z.object({
     vcsWatchPaths: z.array(z.string()).optional(),
 });
 
-export const patchVideoRouter = new Hono()
+export const patchVideoRouter = createRouter()
     .openapi(createRoute({
         method: "patch",
         summary: "Update video metadata",

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/ui/input";
-import * as wrapper from "@/lib/fetch-wrapper"
 import { api } from "@/lib/api-client";
+import { uploadToSession } from "@/lib/upload-transfer";
 import { FormDialog } from "@/components/dialog/form-dialog";
 import { Upload } from "lucide-react";
 import path from "path";
@@ -53,15 +53,15 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
         try {
             setMessage("");
 
-            const init = await wrapper.uploadVideoInit({
-                title,
-                folderKey: selectedFolderKey,
-            });
+            const initRes = await api.videos.upload.init.$post({ form: { title, folderKey: selectedFolderKey } });
+            if (!initRes.ok) throw new Error("upload init failed");
+            // The init route parses its multipart body by hand and declares no response schema.
+            const init = (await initRes.json()) as { url: string; session: UploadSession };
 
             setSession(init.session);
             setStep("uploading");
 
-            wrapper.uploadVideo({
+            uploadToSession({
                 url: init.url,
                 session: init.session,
                 file,
@@ -80,19 +80,16 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
 
         const timer = setInterval(async () => {
             try {
-                const res = await wrapper.checkUploadStatus({
-                    session_id: session.id,
-                });
+                const res = await api.uploadStatus.index.$get({ query: { session_id: session.id } });
 
-                if (cancelled) return;
+                if (cancelled || res.status !== 200) return;
+                const { status } = await res.json();
 
-                if (res.status === "uploaded") {
-                    await wrapper.uploadVideoFinish({
-                        session_id: session.id,
-                    });
+                if (status === "uploaded") {
+                    await api.videos.upload.finish.$post({ query: { session_id: session.id } });
                 }
 
-                if (res.status === "completed") {
+                if (status === "completed") {
                     setStep("done");
                     onClose();
                     return;

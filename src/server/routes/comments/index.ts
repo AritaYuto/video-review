@@ -1,6 +1,7 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { byIdRouter } from "@/server/routes/comments/[id]";
 import { lastUpdatedRouter } from "@/server/routes/comments/last-updated";
 import { usersRouter } from "@/server/routes/comments/users";
@@ -41,7 +42,7 @@ const UpdateCommentBody = z.object({
     notifiedProviders: z.string().array().optional(),
 });
 
-export const commentsRouter = new Hono()
+export const commentsRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get comments",

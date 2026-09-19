@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { fetchMediaUrl } from "@/lib/fetch-wrapper";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { env } from "@/lib/env";
 import { useThumbnailGridStore } from "@/stores/thumbnail-grid-store";
 
@@ -19,7 +19,7 @@ function usePreviewUrl(filePath: string | undefined): { url: string | undefined;
 
     useEffect(() => {
         if (!key || useThumbnailGridStore.getState().urls.has(key)) return;
-        fetchMediaUrl(key).then(ret => cacheUrl(key, ret.ok ? ret.data : undefined));
+        resolveMediaUrl(key).then(url => cacheUrl(key, url));
     }, [key]);
 
     return { url, forget: () => key && forgetUrl(key) };

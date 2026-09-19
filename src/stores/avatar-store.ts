@@ -11,9 +11,25 @@
  * interface to consumers.
  */
 "use client";
-import { fetchIntegration, fetchLocal } from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+async function fetchLocal(email: string): Promise<string | undefined> {
+    const res = await api.avatar.local.$get({ query: { email } });
+    if (res.status !== 200) return undefined;
+    return (await res.json()).avatarUrl;
+}
+
+async function fetchIntegration(email: string): Promise<string | undefined> {
+    const res = await api.avatar.integration.$get({ query: { email } });
+    if (!res.ok) return undefined;
+
+    const blob = await res.blob();
+    if (blob.size === 0) return undefined;
+
+    return URL.createObjectURL(blob);
+}
 
 interface AvatarCacheEntry {
     icon: string | undefined;

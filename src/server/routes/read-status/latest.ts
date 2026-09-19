@@ -1,8 +1,9 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 
-export const latestRouter = new Hono()
+export const latestRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get latest comment",

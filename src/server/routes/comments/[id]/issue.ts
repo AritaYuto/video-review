@@ -3,7 +3,8 @@ import { prisma } from "@/server/lib/db";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { createJiraIssue } from "@/server/lib/issue-tracker/jira";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { VideoCommentSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 
@@ -16,7 +17,7 @@ const IssueForm = z.object({
     file: z.file().optional().openapi({ type: "string", format: "binary" }),
 });
 
-export const issueRouter = new Hono()
+export const issueRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Create an issue from a comment",

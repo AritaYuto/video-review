@@ -1,11 +1,12 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { externalLinksRouter } from "@/server/routes/comments/[id]/external-links";
 import { issueRouter } from "@/server/routes/comments/[id]/issue";
 import { VideoCommentSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 
-export const byIdRouter = new Hono()
+export const byIdRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get comment by ID",

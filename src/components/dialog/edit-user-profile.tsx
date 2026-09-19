@@ -7,11 +7,9 @@ import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useAvatarStore } from "@/stores/avatar-store";
-import { uploadAvatar } from "@/lib/fetch-wrapper";
 import { ControlRow } from "@/components/controls/control-row";
 import { api } from "@/lib/api-client";
 import { Input } from "@/ui/input";
-import { updateUser } from "@/lib/fetch-wrapper/user";
 
 export default function EditUserProfileDialog({
     open,
@@ -57,17 +55,17 @@ export default function EditUserProfileDialog({
             setLoading(true);
             setError(null);
             if (file && email) {
-                const result = await uploadAvatar({ email, file });
-                if(!result.ok) {
-                    errorMsg.push(result.msg);
+                const res = await api.avatar.upload.$put({ form: { email, file } });
+                if (res.status !== 200) {
+                    errorMsg.push((await res.json()).error);
                 }
             }
 
-            const result = await updateUser({ userId: userId ?? undefined, displayName: editDisplayName })
-            if(result.ok) {
+            const res = await api.user.update.$patch({ json: { userId: userId ?? undefined, displayName: editDisplayName } });
+            if (res.status === 200) {
                 setDisplayName(editDisplayName);
             } else {
-                errorMsg.push(result.msg);
+                errorMsg.push((await res.json()).error);
             }
 
             if(errorMsg.length > 0) {

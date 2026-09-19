@@ -1,9 +1,10 @@
 import { env } from "@/server/lib/env";
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 
-export const externalLinksRouter = new Hono()
+export const externalLinksRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get external links",

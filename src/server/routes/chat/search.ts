@@ -1,10 +1,11 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { z } from "zod";
 import { Client as McpClient } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { createLLMClient, ChatTurn } from "@/server/lib/integration-clients/llm-client";
 import { env } from "@/server/lib/env";
 
@@ -64,7 +65,7 @@ async function buildSystemPrompt(mcpClient: McpClient): Promise<string> {
     return `${guide.trim()}\n\n# Context\n${context.join("\n")}`;
 }
 
-export const chatSearchRouter = new Hono()
+export const chatSearchRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Chat search",
@@ -76,18 +77,27 @@ export const chatSearchRouter = new Hono()
             },
         },
         responses: {
-            200: { description: "Chat reply" },
-            400: { description: "Bad request" },
-            401: { description: "Unauthorized" },
-            502: { description: "LLM request failed" },
-            503: { description: "LLM or MCP not configured or MCP unreachable" },
+            200: {
+                description: "Chat reply",
+                content: {
+                    "application/json": {
+                        schema: z.object({ reply: z.string() }),
+                    },
+                },
+            },
+            400: errorResponse("Bad request"),
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Internal error"),
+            502: errorResponse("LLM request failed"),
+            503: errorResponse("LLM or MCP not configured or MCP unreachable"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["viewer", "admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
             return c.json({ error: "unauthorized" }, 401);
         }
@@ -114,14 +124,14 @@ export const chatSearchRouter = new Hono()
             mcpClient = await createMcpClient(env.MCP_URL);
             const system = await buildSystemPrompt(mcpClient);
             const reply = await llm.completeWithMCP(messages, mcpClient, system);
-            return c.json({ reply });
+            return c.json({ reply }, 200);
         } catch (err) {
             if (err instanceof ServerError) {
-                return c.json({ error: err.message }, err.status as ContentfulStatusCode);
+                return c.json({ error: err.message }, err.status as 400 | 500 | 502 | 503);
             }
             const msg = String(err);
             if (msg.includes("max turns exceeded")) {
-                return c.json({ reply: "The query required too many steps to process. Try narrowing it down." });
+                return c.json({ reply: "The query required too many steps to process. Try narrowing it down." }, 200);
             }
             console.error("[chat/search]", err);
             return c.json({ error: "LLM request failed" }, 502);

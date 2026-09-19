@@ -1,13 +1,15 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { z } from "zod";
 import { ChatProviders, ChatType } from "@/server/lib/chat/chat-type";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { chatSlack, chatWebhook, chatEmail } from "@/server/lib/chat";
 import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
 
 const FormSchema = z.object({
+    baseURL: z.string().optional(),
     commentId: z.string().optional(),
     commentText: z.string().optional(),
     videoId: z.string().optional(),
@@ -56,7 +58,7 @@ function buildChatContext(form: FormData): ChatType {
     };
 }
 
-export const chatRouter = new Hono()
+export const chatRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "send chat",
@@ -72,15 +74,26 @@ export const chatRouter = new Hono()
         },
         responses: {
             200: {
-                description: "List videos",
+                description: "Providers that received the comment and the toast to show",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            notifiedProviders: z.string().array(),
+                            toastData: z.object({ title: z.string(), comment: z.string().optional() }),
+                        }),
+                    },
+                },
             },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Auth configuration is missing"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["viewer", "admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
             return c.json({ error: "unauthorized" }, 401);
         }

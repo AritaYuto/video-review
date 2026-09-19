@@ -90,7 +90,7 @@ describe("videos upload finishRouter (DB)", () => {
         });
 
         expect(res.status).toBe(400);
-        await expect(res.json()).resolves.toEqual({ error: "missing session_id" });
+        await expect(res.json()).resolves.toEqual({ error: expect.stringContaining("session_id") });
     });
 
     it("returns 400 when upload session does not exist", async () => {

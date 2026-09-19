@@ -8,7 +8,7 @@ import { ControlRow } from "@/components/controls/control-row";
 import { useVideoEventSearchStore } from "@/stores/video-event-search-store";
 import { Checkbox } from "@/ui/checkbox";
 import { useVideoStore } from "@/stores/video-store";
-import { fetchVideoEventKinds } from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import { useVideoEventStore } from "@/stores/video-event-store";
 
 export function VideoEventSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -27,7 +27,9 @@ export function VideoEventSearchDialog({ open, onClose }: { open: boolean; onClo
 
     useEffect(() => {
         void (async () => {
-            const items = await fetchVideoEventKinds();
+            const res = await api.videos["event-kinds"].$get();
+            if (res.status !== 200) throw new Error("Failed to fetch event kinds");
+            const { items } = await res.json();
             setEventKinds(items.map((item) => ({ label: item, value: item })));
         })();
     }, [open]);

@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
 import { PrismaTypes } from "@/lib/db-types";
 
@@ -12,7 +13,7 @@ const QuerySchema = z.object({
         .optional(),
 });
 
-export const usersRouter = new Hono()
+export const usersRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "get users",

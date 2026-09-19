@@ -1,7 +1,8 @@
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { Client as McpClient } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { createLLMClient } from "@/server/lib/integration-clients/llm-client";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
@@ -33,22 +34,34 @@ async function isMcpReachable(url: string): Promise<boolean> {
     return reachable;
 }
 
-export const llmStatusRouter = new Hono()
+export const llmStatusRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "LLM and MCP availability status",
         description: "Returns whether the LLM provider and MCP server are configured and reachable.",
         path: "/",
         responses: {
-            200: { description: "Status" },
-            401: { description: "Unauthorized" },
+            200: {
+                description: "Status",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            llm: z.object({ configured: z.boolean(), provider: z.string().nullable(), model: z.string().nullable() }),
+                            mcp: z.object({ configured: z.boolean(), reachable: z.boolean() }),
+                        }),
+                    },
+                },
+            },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Auth configuration is missing"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["viewer", "admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
             return c.json({ error: "unauthorized" }, 401);
         }
@@ -65,5 +78,5 @@ export const llmStatusRouter = new Hono()
             reachable: env.MCP_URL ? await isMcpReachable(env.MCP_URL) : false,
         };
 
-        return c.json({ llm, mcp });
+        return c.json({ llm, mcp }, 200);
     });

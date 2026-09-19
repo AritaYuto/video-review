@@ -5,7 +5,7 @@ import { useVideoStore } from "@/stores/video-store";
 import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { api } from "@/lib/api-client";
-import { fetchVideoEvents } from "@/lib/fetch-wrapper/events";
+import { fetchVideoEvents } from "@/stores/video-event-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRouter } from "next/navigation";
 

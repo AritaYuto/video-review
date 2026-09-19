@@ -1,7 +1,8 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 
-export const lastUpdatedRouter = new Hono()
+export const lastUpdatedRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get last updated time",

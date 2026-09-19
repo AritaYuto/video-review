@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import * as api from "@/lib/fetch-wrapper"
+import { api } from "@/lib/api-client";
+import { uploadToSession } from "@/lib/upload-transfer";
 
 interface DrawingState {
     canvasRefElement: HTMLCanvasElement | null,
@@ -30,11 +31,13 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
                 if (!blob) return resolve(null);
                 
 
-                const init = await api.uploadDrawingInit({drawingPath: path});
-                await api.uploadDrawing({ url: init.url, session: init.session, file: blob });
-                const filePath = await api.uploadDrawingFinish({ session_id: init.session.id });
+                const initRes = await api.drawing.upload.init.$post({ form: { path: path ?? "" } });
+                if (initRes.status !== 200) return resolve(null);
+                const init = await initRes.json();
+                await uploadToSession({ url: init.url, session: init.session, file: blob });
+                const finishRes = await api.drawing.upload.finish.$post({ query: { session_id: init.session.id } });
 
-                resolve(filePath);
+                resolve(finishRes.status === 200 ? (await finishRes.json()).filePath : null);
             }, "image/png");
         });
     },

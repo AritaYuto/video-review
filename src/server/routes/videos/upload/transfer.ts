@@ -1,4 +1,5 @@
-import { OpenAPIHono as Hono, createRoute, z } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { getSession } from "@/server/lib/upload-session";
@@ -11,7 +12,7 @@ const TransferQuerySchema = z.object({
     session_id: z.string().min(1),
 });
 
-export const transferRouter = new Hono()
+export const transferRouter = createRouter()
     .openapi(createRoute({
         method: "put",
         summary: "Transfer upload data",

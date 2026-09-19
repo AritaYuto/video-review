@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
@@ -10,7 +11,7 @@ import Busboy from "busboy";
 import { Readable } from "stream";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 
-export const initRouter = new Hono()
+export const initRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Init upload",

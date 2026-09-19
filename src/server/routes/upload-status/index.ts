@@ -1,68 +1,76 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { getSession } from "@/server/lib/upload-session";
-import { ContentfulStatusCode } from "hono/utils/http-status";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
-export const uploadStatusRouter = new Hono()
+export const uploadStatusRouter = createRouter()
     .openapi(createRoute({
         method: "get",
         summary: "Get upload status",
         description: "Returns the upload status of a video.",
         path: "/",
-        parameters: [
-            {
-                name: "session_id",
-                in: "query",
-                required: true,
-                schema: {
-                    type: "string",
-                },
-                description: "The upload session ID",
-            },
-        ],
+        request: { query: z.object({ session_id: z.string().min(1) }) },
         responses: {
             200: {
-                description: "Get upload status",
+                description: "Upload in progress, uploaded, or completed",
+                content: {
+                    "application/json": {
+                        schema: z.union([
+                            z.object({
+                                status: z.enum(["progress", "uploaded"]),
+                                nextRev: z.number().int(),
+                                title: z.string(),
+                                folderKey: z.string(),
+                            }),
+                            z.object({
+                                status: z.literal("completed"),
+                                revisionId: z.string(),
+                                videoId: z.string(),
+                                revision: z.number().int(),
+                            }),
+                        ]),
+                    },
+                },
             },
-            400: {
-                description: "Missing session_id",
-            },
-            401: {
-                description: "Unauthorized",
-            },
+            400: errorResponse("Missing session_id"),
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
             404: {
                 description: "Session not found",
+                content: {
+                    "application/json": {
+                        schema: z.object({ status: z.literal("not_found") }),
+                    },
+                },
             },
+            500: errorResponse("Auth configuration is missing"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
-            return c.json({ error: "unauthorized" }, { status: 401 });
+            return c.json({ error: "unauthorized" }, 401);
         }
 
-        const { searchParams } = new URL(c.req.url);
-        const session_id = searchParams.get("session_id");
-        if (!session_id) {
-            return c.json({ error: "missing session_id" }, { status: 400 });
-        }
+        const { session_id } = c.req.valid("query");
 
         const session = await getSession(session_id);
         if (session) {
             const hasObject = await VideoReviewStorage.hasObject(session.storage);
-            const status = hasObject ? "progress" : "uploaded";
+            const status = hasObject ? ("progress" as const) : ("uploaded" as const);
             return c.json({
                 status: status,
                 nextRev: session.nextRev,
                 title: session.title,
                 folderKey: session.folderKey,
-            });
+            }, 200);
         }
 
         const revision = await prisma.videoRevision.findFirst({
@@ -71,15 +79,12 @@ export const uploadStatusRouter = new Hono()
 
         if (revision) {
             return c.json({
-                status: "completed",
+                status: "completed" as const,
                 revisionId: revision.id,
                 videoId: revision.videoId,
                 revision: revision.revision,
-            });
+            }, 200);
         }
 
-        return c.json(
-            { status: "not_found" },
-            { status: 404 }
-        );
+        return c.json({ status: "not_found" as const }, 404);
     });

@@ -1,5 +1,6 @@
 import { prisma } from "@/server/lib/db";
-import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { createRouter } from "@/server/lib/openapi/router";
 import { z } from "zod";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
@@ -40,7 +41,7 @@ const uploadBody = z.object({
     });
 });
 
-export const metaDataRouter = new Hono()
+export const metaDataRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "",
