@@ -38,6 +38,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-primary-strong: var(--primary-strong);
+  --shadow-panel: 0 8px 30px rgb(0 0 0 / 0.4);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --radius-sm: calc(var(--radius) - 4px);
@@ -97,6 +98,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Optional background picture behind the login panel (see AuthLayout). */
+@utility auth-backdrop {
+  background-image: var(--auth-bg, none);
+  background-size: cover;
+  background-position: center;
 }
 
 @utility scrollbar-thin {
