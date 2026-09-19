@@ -1,13 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faPen,
-    faEraser,
-    faSave,
-    faFile,
-    faGear
-} from "@fortawesome/free-solid-svg-icons";
+import { faPen, faEraser, faFile } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@/ui/button";
 import { useCommentEditStore } from "@/stores/comment-edit-store";
 import { useDrawingStore } from "@/stores/drawing-store";
 import { CanvasSettingsPopover } from "@/components/canvas-setting";
@@ -100,7 +95,7 @@ export default function CanvasControlPanel() {
                     break;
                 case "eraser":
                     ctx.globalCompositeOperation = "destination-out";
-                    ctx.lineWidth = lineWidthRef.current;;
+                    ctx.lineWidth = lineWidthRef.current;
                     break;
             }
             ctx.lineTo(pos.x, pos.y);
@@ -149,25 +144,13 @@ export default function CanvasControlPanel() {
     }
 
     return (
-        <div className="absolute top-2 left-2 flex gap-2 bg-[#202020]/80 p-2 rounded-lg border border-[#333]">
-            <button className="p-1"
-                onClick={() => {
-                    if (mode === "pen") {
-                        setMode("eraser")
-                    } else if (mode === "eraser") {
-                        setMode("pen")
-                    }
-                }}
-
-            >
+        <div className="absolute top-2 left-2 flex gap-2 bg-card/80 p-2 rounded-lg border">
+            <Button variant="ghost" size="icon-sm" onClick={() => setMode(mode === "pen" ? "eraser" : "pen")}>
                 <FontAwesomeIcon icon={mode === "pen" ? faPen : faEraser} />
-            </button>
-            <button className="p-1"
-                onClick={() => handleNewCanvas()}
-
-            >
+            </Button>
+            <Button variant="ghost" size="icon-sm" onClick={handleNewCanvas}>
                 <FontAwesomeIcon icon={faFile} />
-            </button>
+            </Button>
             <CanvasSettingsPopover
                 lineWidth={lineWidth}
                 setLineWidth={setLineWidth}

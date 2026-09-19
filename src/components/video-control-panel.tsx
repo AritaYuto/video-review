@@ -62,32 +62,20 @@ export default function VideoControlPanel() {
     };
 
     return (
-        <div onMouseLeave={() => { setShowVolume(false); setShowPlayMode(false); }} className="flex items-center gap-3 mb-3 bg-[#202020] rounded-lg px-3 py-2 border border-[#333]">
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={togglePlay}
-                className="text-white hover:bg-[#d4d4d4] rounded-full w-8 h-8"
-            >
+        <div onMouseLeave={() => { setShowVolume(false); setShowPlayMode(false); }} className="flex items-center gap-3 mb-3 bg-card rounded-lg px-3 py-2 border">
+            <Button variant="ghost" size="icon-round" onClick={togglePlay}>
                 <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
             </Button>
 
             <div className="ml-2 flex items-center gap-2" onMouseOver={() => setShowVolume(true)}>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                        setVolumeEnabled(!volumeEnabled);
-                    }}
-                    className="text-white hover:bg-[#d4d4d4] rounded-full w-8 h-8"
-                >
+                <Button variant="ghost" size="icon-round" onClick={() => setVolumeEnabled(!volumeEnabled)}>
                     {volumeEnabled ? (
                         <FontAwesomeIcon icon={faVolumeHigh} />
                     ) : (
                         <FontAwesomeIcon icon={faVolumeXmark} />
                     )}
                 </Button>
-                <span hidden={!showVolume} className="text-sm text-[#aaa] w-25">
+                <span hidden={!showVolume} className="w-25">
                     <Slider
                         min={0}
                         max={1.0}
@@ -104,7 +92,7 @@ export default function VideoControlPanel() {
                 </span>
             </div>
 
-            <span className="ml-2 flex items-center gap-2 text-sm text-[#aaa] w-30">
+            <span className="ml-2 flex items-center gap-2 text-sm text-muted-foreground w-30">
                 {formatTime(currentTime)} / {formatTime(duration)}
             </span>
 
@@ -115,10 +103,10 @@ export default function VideoControlPanel() {
                     setPlaybackRate(rate);
                 }}
             >
-                <SelectTrigger className="w-20 h-8 bg-[#181818] text-white border-[#333]">
+                <SelectTrigger size="sm" className="w-20">
                     <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#181818] text-white border-[#333]">
+                <SelectContent>
                     {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 3.5, 4].map((r) => (
                         <SelectItem key={r} value={r.toString()}>
                             {r}x
@@ -127,8 +115,7 @@ export default function VideoControlPanel() {
                 </SelectContent>
             </Select>
 
-            <div className="flex items-center" onMouseOver={() => setShowPlayMode(true)}>
-
+            <div className="flex items-center gap-2" onMouseOver={() => setShowPlayMode(true)}>
                 <span className="text-xs text-white">
                     {t("playMode")} : {t(playMode)}
                 </span>
@@ -143,10 +130,10 @@ export default function VideoControlPanel() {
                             setMode(val as EPlayMode);
                         }}
                     >
-                        <SelectTrigger className="relative w-30 h-8 bg-[#181818] text-white border-[#333]">
+                        <SelectTrigger size="sm" className="relative w-30">
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#181818] text-white border-[#333]">
+                        <SelectContent>
                             {["normal", "loop", "next"].map((r) => (
                                 <SelectItem key={r} value={r.toString()}>
                                     {t(r)}
@@ -157,7 +144,7 @@ export default function VideoControlPanel() {
                 </div>
             </div>
 
-            <div className="ml-auto rounded">
+            <div className="ml-auto flex gap-1">
                 <OpenSceneButton scenePath={selectedVideo?.scenePath ?? null} />
                 <DownloadVideo videoId={selectedVideo?.id ?? null} videoRevId={selectedRevision?.id ?? null} />
                 <ButtonShareLink url={createLink()} />
@@ -171,31 +158,25 @@ function ButtonShareLink({ url }: { url: string }) {
 
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                className="px-3 py-1 bg-[#ff8800] hover:bg-[#ff5500] text-black text-sm font-medium"
-            >
+            <Button size="icon-sm" onClick={() => setOpen(true)}>
                 <FontAwesomeIcon icon={faLink} />
-            </button>
+            </Button>
             <ShareLinkDialog url={url} open={open} onOpenChange={setOpen} />
         </>
     );
 }
 
 function DownloadVideo({ videoId, videoRevId }: { videoId: string | null, videoRevId: string | null }) {
+    const [open, setOpen] = useState(false);
     if (!videoId || !videoRevId) {
         return <></>
     }
-    const [open, setOpen] = useState(false);
 
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                className="px-3 py-1 bg-[#ff8800] hover:bg-[#ff5500] text-black text-sm font-medium"
-            >
+            <Button size="icon-sm" onClick={() => setOpen(true)}>
                 <FontAwesomeIcon icon={faDownload} />
-            </button>
+            </Button>
             <VideoDownloadDialog videoId={videoId} videoRevId={videoRevId} open={open} onClose={() => setOpen(false)} />
         </>
     );
@@ -207,13 +188,8 @@ function OpenSceneButton({ scenePath }: { scenePath: string | null }) {
     }
 
     return (
-        <>
-            <button
-                onClick={() => OpenScene(scenePath)}
-                className="px-3 py-1 bg-[#ff8800] hover:bg-[#ff5500] text-black text-sm font-medium"
-            >
-                <FontAwesomeIcon icon={faGamepad} />
-            </button>
-        </>
+        <Button size="icon-sm" onClick={() => OpenScene(scenePath)}>
+            <FontAwesomeIcon icon={faGamepad} />
+        </Button>
     );
 }

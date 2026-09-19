@@ -19,11 +19,13 @@ export default defineConfig([
                 contracts: [
                     { pattern: "^PopoverContent$", allow: ["layout", "p-0"] },
                     // An icon overlaid inside the field needs room on the left.
-                    { pattern: "^(Input|SidebarInput)$", allow: ["layout", "pl-8"] },
+                    { pattern: "^(Input|SidebarInput)$", allow: ["layout", "typography", "pl-8"] },
                     // The hover card must not exceed the viewport; the utility is declared in globals.css.
                     { pattern: "^HoverCardContent$", allow: ["layout", "max-w-screen-gutter"] },
                     // The side panel's tab list sits flush against its content.
                     { pattern: "^Tabs$", allow: ["layout", "gap-0"] },
+                    // The spinner inherits currentColor; the accent is the only colour it takes.
+                    { pattern: "^Spinner$", allow: ["layout", "text-primary"] },
                 ],
             }],
             "shadcn/no-raw-colors": "warn",

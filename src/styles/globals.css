@@ -122,6 +122,11 @@
   max-width: calc(100vw - var(--panel-offset, 0px));
 }
 
+/* The player never grows past most of the viewport so the controls stay visible. */
+@utility video-stage {
+  max-height: 80vh;
+}
+
 @utility max-w-screen-gutter {
   max-width: calc(100vw - 2rem);
 }
