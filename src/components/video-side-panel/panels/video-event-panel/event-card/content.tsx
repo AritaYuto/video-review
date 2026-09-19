@@ -1,15 +1,14 @@
 "use client";
 
-import { CardContent } from "@/ui/card";
-import { formatTime } from "@/lib/utils";
 import { VideoEventWithKind } from "@/lib/db-types";
+import { TimelineCardContent } from "@/components/video-side-panel/timeline-card";
 
 export default function EventCardContent(props: { event: VideoEventWithKind }) {
     return (
-        <CardContent className="px-3">
-            <p className="text-sm text-[#ccc] whitespace-pre-line">
+        <TimelineCardContent>
+            <p className="text-sm text-foreground/80 whitespace-pre-line">
                 {props.event.data}
             </p>
-        </CardContent>
+        </TimelineCardContent>
     );
 }

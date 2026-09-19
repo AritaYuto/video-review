@@ -22,6 +22,8 @@ export default defineConfig([
                     { pattern: "^(Input|SidebarInput)$", allow: ["layout", "pl-8"] },
                     // The hover card must not exceed the viewport; the utility is declared in globals.css.
                     { pattern: "^HoverCardContent$", allow: ["layout", "max-w-screen-gutter"] },
+                    // The side panel's tab list sits flush against its content.
+                    { pattern: "^Tabs$", allow: ["layout", "gap-0"] },
                 ],
             }],
             "shadcn/no-raw-colors": "warn",

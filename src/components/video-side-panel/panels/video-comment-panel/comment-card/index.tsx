@@ -35,37 +35,19 @@ export default function CommentCard(props: {
             containerRef={props.containerRef}
             itemCardRef={props.commentCardRef}
             getKey={(comment) => comment.id}
-            getCardClassName={(comment) => {
-                // Visual state rules for comment cards.
-                // Priority order (later rules override earlier ones):
-                // 1. Selected comment (explicit user focus)
-                // 2. Active comment (currently relevant to playback time)
-                // 3. Comment with both issue + drawing
-                // 4. Comment with issue only
-                // 5. Comment with drawing only
+            getCardState={(comment) => {
+                // Priority: user selection, then playback position, then what the comment carries.
                 const isActive = activeComments.some(e => e.id === comment.id);
                 const isSelected = selectedComment?.id === comment.id;
                 const hasDrawing = comment.drawingPath !== "" && comment.drawingPath !== null;
                 const hasIssue = comment.issueId !== "" && comment.issueId !== null;
 
-                let stateClass = "";
-                if (hasIssue) {
-                    stateClass = "border-[#32cd32]";
-                } else if (hasDrawing) {
-                    stateClass = "border-[#4aa3ff]";
-                }
-
-                if (hasIssue && hasDrawing) {
-                    stateClass = "border-[#ffff00]";
-                }
-
-                if (isSelected) {
-                    stateClass = "border-[#ff8800] bg-[#3a2b00]";
-                } else if (isActive) {
-                    stateClass = "border-[#ffffff]";
-                }
-
-                return stateClass;
+                if (isSelected) return "selected";
+                if (isActive) return "active";
+                if (hasIssue && hasDrawing) return "issue-drawing";
+                if (hasIssue) return "issue";
+                if (hasDrawing) return "drawing";
+                return "none";
             }}
             onClick={(comment) => { handleSelectComment(comment) }}
             renderHeader={(comment) => <CommentCardHeader comment={comment} />}

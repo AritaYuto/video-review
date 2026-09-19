@@ -3,10 +3,9 @@
 import { useTranslations } from "next-intl";
 import { CommentSearchDialog } from "@/components/dialog/comment-search";
 import CalendarDateRadio from "@/components/controls/calendar-date-radio";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { X, Search } from "lucide-react";
-import { SidebarGroup, SidebarGroupContent, SidebarInput } from "@/ui/sidebar";
+import { SidebarGroup } from "@/ui/sidebar";
+import { SidebarSearchInput } from "@/components/controls/sidebar-search-input";
+import { PanelSearchActions } from "@/components/video-side-panel/panel-search-actions";
 import VideoCommentContent from "@/components/video-side-panel/panels/video-comment-panel/content";
 import { useCommentSearchStore } from "@/stores/comment-search-store";
 import { useCommentSearchDateFilterStore } from "@/stores/date-filter-store";
@@ -29,37 +28,20 @@ export function useVideoCommentPanelDefinition(): VideoSidePanelDefinition {
         label: tComment("title"),
         renderPanel: ({ topAreaRef }) => <VideoCommentContent topAreaRef={topAreaRef} />,
         renderHeaderActions: ({ openDialog }) => (
-            <div>
-                <button
-                    onClick={openDialog}
-                    className={`
-                        inline-flex items-center justify-center
-                        text-lg px-1 leading-none hover:text-[#ff5500]
-                        ${filtering ? "text-[#15fa34ff]" : ""}
-                    `}
-                >
-                    <FontAwesomeIcon icon={faSearch} />
-                </button>
-                {filtering
-                    ? (
-                        <button
-                            onClick={() => {
-                                commentSearch.clear();
-                                dateFilter.clear();
-                                if (selectedRevision) {
-                                    fetchComments(selectedRevision);
-                                }
-                            }}
-                            className="inline-flex items-center justify-center hover:text-[#ff5500]"
-                        >
-                            <X className="size-5" />
-                        </button>
-                    )
-                    : null}
-            </div>
+            <PanelSearchActions
+                filtering={filtering}
+                onOpen={openDialog}
+                onClear={() => {
+                    commentSearch.clear();
+                    dateFilter.clear();
+                    if (selectedRevision) {
+                        fetchComments(selectedRevision);
+                    }
+                }}
+            />
         ),
         renderHeaderBody: () => (
-            <SidebarGroup className="py-0">
+            <SidebarGroup>
                 <CalendarDateRadio
                     mode={dateFilter.mode}
                     range={dateFilter.mode === "range" && dateFilter.from && dateFilter.to
@@ -72,15 +54,7 @@ export function useVideoCommentPanelDefinition(): VideoSidePanelDefinition {
                     className="size-10"
                 />
 
-                <SidebarGroupContent className="relative mt-1">
-                    <SidebarInput
-                        value={commentSearch.filterText}
-                        onChange={(e) => commentSearch.setFilterText(e.target.value)}
-                        placeholder="Filter comment text..."
-                        className="pl-8 border-[#fff] w-full h-8 rounded bg-[#181818] border text-sm text-white"
-                    />
-                    <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 select-none" />
-                </SidebarGroupContent>
+                <SidebarSearchInput value={commentSearch.filterText} onChange={commentSearch.setFilterText} placeholder="Filter comment text..." />
             </SidebarGroup>
         ),
         renderDialog: ({ open, onClose }) => (

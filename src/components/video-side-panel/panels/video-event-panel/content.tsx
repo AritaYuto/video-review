@@ -61,10 +61,7 @@ export default function VideoEventContent(props: {
     }, [activeEvent]);
 
     return (
-        <div
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#333 #181818" }}
-            className="font-sans text-white bg-[#181818] border-[#333] w-full h-full flex flex-col border-r"
-        >
+        <div className="bg-sidebar w-full h-full flex flex-col border-r">
             {events.length > 0
                 ? (
                     <EventCard
@@ -79,7 +76,7 @@ export default function VideoEventContent(props: {
                     />
                 )
                 : (
-                    <div className="flex-1 p-4 text-sm text-[#888]">
+                    <div className="flex-1 p-4 text-sm text-muted-foreground">
                         {t("empty")}
                     </div>
                 )}
