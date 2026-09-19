@@ -7,12 +7,11 @@ import { eventsRouter } from "@/server/routes/videos/[id]/events";
 import { vcsRouter } from "@/server/routes/videos/[id]/vcs";
 import { patchVideoRouter } from "@/server/routes/videos/[id]/patch";
 
-export const videoByIdRouter = new Hono();
-
-videoByIdRouter.route("/", getVideoRouter);
-videoByIdRouter.route("/", patchVideoRouter);
-videoByIdRouter.route("/", vcsRouter);
-videoByIdRouter.route("/latest", latestRouter);
-videoByIdRouter.route("/revisions", revisionsRouter);
-videoByIdRouter.route("/events", eventsRouter);
-videoByIdRouter.route("/metadata", metaDataRouter);
+export const videoByIdRouter = new Hono()
+    .route("/", getVideoRouter)
+    .route("/", patchVideoRouter)
+    .route("/", vcsRouter)
+    .route("/latest", latestRouter)
+    .route("/revisions", revisionsRouter)
+    .route("/events", eventsRouter)
+    .route("/metadata", metaDataRouter);

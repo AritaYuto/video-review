@@ -1,4 +1,4 @@
-import { OpenAPIHono as Hono } from "@hono/zod-openapi";
+import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ChatProviders, ChatType } from "@/server/lib/chat/chat-type";
 import { authorize } from "@/server/lib/token";
@@ -6,8 +6,6 @@ import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { chatSlack, chatWebhook, chatEmail } from "@/server/lib/chat";
 import { createOpenSceneLink, createVideoCommentLink } from "@/lib/url";
-
-export const chatRouter = new Hono();
 
 const FormSchema = z.object({
     commentId: z.string().optional(),
@@ -58,53 +56,54 @@ function buildChatContext(form: FormData): ChatType {
     };
 }
 
-chatRouter.openapi({
-    method: "post",
-    summary: "send chat",
-    path: "/",
-    request: {
-        body: {
-            content: {
-                "multipart/form-data": {
-                    schema: FormSchema,
+export const chatRouter = new Hono()
+    .openapi(createRoute({
+        method: "post",
+        summary: "send chat",
+        path: "/",
+        request: {
+            body: {
+                content: {
+                    "multipart/form-data": {
+                        schema: FormSchema,
+                    },
                 },
             },
         },
-    },
-    responses: {
-        200: {
-            description: "List videos",
+        responses: {
+            200: {
+                description: "List videos",
+            },
         },
-    },
-}, async (c) => {
-    try {
-        await authorize(c.req.raw, ["viewer", "admin"]);
-    } catch (e) {
-        if (e instanceof ServerError) {
-            return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+    }), async (c) => {
+        try {
+            await authorize(c.req.raw, ["viewer", "admin"]);
+        } catch (e) {
+            if (e instanceof ServerError) {
+                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+            }
+            return c.json({ error: "unauthorized" }, 401);
         }
-        return c.json({ error: "unauthorized" }, 401);
-    }
 
-    const form = await c.req.formData();
-    const ctx = buildChatContext(form);
-    const notifiedProviders: ChatProviders[] = []
+        const form = await c.req.formData();
+        const ctx = buildChatContext(form);
+        const notifiedProviders: ChatProviders[] = []
 
-    if (await chatSlack(ctx)) {
-        notifiedProviders.push("slack");
-    }
+        if (await chatSlack(ctx)) {
+            notifiedProviders.push("slack");
+        }
 
-    if (await chatWebhook(ctx)) {
-        notifiedProviders.push("webhook");
-    }
+        if (await chatWebhook(ctx)) {
+            notifiedProviders.push("webhook");
+        }
 
-    if (await chatEmail(ctx)) {
-        notifiedProviders.push("email");
-    }
+        if (await chatEmail(ctx)) {
+            notifiedProviders.push("email");
+        }
 
-    const toastData = {
-        title: "Posted to " + notifiedProviders.join(", "),
-        comment: ctx.commentText,
-    }
-    return c.json({ notifiedProviders, toastData }, 200);
-});
+        const toastData = {
+            title: "Posted to " + notifiedProviders.join(", "),
+            comment: ctx.commentText,
+        }
+        return c.json({ notifiedProviders, toastData }, 200);
+    });
