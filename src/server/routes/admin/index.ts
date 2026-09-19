@@ -5,6 +5,7 @@ import { createVCSProviderFromEnv } from "@/server/lib/vcs/from-env";
 import { listUTCDays, upsertMerge, upsertCommit } from "@/server/lib/vcs/cache";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import bcrypt from "bcrypt";
 import { hash, randomBytes } from "crypto";
@@ -48,13 +49,14 @@ export const adminRouter = new Hono()
         responses: {
             200: {
                 description: "admin user created successfully",
+                content: {
+                    "application/json": {
+                        schema: z.object({ success: z.boolean() }),
+                    },
+                },
             },
-            400: {
-                description: "Invalid parameters",
-            },
-            410: {
-                description: "admin user already exists",
-            },
+            400: errorResponse("Invalid parameters"),
+            410: errorResponse("admin user already exists"),
         },
     }), async (c) => {
         const body = c.req.valid("json");
@@ -101,7 +103,7 @@ export const adminRouter = new Hono()
                 },
             },
         });
-        return c.json({ success: true }, { status: 200 });
+        return c.json({ success: true }, 200);
     })
     .openapi(createRoute({
         method: "post",

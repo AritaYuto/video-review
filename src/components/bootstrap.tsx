@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { bootstrap } from "@/lib/fetch-wrapper/admin";
 import { useTranslations } from "next-intl";
-import * as api from "@/lib/fetch-wrapper";
+import * as wrapper from "@/lib/fetch-wrapper";
+import { api } from "@/lib/api-client";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 import { AuthCard, AuthLayout } from "@/components/auth/auth-layout";
@@ -17,14 +17,14 @@ export default function Bootstrap() {
     const { setAuth } = useAuthStore();
 
     async function submit() {
-        const res = await bootstrap(email, pass);
-        if (!res.ok) {
-            alert(res.msg);
+        const res = await api.admin.bootstrap.$post({ json: { email, pass } });
+        if (res.status !== 200) {
+            alert((await res.json()).error);
             return;
         }
 
         try {
-            const data = await api.login("user", { email, password: pass });
+            const data = await wrapper.login("user", { email, password: pass });
             setAuth(data.id, data.email, data.role, data.token, data.displayName);
             location.href = "/";
         } catch (e) {

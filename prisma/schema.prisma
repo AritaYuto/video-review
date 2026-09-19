@@ -12,6 +12,7 @@ datasource db {
 generator zod {
   provider                         = "zod-prisma-types"
   output                           = "../src/schema/zod"
+  createInputTypes                 = false
 }
 
 model SystemSecret {

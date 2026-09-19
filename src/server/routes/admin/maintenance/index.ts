@@ -9,6 +9,7 @@ import { z } from "zod";
 import { hash, randomBytes } from "crypto";
 import { env } from "@/lib/env";
 import { formatVideoRes } from "@/server/lib/utils/format-video-res";
+import { errorResponse } from "@/server/lib/openapi/error-response";
 
 const DeleteQuerySchema = z.object({
     videoId: z.string().optional(),
@@ -160,16 +161,24 @@ export const maintenanceRouter = new Hono()
         responses: {
             200: {
                 description: "rotate api token",
-            }
+                content: {
+                    "application/json": {
+                        schema: z.object({ token: z.string() }),
+                    },
+                },
+            },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Auth configuration is missing"),
         },
     }), async (c) => {
         try {
             await authorize(c.req.raw, ["admin"]);
         } catch (e) {
             if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
             }
-            return c.json({ error: "unauthorized" }, { status: 401 });
+            return c.json({ error: "unauthorized" }, 401);
         }
 
         const apiToken = randomBytes(32).toString("hex");
@@ -179,7 +188,7 @@ export const maintenanceRouter = new Hono()
             update: { valueHash: tokenHash },
             create: { key: "API_TOKEN", valueHash: tokenHash },
         });
-        return c.json({ token: apiToken });
+        return c.json({ token: apiToken }, 200);
     })
     .openapi(createRoute({
         method: "get",
@@ -188,7 +197,17 @@ export const maintenanceRouter = new Hono()
         responses: {
             200: {
                 description: "check initialized",
-            }
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            hasAdmin: z.boolean(),
+                            hasJwt: z.boolean(),
+                            initialized: z.boolean(),
+                        }),
+                    },
+                },
+            },
+            500: errorResponse("Unknown error"),
         },
     }), async (c) => {
         try {
@@ -198,11 +217,8 @@ export const maintenanceRouter = new Hono()
                 hasAdmin,
                 hasJwt,
                 initialized: hasAdmin && hasJwt,
-            });
+            }, 200);
         } catch (e) {
-            if (e instanceof ServerError) {
-                return c.json({ error: e.message }, e.status as ContentfulStatusCode);
-            }
-            return c.json({ error: "unknown error" }, { status: 500 });
+            return c.json({ error: e instanceof ServerError ? e.message : "unknown error" }, 500);
         }
     });

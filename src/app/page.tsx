@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { withRetry } from "@/lib/utils";
 import { LoadingBadge } from "@/components/controls/loading-badge";
-import { checkStatus } from "@/lib/fetch-wrapper/admin";
+import { api } from "@/lib/api-client";
 
 export default function Home() {
     const router = useRouter();
@@ -38,8 +38,8 @@ export default function Home() {
             setWarmupDB(result);
 
             if(result) {
-                const status = await checkStatus();
-                const initialized = status.ok && status.data
+                const status = await api.admin.maintenance.status.$get();
+                const initialized = status.status === 200 && (await status.json()).initialized;
                 if(initialized) {
                     router.replace(await verifyAuth() ? "/video-review/review" : "/login");
                 } else {

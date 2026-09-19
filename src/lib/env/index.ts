@@ -1,4 +1,4 @@
-import * as api from "@/lib/fetch-wrapper";
+import type { LoginType } from "@/lib/auth-types";
 import { booleanEnv, resolveEnv, typeEnv, arrayEnv } from "@/lib/env/helpers";
 
 export const env = {
@@ -6,7 +6,7 @@ export const env = {
     PUBLIC_VIDEO_REVIEW_DESC: process.env.NEXT_PUBLIC_VIDEO_REVIEW_DESC ?? "Internal Video Review Tool",
     PUBLIC_VIDEO_REVIEW_URL_SCHEMA: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_URL_SCHEMA, process.env.NEXT_PUBLIC_URL_SCHEMA),
     PUBLIC_LOGIN_BG_URL: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_LOGIN_BG, process.env.NEXT_PUBLIC_LOGIN_BG),
-    PUBLIC_LOGIN_DEFAULT_TYPE: typeEnv<api.LoginType>(resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_LOGIN_DEFAULT_TYPE, process.env.NEXT_PUBLIC_LOGIN_DEFAULT_TYPE) , "guest"),
+    PUBLIC_LOGIN_DEFAULT_TYPE: typeEnv<LoginType>(resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_LOGIN_DEFAULT_TYPE, process.env.NEXT_PUBLIC_LOGIN_DEFAULT_TYPE) , "guest"),
     PUBLIC_JIRA_ISSUE_TYPE_TASK: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_JIRA_ISSUE_TYPE_TASK, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_TASK),
     PUBLIC_JIRA_ISSUE_TYPE_BUG: resolveEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_JIRA_ISSUE_TYPE_BUG, process.env.NEXT_PUBLIC_JIRA_ISSUE_TYPE_BUG),
     USE_AI_SUPPORT: booleanEnv(process.env.NEXT_PUBLIC_VIDEO_REVIEW_USE_AI_SUPPORT),

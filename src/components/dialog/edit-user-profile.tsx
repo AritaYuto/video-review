@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useAvatarStore } from "@/stores/avatar-store";
 import { uploadAvatar } from "@/lib/fetch-wrapper";
 import { ControlRow } from "@/components/controls/control-row";
-import { apiTokenRotate } from "@/lib/fetch-wrapper/admin";
+import { api } from "@/lib/api-client";
 import { Input } from "@/ui/input";
 import { updateUser } from "@/lib/fetch-wrapper/user";
 
@@ -86,9 +86,11 @@ export default function EditUserProfileDialog({
         setError(null);
 
         try {
-            const res = await apiTokenRotate();
-            if (res.ok) {
-                setApiToken(res.data);
+            const res = await api.admin.maintenance["api-token"].rotate.$post();
+            if (res.status === 200) {
+                setApiToken((await res.json()).token);
+            } else {
+                setError(t("rotateFailed"));
             }
         } catch {
             setError(t("rotateFailed"));

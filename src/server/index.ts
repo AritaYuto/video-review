@@ -1,47 +1,11 @@
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
-import { mediaRouter } from "@/server/routes/media";
-import { readStatusRouter } from "@/server/routes/read-status";
-import { localRouter } from "@/server/routes/media/local";
-import { nextCloudRouter } from "@/server/routes/media/nextcloud";
-import { resolverRouter } from "@/server/routes/media/resolver";
-import { commentsRouter } from "@/server/routes/comments";
-import { authRouter } from "@/server/routes/auth";
-import { adminRouter } from "@/server/routes/admin";
-import { videosRouter } from "./routes/videos";
-import { drawingRouter } from "./routes/drawing";
-import { oldUploadRouter as oldVideoUploadRouter } from "@/server/routes/videos/upload/old-upload";
-import { oldUploadRouter as oldDrawingUploadRouter } from "@/server/routes/drawing/upload/old-upload";
-import { listRouter } from "@/server/routes/videos/list";
-import { videoByIdRouter } from "@/server/routes/videos/[id]";
-import { foldersRouter } from "@/server/routes/videos/folders";
-import { downloadRouter } from "@/server/routes/media/download";
-import { uploadStatusRouter } from "./routes/upload-status";
+import { v1Router } from "@/server/routes/v1";
 import { swaggerUI } from "@hono/swagger-ui";
 import { ensurePrismaWarmup } from "@/server/lib/db";
-import { avatarRouter } from "@/server/routes/avatar";
-import { userRouter } from "@/server/routes/user";
-import { chatRouter } from "@/server/routes/chat";
-import { chatSearchRouter } from "@/server/routes/chat/search";
-import { thumbnailRouter } from "@/server/routes/thumbnail";
-import { llmStatusRouter } from "@/server/routes/llm/status";
 
 export const app = new Hono().basePath("/api");
 
-// v1 API
-app.route("/v1/media", mediaRouter);
-app.route("/v1/read-status", readStatusRouter);
-app.route("/v1/comments", commentsRouter);
-app.route("/v1/auth", authRouter);
-app.route("/v1/admin", adminRouter);
-app.route("/v1/videos", videosRouter);
-app.route("/v1/drawing", drawingRouter);
-app.route("/v1/upload-status", uploadStatusRouter);
-app.route("/v1/avatar", avatarRouter);
-app.route("/v1/user", userRouter);
-app.route("/v1/chat", chatRouter);
-app.route("/v1/llm/status", llmStatusRouter);
-app.route("/v1/chat/search", chatSearchRouter);
-app.route("/v1/thumbnail", thumbnailRouter);
+app.route("/v1", v1Router);
 
 // OpenAPI and Swagger UI
 app.doc('/specification', {
