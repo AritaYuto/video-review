@@ -4,6 +4,5 @@ export * from "@/lib/fetch-wrapper/comments";
 export * from "@/lib/fetch-wrapper/events";
 export * from "@/lib/fetch-wrapper/media";
 export * from "@/lib/fetch-wrapper/upload";
-export * from "@/lib/fetch-wrapper/videos";
 export * from "@/lib/fetch-wrapper/avatar";
 export * from "@/lib/fetch-wrapper/chat";

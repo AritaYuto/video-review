@@ -1,6 +1,6 @@
 import { prisma } from "@/server/lib/db";
 import { OpenAPIHono as Hono, createRoute } from "@hono/zod-openapi";
-import { VideoSchema } from "@/schema/zod"
+import { VideoSchema, VideoRevisionSchema } from "@/schema/zod"
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
@@ -58,7 +58,10 @@ export const listRouter = new Hono()
                 description: "List videos",
                 content: {
                     "application/json": {
-                        schema: VideoSchema.array(),
+                        schema: VideoSchema.extend({
+                            latestRevision: VideoRevisionSchema.pick({ revision: true, uploadedAt: true, tags: true, filePath: true }).nullable(),
+                            revisions: VideoRevisionSchema.array().optional(),
+                        }).array(),
                     },
                 },
             },

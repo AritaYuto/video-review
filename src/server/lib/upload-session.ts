@@ -1,4 +1,4 @@
-import { UploadSession } from '@/lib/db-types';
+import { UploadSession } from '@prisma/client';
 import { prisma } from '@/server/lib/db';
 
 type SessionParam = Omit<UploadSession, "id" | "createdAt">;

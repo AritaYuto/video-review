@@ -5,6 +5,7 @@ import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { randomUUID } from "crypto";
+import { VideoRevisionSchema } from "@/schema/zod";
 
 const annotateBody = z.object({
     tags: z.string().transform((x) => x.split(",")).optional(),
@@ -55,7 +56,14 @@ export const metaDataRouter = new Hono()
             },
         },
         responses: {
-            200: { description: "" },
+            200: {
+                description: "Revision annotated",
+                content: {
+                    "application/json": {
+                        schema: z.object({ videoRevision: VideoRevisionSchema }),
+                    },
+                },
+            },
             401: { description: "Unauthorized" },
             403: { description: "Forbidden" },
             500: { description: "" }
@@ -81,7 +89,7 @@ export const metaDataRouter = new Hono()
                 tags: tags ?? []
             }
         });
-        return c.json({ videoRevision: updatedVideoRev });
+        return c.json({ videoRevision: updatedVideoRev }, 200);
     })
     .openapi(createRoute({
         method: "put",

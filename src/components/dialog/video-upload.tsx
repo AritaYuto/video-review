@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/ui/input";
 import * as api from "@/lib/fetch-wrapper"
+import { api as rpc } from "@/lib/api-client";
 import { FormDialog } from "@/components/dialog/form-dialog";
 import { Upload } from "lucide-react";
 import path from "path";
@@ -23,8 +24,8 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
     useEffect(() => {
         void (async () => {
             try {
-                const keys = await api.getVideoFolderKeys();
-                setFolderKeys(keys);
+                const res = await rpc.videos.folders.$get();
+                if (res.status === 200) setFolderKeys(await res.json());
             } catch {
 
             }
