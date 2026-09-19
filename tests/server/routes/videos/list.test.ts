@@ -42,6 +42,22 @@ async function createVideoWithRevision(input: TestVideoInput) {
     });
 
     createdVideoIds.push(videoId);
+    return videoId;
+}
+
+async function createComment(videoId: string, issueId: string, deleted = false) {
+    await prisma.videoComment.create({
+        data: {
+            id: randomUUID(),
+            videoId,
+            videoRevNum: 1,
+            userName: "list-test",
+            comment: "comment",
+            time: 0,
+            issueId,
+            deleted,
+        },
+    });
 }
 
 describe("videos listRouter (DB)", () => {
@@ -50,6 +66,10 @@ describe("videos listRouter (DB)", () => {
     const hiddenTitle = `DB List Hidden ${unique}`;
     const folderKey = `db-tests-${unique}`;
     const uniqueTag = `db-tag-${unique}`;
+    const issueKey = `LST${unique}`;
+    const issueMatchTitle = `DB List Issue Match ${unique}`;
+    const issueOtherTitle = `DB List Issue Other ${unique}`;
+    const issueDeletedTitle = `DB List Issue Deleted ${unique}`;
 
     beforeAll(async () => {
         await createVideoWithRevision({
@@ -64,10 +84,20 @@ describe("videos listRouter (DB)", () => {
             tags: [uniqueTag, "beta"],
             deleted: true,
         });
+
+        const issueMatchId = await createVideoWithRevision({ title: issueMatchTitle, folderKey, tags: [] });
+        const issueOtherId = await createVideoWithRevision({ title: issueOtherTitle, folderKey, tags: [] });
+        const issueDeletedId = await createVideoWithRevision({ title: issueDeletedTitle, folderKey, tags: [] });
+        await createComment(issueMatchId, `${issueKey}-12`);
+        await createComment(issueOtherId, `OTHER${unique}-1`);
+        await createComment(issueDeletedId, `${issueKey}-13`, true);
     });
 
     afterAll(async () => {
         if (createdVideoIds.length === 0) return;
+        await prisma.videoComment.deleteMany({
+            where: { videoId: { in: createdVideoIds } },
+        });
         await prisma.video.updateMany({
             where: { id: { in: createdVideoIds } },
             data: { latestRevisionNum: null },
@@ -107,6 +137,19 @@ describe("videos listRouter (DB)", () => {
 
         expect(titles).toContain(visibleTitle);
         expect(titles).not.toContain(hiddenTitle);
+    });
+
+    it("filters by a partial issue key on non-deleted comments", async () => {
+        const res = await listRouter.request(
+            `http://localhost/?filterIssue=${encodeURIComponent(`${issueKey}-1`)}`,
+            { method: "GET" },
+        );
+        expect(res.status).toBe(200);
+
+        const body = await res.json() as Array<{ title: string }>;
+        const titles = body.map((x) => x.title);
+
+        expect(titles).toEqual([issueMatchTitle]);
     });
 
     it("returns 500 when video query fails", async () => {

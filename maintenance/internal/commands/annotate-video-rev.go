@@ -19,9 +19,20 @@ func RunAnnotateVideoRev(cmd string, args []string) {
 		return
 	}
 
+	// Send only the flags that were given so the server leaves the other field untouched.
+	body := map[string]interface{}{}
+	fs.Visit(func(f *flag.Flag) {
+		switch f.Name {
+		case "tags":
+			body["tags"] = *tags
+		case "summary":
+			body["summary"] = *summary
+		}
+	})
+
 	Fetch(FetchOptions{
 		Method: POST,
 		Path:   fmt.Sprintf("/api/v1/videos/%s/metadata/annotate", *videoId),
-		Json:   map[string]interface{}{"tags": *tags, "summary": *summary},
+		Json:   body,
 	})
 }

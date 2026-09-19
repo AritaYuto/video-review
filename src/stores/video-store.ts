@@ -40,6 +40,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
                 commentsTo: commentsDateRange?.to?.toISOString(),
                 user: s.user || undefined,
                 filterTree: s.filterTree || undefined,
+                filterIssue: s.filterIssue || undefined,
                 hasIssue: s.hasIssue ? "true" : undefined,
                 hasDrawing: s.hasDrawing ? "true" : undefined,
                 hasComment: s.hasComment ? "true" : undefined,

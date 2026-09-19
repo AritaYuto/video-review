@@ -207,6 +207,66 @@ describe("videos metadataRouter (DB)", () => {
         expect(storedB).toEqual([{ startMs: 0, endMs: 200, data: "b-event" }]);
     });
 
+    it("annotate keeps summary when only tags are sent", async () => {
+        await prisma.videoRevision.update({
+            where: { id: revisionId },
+            data: { summary: "keep me", tags: ["old"] },
+        });
+
+        const res = await app.request(`http://localhost/videos/${revisionId}/metadata/annotate`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ tags: "a, b" }),
+        });
+        expect(res.status).toBe(200);
+
+        const stored = await prisma.videoRevision.findUnique({
+            where: { id: revisionId },
+            select: { summary: true, tags: true },
+        });
+        expect(stored).toEqual({ summary: "keep me", tags: ["a", "b"] });
+    });
+
+    it("annotate keeps tags when only summary is sent", async () => {
+        await prisma.videoRevision.update({
+            where: { id: revisionId },
+            data: { summary: "old", tags: ["keep", "me"] },
+        });
+
+        const res = await app.request(`http://localhost/videos/${revisionId}/metadata/annotate`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ summary: "new summary" }),
+        });
+        expect(res.status).toBe(200);
+
+        const stored = await prisma.videoRevision.findUnique({
+            where: { id: revisionId },
+            select: { summary: true, tags: true },
+        });
+        expect(stored).toEqual({ summary: "new summary", tags: ["keep", "me"] });
+    });
+
+    it("annotate stores an empty tag list for an empty string", async () => {
+        await prisma.videoRevision.update({
+            where: { id: revisionId },
+            data: { tags: ["old"] },
+        });
+
+        const res = await app.request(`http://localhost/videos/${revisionId}/metadata/annotate`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ tags: "" }),
+        });
+        expect(res.status).toBe(200);
+
+        const stored = await prisma.videoRevision.findUnique({
+            where: { id: revisionId },
+            select: { tags: true },
+        });
+        expect(stored).toEqual({ tags: [] });
+    });
+
     it("returns status from ServerError on authorization", async () => {
         vi.mocked(authorize).mockRejectedValueOnce(new ServerError("forbidden", 403));
 
