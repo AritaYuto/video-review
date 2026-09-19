@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
-import { ControlRow } from "@/ui/control-row";
+import { ControlRow } from "@/components/controls/control-row";
 import { useVideoEventSearchStore } from "@/stores/video-event-search-store";
 import { Checkbox } from "@/ui/checkbox";
-import ComboBox from "@/ui/combo-box";
+import ComboBox from "@/components/controls/combo-box";
 import { Button } from "@/ui/button";
 import { X } from "lucide-react";
 import { useVideoStore } from "@/stores/video-store";

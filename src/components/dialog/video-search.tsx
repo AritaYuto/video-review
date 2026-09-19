@@ -4,16 +4,16 @@ import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { fetcCommentUsers, fetchAllVideoTags } from "@/lib/fetch-wrapper";
-import { ControlRow } from "@/ui/control-row";
-import ComboBox from "@/ui/combo-box";
+import { ControlRow } from "@/components/controls/control-row";
+import ComboBox from "@/components/controls/combo-box";
 import { Checkbox } from "@/ui/checkbox";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import { useVideoDateFilterStore, useVideoCommentsDateFilterStore } from "@/stores/date-filter-store";
 import { Button } from "@/ui/button";
 import { useVideoStore } from "@/stores/video-store";
 import { X } from "lucide-react";
-import CalendarDateRadio from "@/ui/calendar-date-radio";
-import MultiComboBox from "@/ui/multi-combobox";
+import CalendarDateRadio from "@/components/controls/calendar-date-radio";
+import MultiComboBox from "@/components/controls/multi-combobox";
 import { Badge } from "@/ui/badge";
 
 export function VideoSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {

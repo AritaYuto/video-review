@@ -17,7 +17,7 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useVideoSearchStore } from "@/stores/video-search-store";
 import { useVideoDateFilterStore } from "@/stores/date-filter-store";
 import { useVideoStore } from "@/stores/video-store";
-import CalendarDateRadio from "@/ui/calendar-date-radio";
+import CalendarDateRadio from "@/components/controls/calendar-date-radio";
 import { Separator } from "../ui/separator";
 import { useLLMStatusStore } from "@/stores/llm-status-store";
 import { useChatSearchStore } from "@/stores/chat-search-store";

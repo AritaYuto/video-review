@@ -44,7 +44,7 @@ export default function MultiComboBox({
     return (
         <div className="flex flex-col gap-1">
             {label && (
-                <label className="text-sm text-[#ccc]">
+                <label className="text-sm text-muted-foreground">
                     {label}
                 </label>
             )}
@@ -55,20 +55,16 @@ export default function MultiComboBox({
                         variant="outline"
                         role="combobox"
                         disabled={disabled}
-                        className="justify-between bg-[#202020] border-[#333] text-white hover:bg-[#202020] hover:border-[#ff8800]"
+                        className="justify-between"
                     >
                         <div className="flex gap-1 flex-wrap">
                             {value.length === 0 && (
-                                <span className="text-[#888]">
+                                <span className="text-muted-foreground">
                                     {placeholder}
                                 </span>
                             )}
                             {value.map((v) => (
-                                <Badge
-                                    key={v}
-                                    variant="outline"
-                                    className="border-[#333] bg-[#202020] text-[#eee]"
-                                >
+                                <Badge key={v} variant="outline">
                                     {v}
                                 </Badge>
                             ))}
@@ -77,22 +73,20 @@ export default function MultiComboBox({
                     </Button>
                 </PopoverTrigger>
 
-                <PopoverContent className="p-0 w-60 bg-[#202020] border-[#333] text-white">
-                    <Command className="bg-[#202020] text-white">
+                <PopoverContent className="p-0 w-60">
+                    <Command>
                         <CommandInput placeholder="Search..." />
-                        <CommandList className="max-h-60 [scrollbar-width:thin] [scrollbar-color:#555_transparent]">
+                        <CommandList className="max-h-60 scrollbar-thin">
                             <CommandEmpty>No options found.</CommandEmpty>
                             <CommandGroup>
                                 {options.map((option) => (
                                     <CommandItem
                                         key={option}
                                         onSelect={() => toggleValue(option)}
-                                        className="text-[#fff] data-[selected=true]:bg-[#eee] data-[selected=true]:text-[#222]"
                                     >
                                         <Check
                                             className={cn(
                                                 "mr-2 h-4 w-4",
-                                                "text-white",
                                                 value.includes(option)
                                                     ? "opacity-100"
                                                     : "opacity-0"

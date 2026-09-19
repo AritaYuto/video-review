@@ -6,7 +6,7 @@ import { PopoverContent, PopoverTrigger } from '@/ui/popover';
 import { Button } from '@/ui/button';
 import { DateRange } from 'react-day-picker';
 import { Calendar } from '@/ui/calendar';
-import CalendarDateRadio from '@/ui/calendar-date-radio';
+import CalendarDateRadio from '@/components/controls/calendar-date-radio';
 
 interface CalendarPopoverProps extends React.ComponentProps<"div"> {
     mode: "none" | "today" | "recent" | "range";
@@ -46,11 +46,11 @@ export default function CalendarPopover({
     return (
         <Popover open={open} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
-                <Button className={`text-white bg-[#333] hover:bg-[#fff]`} size="sm" variant="outline">
+                <Button size="sm" variant="secondary">
                     <CalendarIcon />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="flex items-center bg-[#1f1f1f] ">
+            <PopoverContent className="flex items-center">
                 <div>
                     <div className="flex justify-between">
                         <CalendarDateRadio
@@ -61,7 +61,7 @@ export default function CalendarPopover({
                             onSetRange={onSetRange}
                             onClear={onClear}
                             collapseCalendarBtn />
-                        <Button onClick={() => setOpen(false)} className="text-white bg-[#333] hover:bg-[#fff] hover:text-[#000]">
+                        <Button onClick={() => setOpen(false)} variant="secondary">
                             <X />
                         </Button>
                     </div>
@@ -71,31 +71,6 @@ export default function CalendarPopover({
                         selected={draft}
                         onSelect={handleSelect}
                         numberOfMonths={1}
-                        className='rounded-md  bg-[#1f1f1f] text-white'
-                        classNames={{
-                            range_start: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-l-full',
-                            range_end: 'bg-[#ff880055] dark:bg-[#ff880055] rounded-r-full',
-                            day_button: [
-                                // range selected
-                                "data-[range-start=true]:rounded-full!",
-                                "data-[range-start=true]:bg-[#ff8800]!",
-                                "data-[range-start=true]:text-white!",
-
-                                "data-[range-end=true]:rounded-full!",
-                                "data-[range-end=true]:bg-[#ff8800]!",
-                                "data-[range-end=true]:text-white!",
-
-                                // range middle
-                                "data-[range-middle=true]:rounded-none",
-                                "data-[range-middle=true]:bg-[#ff880055]",
-                                "data-[range-middle=true]:text-white!",
-
-                                // hover
-                                "hover:rounded-full",
-                            ].join(" "),
-                            today:
-                                'data-[selected=true]:rounded-l-none! rounded-full bg-[#ee990077]!'
-                        }}
                     />
                 </div>
             </PopoverContent>

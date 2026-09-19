@@ -20,7 +20,7 @@ export function ControlRow(label: string, control: () => React.ReactElement, col
     return (
         <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm text-gray-100">
+                <span className="text-sm text-foreground">
                     {label}
                 </span>
             </div>

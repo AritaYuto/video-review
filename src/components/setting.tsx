@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLLMStatusStore } from "@/stores/llm-status-store";
 import { isAdmin } from "@/lib/role";
-import { ControlRow } from "@/ui/control-row";
+import { ControlRow } from "@/components/controls/control-row";
 import { useEffect, useState } from "react";
 import EditUserProfileDialog from "@/components/dialog/edit-user-profile";
 import { Separator } from "@/ui/separator";

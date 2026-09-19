@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { CommentSearchDialog } from "@/components/dialog/comment-search";
-import CalendarDateRadio from "@/ui/calendar-date-radio";
+import CalendarDateRadio from "@/components/controls/calendar-date-radio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { X, Search } from "lucide-react";

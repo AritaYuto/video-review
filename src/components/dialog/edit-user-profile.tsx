@@ -8,7 +8,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useAvatarStore } from "@/stores/avatar-store";
 import { uploadAvatar } from "@/lib/fetch-wrapper";
-import { ControlRow } from "@/ui/control-row";
+import { ControlRow } from "@/components/controls/control-row";
 import { apiTokenRotate } from "@/lib/fetch-wrapper/admin";
 import { Input } from "@/ui/input";
 import { updateUser } from "@/lib/fetch-wrapper/user";

@@ -3,8 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { env } from "@/lib/env";
-import ComboBox from "@/ui/combo-box";
-import { ControlRow } from "@/ui/control-row";
+import ComboBox from "@/components/controls/combo-box";
+import { ControlRow } from "@/components/controls/control-row";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { downloadVideo } from "@/lib/fetch-wrapper";
