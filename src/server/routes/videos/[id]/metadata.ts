@@ -9,7 +9,9 @@ import { randomUUID } from "crypto";
 import { VideoRevisionSchema } from "@/schema/zod";
 
 const annotateBody = z.object({
-    tags: z.string().transform((x) => x.split(",")).optional(),
+    tags: z.string()
+        .transform((x) => x.split(",").map((tag) => tag.trim()).filter((tag) => tag.length > 0))
+        .optional(),
     summary: z.string().optional(),
 });
 
@@ -85,10 +87,11 @@ export const metaDataRouter = createRouter()
 
         const updatedVideoRev = await prisma.videoRevision.update({
             where: { id: videoRev.id },
+            // Callers send only the field they edit; leave the other one untouched.
             data: {
-                summary: summary ?? "",
-                tags: tags ?? []
-            }
+                ...(summary !== undefined ? { summary } : {}),
+                ...(tags !== undefined ? { tags } : {}),
+            },
         });
         return c.json({ videoRevision: updatedVideoRev }, 200);
     })
