@@ -38,12 +38,12 @@ export default function CalendarDateRadio({
         <div className={className}>
             <ButtonGroup>
                 <Button
-                    variant={mode === "today" ? "success" : "secondary"} size="sm"
+                    variant={mode === "today" ? "accent" : "secondary"} size="sm"
                     onClick={onToday}>
                     {t("today")}
                 </Button>
                 <Button
-                    variant={mode === "recent" ? "success" : "secondary"} size="sm"
+                    variant={mode === "recent" ? "accent" : "secondary"} size="sm"
                     onClick={() => onRecent(recentDay)}>
                     {t("recent", { days: recentDay })}
                 </Button>
