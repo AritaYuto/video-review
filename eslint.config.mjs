@@ -10,10 +10,10 @@ export default defineConfig([
             parserOptions: { ecmaFeatures: { jsx: true } },
         },
         plugins: { shadcn },
-        // Every rule starts as a warning: the codebase has ~1,000 findings that are being
-        // worked off directory by directory. A rule moves to "error" once it reports nothing.
+        // Colours, spacing and shapes come from the tokens in src/styles/globals.css and the
+        // wrappers in src/components/ui; a finding means a hand-written exception crept back in.
         rules: {
-            "shadcn/no-restyle": ["warn", {
+            "shadcn/no-restyle": ["error", {
                 allow: ["layout", "typography"],
                 // A popover that wraps a Command list has no padding of its own.
                 contracts: [
@@ -26,15 +26,15 @@ export default defineConfig([
                     { pattern: "^Tabs$", allow: ["layout", "gap-0"] },
                     // The spinner inherits currentColor; the accent is the only colour it takes.
                     { pattern: "^Spinner$", allow: ["layout", "text-primary"] },
-                    // The chat sheet's header is separated from the message list by a rule.
-                    { pattern: "^SheetHeader$", allow: ["layout", "border-b"] },
+                    // The chat sheet's header holds a button row: shorter than stock, with a rule below.
+                    { pattern: "^SheetHeader$", allow: ["layout", "border-b", "py-2"] },
                 ],
             }],
-            "shadcn/no-raw-colors": "warn",
-            "shadcn/no-arbitrary-values": "warn",
-            "shadcn/no-inline-styles": "warn",
-            "shadcn/no-unknown-classes": "warn",
-            "shadcn/require-static-classes": "warn",
+            "shadcn/no-raw-colors": "error",
+            "shadcn/no-arbitrary-values": "error",
+            "shadcn/no-inline-styles": "error",
+            "shadcn/no-unknown-classes": "error",
+            "shadcn/require-static-classes": "error",
         },
     },
     {

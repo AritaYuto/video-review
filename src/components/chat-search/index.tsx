@@ -28,7 +28,7 @@ export function ChatSearchPanel() {
     return (
         <Sheet open={isOpen} onOpenChange={(open) => { if (!open) close(); }}>
             <SheetContent side="right" className="w-100">
-                <SheetHeader className="flex flex-row items-center justify-between px-4 py-2 border-b shrink-0">
+                <SheetHeader className="flex flex-row items-center justify-between py-2 border-b shrink-0">
                     <SheetTitle className="text-sm">{t("title")}</SheetTitle>
                     {history.length > 0 && (
                         // Keep clear of the sheet's own close button in the corner.
