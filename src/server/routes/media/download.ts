@@ -17,7 +17,7 @@ export const downloadRouter = createRouter()
         request: {
             query: z.object({
                 videoId: z.string().min(1),
-                videoRevId: z.string().min(1),
+                videoRevId: z.string().min(1).optional(),
                 width: z.string().optional(),
             }),
         },
@@ -49,11 +49,12 @@ export const downloadRouter = createRouter()
 
         console.log(`Received download request for videoId: ${videoId}, videoRevId: ${videoRevId}, width: ${width}`);
 
+        // Without videoRevId (e.g. the maintenance CLI's create-video-tmb) serve the latest live revision.
         const videoRev = await prisma.videoRevision.findFirst({
-            where: { 
-                ...(videoRevId ? { id: videoRevId } : {}), 
-                videoId 
-            },
+            where: videoRevId
+                ? { id: videoRevId, videoId }
+                : { videoId, deleted: false },
+            orderBy: { revision: "desc" },
             include: {
                 video: {
                     select: { title: true },
