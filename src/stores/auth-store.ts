@@ -55,7 +55,8 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                set({userId: null, token: null});
+                void api.auth.logout.$post().catch(() => {});
+                set({ userId: null, token: null });
             },
         }),
         {

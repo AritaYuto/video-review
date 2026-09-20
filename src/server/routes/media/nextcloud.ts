@@ -1,5 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
+import { authorizeMedia } from "@/server/lib/token";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { NextCloudDriver } from "@/server/lib/storage/drivers/nextcloud";
 
@@ -21,6 +22,7 @@ export const nextCloudRouter = createRouter()
             },
         },
     }), async (c) => {
+        await authorizeMedia(c, ["guest", "viewer", "admin"]);
         const relativePath = c.req.param('path');
         if (!relativePath) {
             return c.json({ error: "missing path" }, 400);
