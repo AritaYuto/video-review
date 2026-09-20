@@ -2,7 +2,9 @@ import { VideoReviewStorage } from "@/server/lib/storage";
 import { LocalDriver } from "@/server/lib/storage/drivers/local";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
-import { authorizeMedia } from "@/server/lib/token";
+import { authorizeMedia, roleOf } from "@/server/lib/token";
+import { assertRoleCanSeeVideo, videoIdForStorageKey } from "@/server/lib/videos/guest-access";
+import { ServerError } from "@/server/lib/server-error";
 import fs from "fs";
 import path from "path";
 
@@ -24,10 +26,15 @@ export const localRouter = createRouter()
             },
         },
     }), async (c) => {
-        await authorizeMedia(c, ["guest", "viewer", "admin"]);
+        const auth = await authorizeMedia(c, ["guest", "viewer", "admin"]);
         const relativePath = c.req.param('path');
         if(!relativePath) {
             return c.json({ error: "missing path" }, 400);
+        }
+
+        // Reject "../" segments up front so the guest check and the file read agree on the key.
+        if (relativePath.split("/").some(p => p.includes(".."))) {
+            return c.json({ error: "invalid path" }, 400);
         }
 
         const fileDriver = VideoReviewStorage.getDriver();
@@ -47,6 +54,13 @@ export const localRouter = createRouter()
         const resolved = path.resolve(filePath);
         if (resolved !== root && !resolved.startsWith(root + path.sep)) {
             return c.json({ error: "invalid path" }, 400);
+        }
+
+        const role = roleOf(auth);
+        if (role === "guest") {
+            const videoId = await videoIdForStorageKey(relativePath);
+            if (!videoId) throw new ServerError("forbidden", 403);
+            await assertRoleCanSeeVideo(videoId, role);
         }
 
         const ext = path.extname(filePath).toLowerCase();

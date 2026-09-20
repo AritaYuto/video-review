@@ -118,9 +118,16 @@ export async function authorize(req: Request, passedRoles: Role[]) {
     return { type: "jwt" as const, decoded };
 }
 
+export type AuthIdentity = Awaited<ReturnType<typeof authorize>>;
+
+// The static API token always acts as admin; a JWT carries its own role.
+export function roleOf(auth: AuthIdentity): Role {
+    return auth.type === "api-token" ? auth.role : auth.decoded.role;
+}
+
 // Browser <video>/<img> can't send a bearer header, so media also accepts the JWT
 // from an httpOnly cookie; every other route stays bearer-only.
-export async function authorizeMedia(c: Context, roles: Role[]) {
+export async function authorizeMedia(c: Context, roles: Role[]): Promise<AuthIdentity> {
     const cookieToken = getCookie(c, AUTH_COOKIE);
     if (cookieToken) {
         let decoded: Awaited<ReturnType<typeof verifyToken>>;
@@ -133,7 +140,7 @@ export async function authorizeMedia(c: Context, roles: Role[]) {
         if (!roles.includes(decoded.role)) {
             throw new ServerError("forbidden", 403);
         }
-        return;
+        return { type: "jwt" as const, decoded };
     }
-    await authorize(c.req.raw, roles);
+    return authorize(c.req.raw, roles);
 }

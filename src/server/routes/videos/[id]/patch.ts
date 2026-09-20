@@ -7,6 +7,7 @@ import { ContentfulStatusCode } from "hono/utils/http-status";
 
 const BodySchema = z.object({
     vcsWatchPaths: z.array(z.string()).optional(),
+    guestVisible: z.boolean().optional(),
 });
 
 export const patchVideoRouter = createRouter()
@@ -26,6 +27,10 @@ export const patchVideoRouter = createRouter()
                                 type: "array",
                                 items: { type: "string" },
                                 description: "Path prefixes used to filter relevant VCS changes for this video.",
+                            },
+                            guestVisible: {
+                                type: "boolean",
+                                description: "Whether guests may view this video and its media.",
                             },
                         },
                     },
@@ -70,6 +75,7 @@ export const patchVideoRouter = createRouter()
             where: { id: videoId },
             data: {
                 ...(body.vcsWatchPaths !== undefined && { vcsWatchPaths: body.vcsWatchPaths }),
+                ...(body.guestVisible !== undefined && { guestVisible: body.guestVisible }),
             },
         });
 

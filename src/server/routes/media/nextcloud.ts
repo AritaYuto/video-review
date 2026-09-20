@@ -1,6 +1,8 @@
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
-import { authorizeMedia } from "@/server/lib/token";
+import { authorizeMedia, roleOf } from "@/server/lib/token";
+import { assertRoleCanSeeVideo, videoIdForStorageKey } from "@/server/lib/videos/guest-access";
+import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
 import { NextCloudDriver } from "@/server/lib/storage/drivers/nextcloud";
 
@@ -22,7 +24,7 @@ export const nextCloudRouter = createRouter()
             },
         },
     }), async (c) => {
-        await authorizeMedia(c, ["guest", "viewer", "admin"]);
+        const auth = await authorizeMedia(c, ["guest", "viewer", "admin"]);
         const relativePath = c.req.param('path');
         if (!relativePath) {
             return c.json({ error: "missing path" }, 400);
@@ -34,6 +36,13 @@ export const nextCloudRouter = createRouter()
 
         if (pathSegments.some(p => p.includes(".."))) {
             return c.json({ error: "invalid path" }, 400);
+        }
+
+        const role = roleOf(auth);
+        if (role === "guest") {
+            const videoId = await videoIdForStorageKey(pathSegments.join("/"));
+            if (!videoId) throw new ServerError("forbidden", 403);
+            await assertRoleCanSeeVideo(videoId, role);
         }
 
         const fileDriver = VideoReviewStorage.getDriver();
