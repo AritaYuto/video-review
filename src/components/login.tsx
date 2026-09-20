@@ -21,7 +21,13 @@ export default function Login() {
     const cacheEmail = useAuthStore((e) => e.email);
     const { setAuth } = useAuthStore();
 
-    const [type, setType] = useState<LoginType>(env.PUBLIC_LOGIN_DEFAULT_TYPE);
+    // Don't open on the guest tab when guest login is hidden.
+    const initialType: LoginType =
+        !env.PUBLIC_ALLOW_GUEST && env.PUBLIC_LOGIN_DEFAULT_TYPE === "guest"
+            ? "user"
+            : env.PUBLIC_LOGIN_DEFAULT_TYPE;
+
+    const [type, setType] = useState<LoginType>(initialType);
     const [email, setEmail] = useState<string | null>(null);
     const [password, setPassword] = useState("");
     const [displayName, setDisplayName] = useState("");
@@ -50,23 +56,25 @@ export default function Login() {
         <AuthLayout title={env.PUBLIC_VIDEO_REVIEW_TITLE} backgroundImageUrl={env.PUBLIC_LOGIN_BG_URL}>
                 <Tabs defaultValue={type} onValueChange={(val) => setType(val as LoginType)}>
                     <TabsList>
-                        <TabsTrigger value="guest">Guest</TabsTrigger>
+                        {env.PUBLIC_ALLOW_GUEST && <TabsTrigger value="guest">Guest</TabsTrigger>}
                         <TabsTrigger value="jira">JIRA</TabsTrigger>
                         <TabsTrigger value="user">Email & Password</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="guest">
-                        <AuthCard>
-                            <div className="h-8"></div>
-                            <div className="grid gap-3 mb-4">
-                                <Label htmlFor="displayName">{t("displayName")}</Label>
-                                <Input id="displayName"
-                                    type="text"
-                                    value={displayName ?? ""}
-                                    onChange={(x) => setDisplayName(x.target.value)} />
-                            </div>
-                            <ButtonLogin exec={handleLogin} title={t("ok")} />
-                        </AuthCard>
-                    </TabsContent>
+                    {env.PUBLIC_ALLOW_GUEST && (
+                        <TabsContent value="guest">
+                            <AuthCard>
+                                <div className="h-8"></div>
+                                <div className="grid gap-3 mb-4">
+                                    <Label htmlFor="displayName">{t("displayName")}</Label>
+                                    <Input id="displayName"
+                                        type="text"
+                                        value={displayName ?? ""}
+                                        onChange={(x) => setDisplayName(x.target.value)} />
+                                </div>
+                                <ButtonLogin exec={handleLogin} title={t("ok")} />
+                            </AuthCard>
+                        </TabsContent>
+                    )}
                     <TabsContent value="jira">
                         <AuthCard>
                             <div className="h-8"></div>

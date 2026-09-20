@@ -6,6 +6,7 @@ import { loginUser, loginAsGuest, loginWithJira } from "@/server/lib/login";
 import { ServerError } from "@/server/lib/server-error";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 import { AUTH_COOKIE } from "@/server/lib/token";
+import { env } from "@/server/lib/env";
 
 // Only mark the cookie Secure over https; dev and E2E run on http, where a Secure
 // cookie would never be sent and would break media playback.
@@ -117,9 +118,13 @@ export const loginRouter = createRouter()
             },
             400: errorResponse("Invalid parameters"),
             401: errorResponse("Unauthorized"),
+            403: errorResponse("Guest login disabled"),
             500: errorResponse("Login failed"),
         },
     }), async (c) => {
+        if (!env.ALLOW_GUEST) {
+            return c.json({ error: "guest login is disabled" }, 403);
+        }
         try{
             const body = c.req.valid("json");
             const response = await loginAsGuest({
