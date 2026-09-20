@@ -162,7 +162,7 @@
             "noLlm": "無効: LLM プロバイダーが未設定",
             "noMcp": "無効: MCP サーバーの URL が未設定",
             "mcpUnreachable": "無効: MCP サーバーに接続できません",
-            "ok": "有効"
+            "ok": "On"
         }
     },
     "calendar-date-radio": {
