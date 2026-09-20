@@ -5,6 +5,10 @@ import { ServerError } from "@/server/lib/server-error";
 import { env } from "@/server/lib/env";
 import "server-only"
 import { hash } from "crypto";
+import { Context } from "hono";
+import { getCookie } from "hono/cookie";
+
+export const AUTH_COOKIE = "video_review_token";
 
 type SecretKey = {
     dbKey: string;
@@ -114,3 +118,22 @@ export async function authorize(req: Request, passedRoles: Role[]) {
     return { type: "jwt" as const, decoded };
 }
 
+// Browser <video>/<img> can't send a bearer header, so media also accepts the JWT
+// from an httpOnly cookie; every other route stays bearer-only.
+export async function authorizeMedia(c: Context, roles: Role[]) {
+    const cookieToken = getCookie(c, AUTH_COOKIE);
+    if (cookieToken) {
+        let decoded: Awaited<ReturnType<typeof verifyToken>>;
+        try {
+            decoded = await verifyToken(cookieToken);
+        } catch (e) {
+            if (e instanceof ServerError) throw e;
+            throw new ServerError("invalid token", 401);
+        }
+        if (!roles.includes(decoded.role)) {
+            throw new ServerError("forbidden", 403);
+        }
+        return;
+    }
+    await authorize(c.req.raw, roles);
+}

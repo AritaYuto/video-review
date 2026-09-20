@@ -1,8 +1,28 @@
 import { createRoute, z } from "@hono/zod-openapi";
+import { Context } from "hono";
+import { setCookie } from "hono/cookie";
 import { createRouter } from "@/server/lib/openapi/router";
 import { loginUser, loginAsGuest, loginWithJira } from "@/server/lib/login";
 import { ServerError } from "@/server/lib/server-error";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { AUTH_COOKIE } from "@/server/lib/token";
+
+// Only mark the cookie Secure over https; dev and E2E run on http, where a Secure
+// cookie would never be sent and would break media playback.
+function isHttps(c: Context): boolean {
+    const proto = c.req.header("x-forwarded-proto") ?? new URL(c.req.url).protocol.replace(":", "");
+    return proto === "https";
+}
+
+function setAuthCookie(c: Context, token: string) {
+    setCookie(c, AUTH_COOKIE, token, {
+        httpOnly: true,
+        sameSite: "Lax",
+        secure: isHttps(c),
+        path: "/",
+        maxAge: 60 * 60 * 24,
+    });
+}
 
 const loginUserSchema = z.object({
     email: z.email(),
@@ -61,6 +81,7 @@ export const loginRouter = createRouter()
                 ...body,
                 displayName: "",
             });
+            setAuthCookie(c, response.token);
             return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {
@@ -106,6 +127,7 @@ export const loginRouter = createRouter()
                 email: "",
                 password: "",
             });
+            setAuthCookie(c, response.token);
             return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {
@@ -151,6 +173,7 @@ export const loginRouter = createRouter()
                 displayName: "",
                 password: "",
             });
+            setAuthCookie(c, response.token);
             return c.json(response, 200);
         } catch(e) {
             if (e instanceof ServerError) {

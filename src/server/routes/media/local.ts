@@ -2,6 +2,7 @@ import { VideoReviewStorage } from "@/server/lib/storage";
 import { LocalDriver } from "@/server/lib/storage/drivers/local";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
+import { authorizeMedia } from "@/server/lib/token";
 import fs from "fs";
 import path from "path";
 
@@ -23,6 +24,7 @@ export const localRouter = createRouter()
             },
         },
     }), async (c) => {
+        await authorizeMedia(c, ["guest", "viewer", "admin"]);
         const relativePath = c.req.param('path');
         if(!relativePath) {
             return c.json({ error: "missing path" }, 400);
@@ -39,6 +41,14 @@ export const localRouter = createRouter()
         }
 
         const filePath = path.join(localBaseDirectory, relativePath);
+
+        // Keep "../" from escaping the storage root and reading arbitrary files.
+        const root = path.resolve(localBaseDirectory);
+        const resolved = path.resolve(filePath);
+        if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+            return c.json({ error: "invalid path" }, 400);
+        }
+
         const ext = path.extname(filePath).toLowerCase();
 
         try {
