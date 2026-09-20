@@ -16,23 +16,12 @@ export const patchVideoRouter = createRouter()
         summary: "Update video metadata",
         description: "Updates mutable metadata on a video. Intended for CI/CD use (e.g. setting vcsWatchPaths after upload).",
         path: "/",
-        requestBody: {
-            required: true,
-            content: {
-                "application/json": {
-                    schema: {
-                        type: "object",
-                        properties: {
-                            vcsWatchPaths: {
-                                type: "array",
-                                items: { type: "string" },
-                                description: "Path prefixes used to filter relevant VCS changes for this video.",
-                            },
-                            guestVisible: {
-                                type: "boolean",
-                                description: "Whether guests may view this video and its media.",
-                            },
-                        },
+        request: {
+            body: {
+                required: true,
+                content: {
+                    "application/json": {
+                        schema: BodySchema,
                     },
                 },
             },
@@ -54,13 +43,7 @@ export const patchVideoRouter = createRouter()
         }
 
         const videoId = c.req.param("id");
-
-        let body: z.infer<typeof BodySchema>;
-        try {
-            body = BodySchema.parse(await c.req.json());
-        } catch {
-            return c.json({ error: "invalid request body" }, { status: 400 });
-        }
+        const body = c.req.valid("json");
 
         if (Object.keys(body).length === 0) {
             return c.json({ error: "no fields to update" }, { status: 400 });

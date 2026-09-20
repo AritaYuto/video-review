@@ -1,10 +1,13 @@
 "use client";
 import { useRef, useState } from "react";
 import { useVideoStore } from "@/stores/video-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { isAdmin } from "@/lib/role";
 import { useTranslations } from "next-intl";
 import { SidebarTrigger } from "@/ui/sidebar";
 import { Separator } from "@/ui/separator";
 import { Badge } from "@/ui/badge";
+import { Switch } from "@/ui/switch";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +23,10 @@ export default function VideoTitle() {
         allVideoTags,
         selectVideoRevision,
         updateRevisionTags,
+        setGuestVisible,
     } = useVideoStore();
+
+    const role = useAuthStore((s) => s.role);
 
     const [inputVisible, setInputVisible] = useState(false);
     const [inputValue, setInputValue] = useState("");
@@ -57,29 +63,31 @@ export default function VideoTitle() {
                         />
                         <span className="truncate">{selectedVideo?.title ?? t("noSelection")}</span>
                     </h2>
-                    {revisions.length > 1 && (
-                        <Select
-                            value={selectedRevision?.id ?? ""}
-                            onValueChange={(id) => {
-                                const rev = revisions.find((r) => r.id === id);
-                                if (rev) selectVideoRevision(rev);
-                            }}
-                        >
-                            <SelectTrigger size="sm">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {revisions.map((r) => (
-                                    <SelectItem key={r.id} value={r.id}>
-                                        {t("revisionOption", {
-                                            revision: r.revision,
-                                            date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
-                                        })}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {revisions.length > 1 && (
+                            <Select
+                                value={selectedRevision?.id ?? ""}
+                                onValueChange={(id) => {
+                                    const rev = revisions.find((r) => r.id === id);
+                                    if (rev) selectVideoRevision(rev);
+                                }}
+                            >
+                                <SelectTrigger size="sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {revisions.map((r) => (
+                                        <SelectItem key={r.id} value={r.id}>
+                                            {t("revisionOption", {
+                                                revision: r.revision,
+                                                date: new Date(r.uploadedAt).toLocaleDateString("ja-JP")
+                                            })}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                     {selectedRevision
@@ -158,6 +166,16 @@ export default function VideoTitle() {
                     </div>
                 )}
             </div>
+
+            {isAdmin(role) && selectedVideo && (
+                <div className="shrink-0 self-start mt-1 flex items-center gap-2" title={t("guestVisible")}>
+                    <Badge variant={selectedVideo.guestVisible ? "default" : "outline"}>Guests</Badge>
+                    <Switch
+                        checked={selectedVideo.guestVisible ?? false}
+                        onCheckedChange={(v) => void setGuestVisible(selectedVideo.id, v)}
+                    />
+                </div>
+            )}
         </div>
     );
 }
