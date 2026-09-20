@@ -1,8 +1,13 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { OpenAPIHono as Hono } from "@hono/zod-openapi";
 import { prisma } from "@/server/lib/db";
 import { videoByIdRouter } from "@/server/routes/videos/[id]";
+
+vi.mock("@/server/lib/token", async (importOriginal) => {
+    const { withAuthorizePass } = await import("../../../mocks/authorize");
+    return withAuthorizePass(await importOriginal<typeof import("@/server/lib/token")>());
+});
 
 const createdVideoIds: string[] = [];
 const createdRevisionIds: string[] = [];

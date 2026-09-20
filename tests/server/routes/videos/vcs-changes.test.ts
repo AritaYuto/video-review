@@ -5,6 +5,11 @@ import { prisma } from "@/server/lib/db";
 import { videoByIdRouter } from "@/server/routes/videos/[id]";
 import { startOfUTCDay } from "@/server/lib/vcs/cache";
 
+vi.mock("@/server/lib/token", async (importOriginal) => {
+    const { withAuthorizePass } = await import("../../../mocks/authorize");
+    return withAuthorizePass(await importOriginal<typeof import("@/server/lib/token")>());
+});
+
 // ---------------------------------------------------------------------------
 // Test fixtures
 // ---------------------------------------------------------------------------

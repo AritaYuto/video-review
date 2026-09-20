@@ -2,6 +2,7 @@ import { prisma } from "@/server/lib/db";
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const latestRouter = createRouter()
     .openapi(createRoute({
@@ -19,10 +20,13 @@ export const latestRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             400: errorResponse("Missing videoId"),
             500: errorResponse("Failed to fetch latest comment"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const { videoId } = c.req.valid("query");
 

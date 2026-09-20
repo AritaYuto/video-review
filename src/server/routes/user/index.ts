@@ -4,6 +4,7 @@ import { createRouter } from "@/server/lib/openapi/router";
 import bcrypt from "bcrypt";
 import { UserSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 const UpdateProfileBody = z.object({
     userId: z.string().optional(),
@@ -35,11 +36,15 @@ export const userRouter = createRouter()
                     },
                 },
             },
-            400: errorResponse("Invalid parameters"),
+            401: errorResponse("Unauthorized"),
             403: errorResponse("Forbidden"),
             410: errorResponse("invalid userid"),
         },
     }), async (c) => {
+        // Guests are excluded: only a signed-in viewer/admin may edit a profile.
+        // A failure throws to app.onError, like the other guarded routes.
+        const auth = await authorize(c.req.raw, ["viewer", "admin"]);
+
         const body = c.req.valid("json");
         const {
             userId,
@@ -48,8 +53,11 @@ export const userRouter = createRouter()
             displayName,
         } = body;
 
-        if (!userId) {
-            return c.json({ error: "userId is required" }, 400);
+        // A profile can only be edited by its owner. An api-token caller carries no
+        // user id, so it can never be the owner and is refused as well.
+        const callerId = auth.type === "jwt" ? auth.decoded.id : undefined;
+        if (!userId || !callerId || userId !== callerId) {
+            return c.json({ error: "forbidden" }, 403);
         }
 
         const updated = await prisma.$transaction(async (tx) => {

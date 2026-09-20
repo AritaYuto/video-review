@@ -2,6 +2,8 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { prisma } from "@/server/lib/db";
 import { PrismaTypes } from "@/lib/db-types";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 const QuerySchema = z.object({
     videoId: z.string().optional(),
@@ -29,8 +31,11 @@ export const usersRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const query = c.req.valid("query");
         const {
             videoId,

@@ -5,6 +5,7 @@ import { externalLinksRouter } from "@/server/routes/comments/[id]/external-link
 import { issueRouter } from "@/server/routes/comments/[id]/issue";
 import { VideoCommentSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const byIdRouter = createRouter()
     .openapi(createRoute({
@@ -21,10 +22,13 @@ export const byIdRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             404: errorResponse("Comment not found"),
             500: errorResponse("Failed to fetch comment"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const id = c.req.param("id");
 

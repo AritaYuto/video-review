@@ -1,6 +1,8 @@
 import { prisma } from "@/server/lib/db";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 import * as z from "@/schema/zod"
 
 export const revisionsRouter = createRouter()
@@ -27,11 +29,14 @@ export const revisionsRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             404: {
                 description: "Video not found",
             },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const id = c.req.param("id");
 
         try {

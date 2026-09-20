@@ -3,6 +3,11 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/server/lib/db";
 import { listRouter } from "@/server/routes/videos/list";
 
+vi.mock("@/server/lib/token", async (importOriginal) => {
+    const { withAuthorizePass } = await import("../../../mocks/authorize");
+    return withAuthorizePass(await importOriginal<typeof import("@/server/lib/token")>());
+});
+
 type TestVideoInput = {
     title: string;
     folderKey: string;

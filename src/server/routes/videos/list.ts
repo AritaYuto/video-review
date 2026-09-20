@@ -6,6 +6,8 @@ import { VideoSchema } from "@/server/lib/openapi/models";
 import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 const QuerySchema = z.object({
     videoFrom: z.string().optional(),
@@ -68,11 +70,14 @@ export const listRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             500: {
                 description: "Internal Server Error",
             }
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const query = c.req.valid("query");
         const {
             videoFrom,
@@ -199,11 +204,14 @@ export const listRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             500: {
                 description: "Internal Server Error",
             },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const videos = await prisma.video.findMany({
                 where: { deleted: false },
@@ -248,9 +256,12 @@ export const listRouter = createRouter()
                         schema: z.object({ items: z.string().array() }),
                     },
                 },
-            }
+            },
+            401: errorResponse("Unauthorized"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const items = await prisma.videoEventKind.findMany({ select: { label: true } })
         return c.json({ items: items.map(x => x.label) }, 200);
     })
@@ -262,9 +273,12 @@ export const listRouter = createRouter()
         request: { query: SearchByEventQuerySchema },
         responses: {
             200: { description: "Matching videos with event snippets" },
+            401: errorResponse("Unauthorized"),
             500: { description: "Internal Server Error" },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const { filterText, kind, limit } = c.req.valid("query");
 

@@ -3,6 +3,7 @@ import { prisma } from "@/server/lib/db";
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const externalLinksRouter = createRouter()
     .openapi(createRoute({
@@ -18,10 +19,13 @@ export const externalLinksRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             404: errorResponse("Comment not found"),
             500: errorResponse("Failed to fetch external links"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const id = c.req.param("id");
             console.debug("[external-links] request", { id });

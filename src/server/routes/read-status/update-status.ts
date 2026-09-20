@@ -2,6 +2,7 @@ import { prisma } from "@/server/lib/db";
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const updateStatusRouter = createRouter()
     .openapi(createRoute({
@@ -31,10 +32,13 @@ export const updateStatusRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             400: errorResponse("Invalid request body"),
             500: errorResponse("Failed to update read status"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const { userId, videoId, lastReadCommentId } = c.req.valid("json");
 
