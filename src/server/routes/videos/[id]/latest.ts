@@ -2,7 +2,8 @@ import { prisma } from "@/server/lib/db";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
-import { authorize } from "@/server/lib/token";
+import { authorize, roleOf } from "@/server/lib/token";
+import { assertRoleCanSeeVideo } from "@/server/lib/videos/guest-access";
 import * as z from "@/schema/zod"
 
 export const latestRouter = createRouter()
@@ -35,9 +36,10 @@ export const latestRouter = createRouter()
             },
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
 
-        const id = c.req.param("id");
+        const id = c.req.param("id") as string;
+        await assertRoleCanSeeVideo(id, roleOf(auth));
         try {
             const latest = await prisma.videoRevision.findFirst({
                 where: { videoId: id },

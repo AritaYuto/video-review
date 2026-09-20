@@ -7,7 +7,7 @@ import { PrismaTypes } from "@/lib/db-types";
 import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
 import { errorResponse } from "@/server/lib/openapi/error-response";
-import { authorize } from "@/server/lib/token";
+import { authorize, roleOf } from "@/server/lib/token";
 
 const QuerySchema = z.object({
     videoFrom: z.string().optional(),
@@ -76,7 +76,8 @@ export const listRouter = createRouter()
             }
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const role = roleOf(auth);
 
         const query = c.req.valid("query");
         const {
@@ -102,6 +103,10 @@ export const listRouter = createRouter()
         const whereVideoComment: PrismaTypes.VideoCommentWhereInput = { deleted: false };
         const whereVideo: PrismaTypes.VideoWhereInput = { deleted: false };
         const latestRevisionIs: PrismaTypes.VideoRevisionWhereInput = { deleted: false };
+
+        if (role === "guest") {
+            whereVideo.guestVisible = true;
+        }
 
         if (user) {
             whereVideoComment.userName = user;
@@ -210,11 +215,12 @@ export const listRouter = createRouter()
             },
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const role = roleOf(auth);
 
         try {
             const videos = await prisma.video.findMany({
-                where: { deleted: false },
+                where: { deleted: false, ...(role === "guest" ? { guestVisible: true } : {}) },
                 include: {
                     latestRevision: {
                         select: {
@@ -260,9 +266,15 @@ export const listRouter = createRouter()
             401: errorResponse("Unauthorized"),
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const role = roleOf(auth);
 
-        const items = await prisma.videoEventKind.findMany({ select: { label: true } })
+        const items = await prisma.videoEventKind.findMany({
+            where: role === "guest"
+                ? { events: { some: { videoRevision: { video: { guestVisible: true } } } } }
+                : {},
+            select: { label: true },
+        });
         return c.json({ items: items.map(x => x.label) }, 200);
     })
     .openapi(createRoute({
@@ -277,7 +289,8 @@ export const listRouter = createRouter()
             500: { description: "Internal Server Error" },
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const role = roleOf(auth);
 
         try {
             const { filterText, kind, limit } = c.req.valid("query");
@@ -286,7 +299,10 @@ export const listRouter = createRouter()
                 where: {
                     data: { contains: filterText, mode: "insensitive" },
                     ...(kind ? { kind: { label: kind } } : {}),
-                    videoRevision: { deleted: false, video: { deleted: false } },
+                    videoRevision: {
+                        deleted: false,
+                        video: { deleted: false, ...(role === "guest" ? { guestVisible: true } : {}) },
+                    },
                 },
                 include: {
                     kind: { select: { label: true } },

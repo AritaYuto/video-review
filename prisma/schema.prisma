@@ -58,6 +58,7 @@ model Video {
   comments          VideoComment[]
   latestUpdatedAt   DateTime          @default(now())
   deleted           Boolean           @default(false)
+  guestVisible      Boolean           @default(false)
   links             Json              @default("[]")
 
   @@unique([id, latestRevisionNum])

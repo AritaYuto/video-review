@@ -2,7 +2,7 @@ import { prisma } from "@/server/lib/db";
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { errorResponse } from "@/server/lib/openapi/error-response";
-import { authorize } from "@/server/lib/token";
+import { authorize, roleOf } from "@/server/lib/token";
 
 export const foldersRouter = createRouter()
     .openapi(createRoute({
@@ -25,10 +25,12 @@ export const foldersRouter = createRouter()
             },
         },
     }), async (c) => {
-        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const auth = await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+        const role = roleOf(auth);
 
         try {
             const keys = await prisma.video.findMany({
+                where: role === "guest" ? { guestVisible: true } : {},
                 select: { folderKey: true },
                 distinct: ["folderKey"],
                 orderBy: { folderKey: "asc" },

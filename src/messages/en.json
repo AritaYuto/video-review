@@ -15,7 +15,8 @@
         "addTag": "Add tag",
         "tagInputPlaceholder": "Add tag...",
         "summaryLabel": "Summary",
-        "noSummary": "None"
+        "noSummary": "None",
+        "guestVisible": "Visible to guests"
     },
     "video-download": {
         "title": "Download Video",

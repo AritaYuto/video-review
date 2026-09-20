@@ -17,6 +17,7 @@ interface VideoState {
     nextVideo:() => Promise<boolean>;
     selectVideoRevision: (revision: VideoRevision) => void;
     updateRevisionTags: (revisionId: string, tags: string[]) => Promise<void>;
+    setGuestVisible: (videoId: string, value: boolean) => Promise<void>;
 }
 
 export const useVideoStore = create<VideoState>((set, get) => ({
@@ -95,6 +96,23 @@ export const useVideoStore = create<VideoState>((set, get) => ({
                     : state.selectedRevision,
             revisions: state.revisions.map((r) =>
                 r.id === revisionId ? { ...r, tags } : r
+            ),
+        }));
+    },
+
+    async setGuestVisible(videoId, value) {
+        const res = await api.videos[":id"].$patch({
+            param: { id: videoId },
+            json: { guestVisible: value },
+        });
+        if (res.status !== 200) return;
+        set((state) => ({
+            selectedVideo:
+                state.selectedVideo?.id === videoId
+                    ? { ...state.selectedVideo, guestVisible: value }
+                    : state.selectedVideo,
+            videos: state.videos.map((v) =>
+                v.id === videoId ? { ...v, guestVisible: value } : v
             ),
         }));
     },
