@@ -199,6 +199,28 @@
             "integrations": "Integrations",
             "maintenance": "Maintenance"
         },
-        "empty": "Nothing to configure here yet."
+        "empty": "Nothing to configure here yet.",
+        "users": {
+            "columns": {
+                "displayName": "Display name",
+                "email": "Email",
+                "role": "Role",
+                "createdAt": "Created"
+            },
+            "roles": {
+                "viewer": "Viewer",
+                "admin": "Admin"
+            },
+            "loadFailed": "Failed to load users",
+            "updateFailed": "Failed to update the role",
+            "create": {
+                "title": "Create user",
+                "displayName": "Display name",
+                "email": "Email",
+                "password": "Password",
+                "submit": "Create",
+                "failed": "Failed to create the user"
+            }
+        }
     }
 }

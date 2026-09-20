@@ -54,6 +54,34 @@ test.describe("admin settings dialog", () => {
         await expect(dialog.getByRole("heading", { name: "Users" })).toHaveCount(0);
     });
 
+    test("an admin lists users, creates a viewer and promotes them", async ({ page }) => {
+        await loginAsAdmin(page);
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await expect(dialog.getByRole("row", { name: /Bocchi/ })).toBeVisible();
+
+        // A retry runs against the same seeded DB, so neither field may collide with the first attempt.
+        const name = `E2E Viewer ${test.info().retry}`;
+        const email = `e2e-viewer-${test.info().retry}@example.com`;
+        await dialog.getByLabel("Display name").fill(name);
+        await dialog.getByLabel("Email").fill(email);
+        await dialog.getByLabel("Password").fill("viewer-pass");
+        await dialog.getByRole("button", { name: "Create" }).click();
+
+        const row = dialog.getByRole("row", { name: email });
+        await expect(row).toBeVisible();
+        await expect(row.getByRole("combobox")).toHaveText("Viewer");
+
+        // The select updates optimistically, so the server response is what proves the promotion.
+        const patched = page.waitForResponse(r => r.url().endsWith("/admin/role-update"));
+        await row.getByRole("combobox").click();
+        await page.getByRole("option", { name: "Admin" }).click();
+        expect((await patched).status()).toBe(200);
+        await expect(row.getByRole("combobox")).toHaveText("Admin");
+    });
+
     test("a guest does not see the entry", async ({ page }) => {
         await loginAsGuest(page);
         const popover = await openSettings(page);

@@ -199,6 +199,28 @@
             "integrations": "連携",
             "maintenance": "メンテナンス"
         },
-        "empty": "まだ設定項目はありません"
+        "empty": "まだ設定項目はありません",
+        "users": {
+            "columns": {
+                "displayName": "表示名",
+                "email": "メール",
+                "role": "権限",
+                "createdAt": "作成日"
+            },
+            "roles": {
+                "viewer": "閲覧者",
+                "admin": "管理者"
+            },
+            "loadFailed": "ユーザーの取得に失敗しました",
+            "updateFailed": "権限の更新に失敗しました",
+            "create": {
+                "title": "ユーザーを作成",
+                "displayName": "表示名",
+                "email": "メール",
+                "password": "パスワード",
+                "submit": "作成",
+                "failed": "ユーザーの作成に失敗しました"
+            }
+        }
     }
 }
