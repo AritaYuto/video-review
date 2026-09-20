@@ -3,6 +3,8 @@ import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
 import { VideoRevisionSchema } from "@/schema/zod";
 import { VideoSchema } from "@/server/lib/openapi/models";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const getVideoRouter = createRouter()
     .openapi(createRoute({
@@ -28,11 +30,14 @@ export const getVideoRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             404: {
                 description: "Video not found",
             },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const id = c.req.param("id");
         try {
             const video = await prisma.video.findUnique({

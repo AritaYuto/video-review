@@ -38,7 +38,7 @@ export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string | 
 
     const fromEnv = envKey;
     if (!fromEnv) {
-        throw undefined;
+        return undefined;
     }
 
     cache.set(dbKey, fromEnv);
@@ -72,72 +72,45 @@ export async function signToken(payload: Record<string, any>): Promise<string> {
 }
 
 export async function authorize(req: Request, passedRoles: Role[]) {
-    // NOTE:
-    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary authentication method.
-    // x-maintenance-token is kept temporarily for backward compatibility.
+    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary method; x-maintenance-token is legacy.
     const apiToken = req.headers.get("x-api-token");
     const maintenanceToken = req.headers.get("x-maintenance-token");
 
     if (apiToken) {
         const apiTokenHash = hash("sha256", apiToken);
         const storedHash = await getApiSecretHash();
-
         if (!storedHash) {
             throw new ServerError("api token configuration is missing", 500);
         }
-
-        // Standard root.
-        if (apiTokenHash === storedHash) {
-            return {
-                type: "api-token" as const,
-                role: "admin",
-            };
-        }
-
-        // deprecated plain text root.
-        if (apiToken === storedHash) {
-            return {
-                type: "api-token" as const,
-                role: "admin",
-            };
+        if (apiTokenHash === storedHash || apiToken === storedHash) {
+            return { type: "api-token" as const, role: "admin" as const };
         }
     }
 
-    if (
-        maintenanceToken &&
-        maintenanceToken === env.VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated
-    ) {
-        return {
-            type: "api-token" as const,
-            role: "admin",
-        };
+    if (maintenanceToken && maintenanceToken === env.VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated) {
+        return { type: "api-token" as const, role: "admin" as const };
     }
 
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+        throw new ServerError("missing authorization header", 401);
+    }
+    const [scheme, token] = authHeader.split(" ");
+    if (scheme !== "Bearer" || !token) {
+        throw new ServerError("invalid authorization format", 401);
+    }
+
+    let decoded: Awaited<ReturnType<typeof verifyToken>>;
     try {
-        const authHeader = req.headers.get("authorization");
-        if (!authHeader) {
-            throw new ServerError("missing authorization header", 500);
-        }
-
-        const [type, token] = authHeader.split(" ");
-        if (type !== "Bearer" || !token) {
-            throw new ServerError("invalid authorization format", 401);
-        }
-
-        const decoded = await verifyToken(token);
-        if (typeof decoded === "string") {
-            throw new ServerError("invalid token", 401);
-        }
-
-        if (!passedRoles.includes(decoded.role)) {
-            throw new ServerError("forbidden", 403);
-        }
-        return {
-            type: "jwt" as const,
-            decoded,
-        };
-    } catch {
-        throw new ServerError("unauthorized", 401);
+        decoded = await verifyToken(token);
+    } catch (e) {
+        // A missing/broken signing secret is a server fault (its own 500); a bad or expired token is a 401.
+        if (e instanceof ServerError) throw e;
+        throw new ServerError("invalid token", 401);
     }
+    if (!passedRoles.includes(decoded.role)) {
+        throw new ServerError("forbidden", 403);
+    }
+    return { type: "jwt" as const, decoded };
 }
 

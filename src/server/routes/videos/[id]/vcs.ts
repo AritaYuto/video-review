@@ -6,6 +6,8 @@ import type { Relevance, PullRequest, Commit } from "@/server/lib/vcs/types";
 import { scoreRelevance } from "@/server/lib/vcs/relevance";
 import { startOfUTCDay, ensureDaysCached, queryByDateRange } from "@/server/lib/vcs/cache";
 import { createLLMClient } from "@/server/lib/integration-clients/llm-client";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 const DEFAULT_LOOKBACK_DAYS = 30;
 
@@ -36,10 +38,13 @@ export const vcsRouter = createRouter()
         request: { query: QueryVcsChangesSchema },
         responses: {
             200: { description: "VCS changes retrieved successfully" },
+            401: errorResponse("Unauthorized"),
             404: { description: "Video revision not found" },
             503: { description: "VCS provider not configured" },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const videoId = c.req.param("id") as string;
         const { from: fromRevisionId, to: toRevisionId, refresh } = c.req.valid("query");
 
@@ -174,10 +179,13 @@ export const vcsRouter = createRouter()
         request: { query: QueryVcsSummarySchema },
         responses: {
             200: { description: "Summary returned" },
+            401: errorResponse("Unauthorized"),
             404: { description: "No cached VCS changes found" },
             503: { description: "LLM not configured" },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         const videoId = c.req.param("id") as string;
         const { to: toRevisionId } = c.req.valid("query");
 

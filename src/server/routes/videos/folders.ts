@@ -1,6 +1,8 @@
 import { prisma } from "@/server/lib/db";
 import { createRoute, z } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
+import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 export const foldersRouter = createRouter()
     .openapi(createRoute({
@@ -17,11 +19,14 @@ export const foldersRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             500: {
                 description: "Internal Server Error",
             },
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const keys = await prisma.video.findMany({
                 select: { folderKey: true },

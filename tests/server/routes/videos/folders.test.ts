@@ -3,6 +3,11 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/server/lib/db";
 import { foldersRouter } from "@/server/routes/videos/folders";
 
+vi.mock("@/server/lib/token", async (importOriginal) => {
+    const { withAuthorizePass } = await import("../../../mocks/authorize");
+    return withAuthorizePass(await importOriginal<typeof import("@/server/lib/token")>());
+});
+
 const createdVideoIds: string[] = [];
 
 async function createVideo(folderKey: string, title: string) {

@@ -9,6 +9,7 @@ import { z } from "zod";
 import { toDateRange } from "@/lib/utils/date-helper";
 import { VideoCommentSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
+import { authorize } from "@/server/lib/token";
 
 const QuerySchema = z.object({
     videoId: z.string().optional(),
@@ -58,9 +59,12 @@ export const commentsRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             500: errorResponse("Failed to fetch comments"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const query = c.req.valid("query");
             const {
@@ -143,10 +147,13 @@ export const commentsRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             400: errorResponse("Invalid parameters"),
             500: errorResponse("Failed to create comment"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const {
                 videoId,
@@ -197,10 +204,13 @@ export const commentsRouter = createRouter()
                     },
                 },
             },
+            401: errorResponse("Unauthorized"),
             400: errorResponse("Invalid parameters"),
             500: errorResponse("Failed to update comment"),
         },
     }), async (c) => {
+        await authorize(c.req.raw, ["guest", "viewer", "admin"]);
+
         try {
             const { id, comment, deleted, issueId, drawingPath, thumbsUp, notifiedProviders } = c.req.valid("json");
 

@@ -14,6 +14,11 @@ vi.mock("@/server/lib/integration-clients/llm-client", () => ({
     createLLMClient: vi.fn(),
 }));
 
+vi.mock("@/server/lib/token", async (importOriginal) => {
+    const { withAuthorizePass } = await import("../../../mocks/authorize");
+    return withAuthorizePass(await importOriginal<typeof import("@/server/lib/token")>());
+});
+
 // ---------------------------------------------------------------------------
 // Test fixtures
 // ---------------------------------------------------------------------------
