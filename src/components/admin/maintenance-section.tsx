@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import type { InferResponseType } from "hono/client";
 import { api, readError } from "@/lib/api-client";
 import { AdminSection } from "@/components/admin/admin-section";
+import { MaintenanceTrash } from "@/components/admin/maintenance-trash";
 import { Badge } from "@/ui/badge";
 import { Spinner } from "@/ui/spinner";
 
@@ -51,6 +52,9 @@ export function MaintenanceSection() {
                     ))}
                 </dl>
             )}
+
+            <h4 className="shrink-0 text-sm font-medium border-t pt-3">{t("maintenance.trash.title")}</h4>
+            <MaintenanceTrash />
         </AdminSection>
     );
 }

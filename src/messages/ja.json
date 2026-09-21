@@ -242,6 +242,19 @@
                 "yes": "あり",
                 "no": "なし",
                 "loadFailed": "状態の取得に失敗しました"
+            },
+            "trash": {
+                "title": "ゴミ箱",
+                "filterPlaceholder": "タイトル・フォルダで絞り込み",
+                "empty": "ゴミ箱は空です",
+                "noMatch": "条件に合う動画はありません",
+                "loadFailed": "ゴミ箱の取得に失敗しました",
+                "columns": {
+                    "title": "タイトル",
+                    "folder": "フォルダ",
+                    "updatedAt": "更新日",
+                    "revisions": "リビジョン"
+                }
             }
         }
     }

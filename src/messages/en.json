@@ -242,6 +242,19 @@
                 "yes": "Yes",
                 "no": "No",
                 "loadFailed": "Failed to load the status"
+            },
+            "trash": {
+                "title": "Trash",
+                "filterPlaceholder": "Filter by title or folder...",
+                "empty": "Nothing in the trash.",
+                "noMatch": "No video matches the filter.",
+                "loadFailed": "Failed to load the trash",
+                "columns": {
+                    "title": "Title",
+                    "folder": "Folder",
+                    "updatedAt": "Updated",
+                    "revisions": "Revisions"
+                }
             }
         }
     }

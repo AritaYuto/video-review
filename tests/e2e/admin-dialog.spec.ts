@@ -119,6 +119,51 @@ test.describe("admin settings dialog", () => {
         await expect(statusValue(dialog, "Initialized")).toHaveText("No");
     });
 
+    test("an admin browses and filters the trash", async ({ page }) => {
+        await loginAsAdmin(page);
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+
+        // The seed marks every "Discarded" video as deleted, so the trash is never empty here.
+        await expect(dialog.getByRole("row", { name: /Discarded #001/ })).toBeVisible();
+
+        await dialog.getByPlaceholder("Filter by title or folder...").fill("Discarded #007");
+        await expect(dialog.getByRole("row", { name: /Discarded #007/ })).toBeVisible();
+        await expect(dialog.getByRole("row", { name: /Discarded #001/ })).toHaveCount(0);
+    });
+
+    test("the trash filter matches the folder and ignores case", async ({ page }) => {
+        await loginAsAdmin(page);
+        // Stubbed so the two rows differ only in the fields the filter reads.
+        await page.route("**/admin/maintenance/trash", route => route.fulfill({
+            json: {
+                videos: [
+                    { id: "v1", title: "Alpha", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1] },
+                    { id: "v2", title: "Beta", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [1, 2] },
+                ],
+            },
+        }));
+
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        const filter = dialog.getByPlaceholder("Filter by title or folder...");
+
+        await filter.fill("01_PROTOTYPE");
+        await expect(dialog.getByRole("row", { name: /Alpha/ })).toBeVisible();
+        await expect(dialog.getByRole("row", { name: /Beta/ })).toHaveCount(0);
+
+        // An empty result is not an empty trash, and the two say different things.
+        await filter.fill("no such video");
+        await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
+        await expect(dialog.getByText("Nothing in the trash.")).toHaveCount(0);
+    });
+
     test("a guest does not see the entry", async ({ page }) => {
         await loginAsGuest(page);
         const popover = await openSettings(page);
