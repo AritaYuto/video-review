@@ -234,17 +234,7 @@
             "failed": "Failed to generate the token"
         },
         "maintenance": {
-            "status": {
-                "title": "Status",
-                "hasAdmin": "Admin user",
-                "hasJwt": "JWT secret",
-                "initialized": "Initialized",
-                "yes": "Yes",
-                "no": "No",
-                "loadFailed": "Failed to load the status"
-            },
             "trash": {
-                "title": "Trash",
                 "filterPlaceholder": "Filter by title or folder...",
                 "empty": "Nothing in the trash.",
                 "noMatch": "No video matches the filter.",
@@ -259,7 +249,7 @@
                     "actions": "Actions"
                 },
                 "purge": {
-                    "action": "Delete permanently",
+                    "action": "Delete",
                     "title": "Delete permanently",
                     "description": "{title} and its {revisions} revision file(s) will be removed from storage. This cannot be undone.",
                     "confirmLabel": "Type {word} to confirm",

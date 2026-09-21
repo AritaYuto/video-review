@@ -35,11 +35,6 @@ async function openSettings(page: import("@playwright/test").Page) {
     return popover;
 }
 
-// Rows are identified by their label text, so the labels must stay unique.
-function statusValue(dialog: import("@playwright/test").Locator, label: string) {
-    return dialog.locator("dl > div").filter({ hasText: label }).locator("dd");
-}
-
 test.describe("admin settings dialog", () => {
     test("an admin opens it from the settings popover and switches sections", async ({ page }) => {
         await loginAsAdmin(page);
@@ -85,38 +80,6 @@ test.describe("admin settings dialog", () => {
         await page.getByRole("option", { name: "Admin" }).click();
         expect((await patched).status()).toBe(200);
         await expect(row.getByRole("combobox")).toHaveText("Admin");
-    });
-
-    test("an admin sees the system status under Maintenance", async ({ page }) => {
-        await loginAsAdmin(page);
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
-
-        // The seeded DB has an admin and .env.test provides the JWT secret, so every flag is satisfied.
-        for (const label of ["Admin user", "JWT secret", "Initialized"]) {
-            await expect(statusValue(dialog, label)).toHaveText("Yes");
-        }
-    });
-
-    test("an unsatisfied status flag is reported per row", async ({ page }) => {
-        await loginAsAdmin(page);
-        // Stub the route so the unsatisfied side of the mapping is exercised without breaking the DB.
-        await page.route("**/admin/maintenance/status", route => route.fulfill({
-            json: { hasAdmin: true, hasJwt: false, initialized: false },
-        }));
-
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
-
-        await expect(statusValue(dialog, "Admin user")).toHaveText("Yes");
-        await expect(statusValue(dialog, "JWT secret")).toHaveText("No");
-        await expect(statusValue(dialog, "Initialized")).toHaveText("No");
     });
 
     test("an admin browses and filters the trash", async ({ page }) => {
@@ -206,7 +169,7 @@ test.describe("admin settings dialog", () => {
         const title = `Discarded #${String(40 + test.info().retry).padStart(3, "0")}`;
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
         const row = dialog.getByRole("row", { name: new RegExp(title) });
-        await row.getByRole("button", { name: "Delete permanently" }).click();
+        await row.getByRole("button", { name: "Delete", exact: true }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
         const submit = confirm.getByRole("button", { name: "Delete permanently" });
@@ -232,7 +195,7 @@ test.describe("admin settings dialog", () => {
         await dialog.getByRole("tab", { name: "Maintenance" }).click();
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
         await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
-        await expect(row.getByRole("button", { name: "Delete permanently" })).toBeDisabled();
+        await expect(row.getByRole("button", { name: "Delete", exact: true })).toBeDisabled();
     });
 
     test("physical delete purges every revision and keeps going after a 207", async ({ page }) => {
@@ -262,7 +225,7 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Maintenance" }).click();
         const row = dialog.getByRole("row", { name: /Three Revisions/ });
-        await row.getByRole("button", { name: "Delete permanently" }).click();
+        await row.getByRole("button", { name: "Delete", exact: true }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
         await confirm.getByLabel("Type Delete to confirm").fill("Delete");
@@ -299,7 +262,7 @@ test.describe("admin settings dialog", () => {
         const row = dialog.getByRole("row", { name: /Three Revisions/ });
 
         async function purgeOnce() {
-            await row.getByRole("button", { name: "Delete permanently" }).click();
+            await row.getByRole("button", { name: "Delete", exact: true }).click();
             const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
             await confirm.getByLabel("Type Delete to confirm").fill("Delete");
             await confirm.getByRole("button", { name: "Delete permanently" }).click();

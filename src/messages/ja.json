@@ -234,23 +234,13 @@
             "failed": "トークンの生成に失敗しました"
         },
         "maintenance": {
-            "status": {
-                "title": "状態",
-                "hasAdmin": "管理者ユーザー",
-                "hasJwt": "JWT secret",
-                "initialized": "初期化",
-                "yes": "あり",
-                "no": "なし",
-                "loadFailed": "状態の取得に失敗しました"
-            },
             "trash": {
-                "title": "ゴミ箱",
                 "filterPlaceholder": "タイトル・フォルダで絞り込み",
                 "empty": "ゴミ箱は空です",
                 "noMatch": "条件に合う動画はありません",
                 "loadFailed": "ゴミ箱の取得に失敗しました",
-                "restore": "復元",
-                "restoreFailed": "動画の復元に失敗しました",
+                "restore": "Restore",
+                "restoreFailed": "復元に失敗しました",
                 "columns": {
                     "title": "タイトル",
                     "folder": "フォルダ",
@@ -259,11 +249,11 @@
                     "actions": "操作"
                 },
                 "purge": {
-                    "action": "物理削除",
-                    "title": "物理削除",
+                    "action": "Delete",
+                    "title": "Delete permanently",
                     "description": "{title} と {revisions} 件のリビジョンのファイルをストレージから削除します。元に戻せません",
                     "confirmLabel": "確認のため {word} と入力してください",
-                    "submit": "物理削除",
+                    "submit": "Delete permanently",
                     "cancel": "キャンセル",
                     "failed": "ファイルの削除に失敗しました",
                     "filesLeft": "{title}: リビジョンは削除済みにしましたが、一部のファイルを消せませんでした"
