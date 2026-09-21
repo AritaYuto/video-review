@@ -193,6 +193,128 @@ test.describe("admin settings dialog", () => {
         await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
     });
 
+    test("physical delete is gated behind typing Delete", async ({ page }) => {
+        await loginAsAdmin(page);
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+
+        // A retry runs against the same seeded DB, so each attempt purges a different video.
+        // Counting up from #040 keeps clear of both the restore test and the filter test's #001.
+        const title = `Discarded #${String(40 + test.info().retry).padStart(3, "0")}`;
+        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
+        const row = dialog.getByRole("row", { name: new RegExp(title) });
+        await row.getByRole("button", { name: "Delete permanently" }).click();
+
+        const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
+        const submit = confirm.getByRole("button", { name: "Delete permanently" });
+        await expect(submit).toBeDisabled();
+
+        await confirm.getByLabel("Type Delete to confirm").fill("Delet");
+        await expect(submit).toBeDisabled();
+        await confirm.getByLabel("Type Delete to confirm").fill("delete");
+        await expect(submit).toBeDisabled();
+        await confirm.getByLabel("Type Delete to confirm").fill("Delete");
+        await expect(submit).toBeEnabled();
+
+        const purged = page.waitForResponse(r => r.url().endsWith("/admin/maintenance/video/purge"));
+        await submit.click();
+        // Test storage holds no files, so purge answers 207.
+        expect((await purged).status()).toBe(207);
+        await expect(dialog.getByText(new RegExp(`${title}.*could not be removed`))).toBeVisible();
+
+        // Reopening refetches: proves the revisions really went, not just the local list.
+        await page.reload();
+        const reopened = await openSettings(page);
+        await reopened.getByRole("button", { name: "Administration" }).click();
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
+        await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
+        await expect(row.getByRole("button", { name: "Delete permanently" })).toBeDisabled();
+    });
+
+    test("physical delete purges every revision and keeps going after a 207", async ({ page }) => {
+        await loginAsAdmin(page);
+        // Seeded videos have a single revision, so the bundling only shows up against a stub.
+        await page.route("**/admin/maintenance/trash", route => route.fulfill({
+            json: {
+                videos: [
+                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1, 2, 3] },
+                ],
+            },
+        }));
+        const purged: number[] = [];
+        await page.route("**/admin/maintenance/video/purge", async route => {
+            const body = route.request().postDataJSON() as { revision: string };
+            const revision = Number(body.revision);
+            purged.push(revision);
+            // The middle revision keeps its file: the loop must carry on to the last one.
+            await route.fulfill(revision === 2
+                ? { status: 207, json: { warning: "files", videoId: "v1", revision } }
+                : { json: { success: true, videoId: "v1", revision } });
+        });
+
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        const row = dialog.getByRole("row", { name: /Three Revisions/ });
+        await row.getByRole("button", { name: "Delete permanently" }).click();
+
+        const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
+        await confirm.getByLabel("Type Delete to confirm").fill("Delete");
+        await confirm.getByRole("button", { name: "Delete permanently" }).click();
+
+        await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
+        expect(purged).toEqual([1, 2, 3]);
+        await expect(dialog.getByText(/Three Revisions.*could not be removed/)).toBeVisible();
+    });
+
+    test("a purge that fails mid-way keeps the revisions it did not reach", async ({ page }) => {
+        await loginAsAdmin(page);
+        await page.route("**/admin/maintenance/trash", route => route.fulfill({
+            json: {
+                videos: [
+                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1, 2, 3] },
+                ],
+            },
+        }));
+        const purged: number[] = [];
+        await page.route("**/admin/maintenance/video/purge", async route => {
+            const revision = Number((route.request().postDataJSON() as { revision: string }).revision);
+            purged.push(revision);
+            await route.fulfill(revision === 2
+                ? { status: 500, json: { error: "boom" } }
+                : { json: { success: true, videoId: "v1", revision } });
+        });
+
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        const row = dialog.getByRole("row", { name: /Three Revisions/ });
+
+        async function purgeOnce() {
+            await row.getByRole("button", { name: "Delete permanently" }).click();
+            const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
+            await confirm.getByLabel("Type Delete to confirm").fill("Delete");
+            await confirm.getByRole("button", { name: "Delete permanently" }).click();
+        }
+
+        await purgeOnce();
+        await expect(dialog.getByText(/Failed to delete the files/)).toBeVisible();
+        // Revision 1 went through, so only 2 and 3 are left to try again.
+        await expect(row.getByRole("cell", { name: "2", exact: true })).toBeVisible();
+        expect(purged).toEqual([1, 2]);
+
+        await purgeOnce();
+        expect(purged).toEqual([1, 2, 2]);
+    });
+
     test("a guest does not see the entry", async ({ page }) => {
         await loginAsGuest(page);
         const popover = await openSettings(page);

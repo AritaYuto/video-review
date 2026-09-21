@@ -255,7 +255,18 @@
                     "title": "Title",
                     "folder": "Folder",
                     "updatedAt": "Updated",
-                    "revisions": "Revisions"
+                    "revisions": "Revisions",
+                    "actions": "Actions"
+                },
+                "purge": {
+                    "action": "Delete permanently",
+                    "title": "Delete permanently",
+                    "description": "{title} and its {revisions} revision file(s) will be removed from storage. This cannot be undone.",
+                    "confirmLabel": "Type {word} to confirm",
+                    "submit": "Delete permanently",
+                    "cancel": "Cancel",
+                    "failed": "Failed to delete the files",
+                    "filesLeft": "{title}: the revisions were marked deleted, but some files could not be removed."
                 }
             }
         }

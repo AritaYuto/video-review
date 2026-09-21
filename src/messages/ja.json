@@ -255,7 +255,18 @@
                     "title": "タイトル",
                     "folder": "フォルダ",
                     "updatedAt": "更新日",
-                    "revisions": "リビジョン"
+                    "revisions": "リビジョン",
+                    "actions": "操作"
+                },
+                "purge": {
+                    "action": "物理削除",
+                    "title": "物理削除",
+                    "description": "{title} と {revisions} 件のリビジョンのファイルをストレージから削除します。元に戻せません",
+                    "confirmLabel": "確認のため {word} と入力してください",
+                    "submit": "物理削除",
+                    "cancel": "キャンセル",
+                    "failed": "ファイルの削除に失敗しました",
+                    "filesLeft": "{title}: リビジョンは削除済みにしましたが、一部のファイルを消せませんでした"
                 }
             }
         }

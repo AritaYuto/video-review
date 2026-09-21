@@ -8,6 +8,7 @@ import { api, readError } from "@/lib/api-client";
 import { SidebarSearchInput } from "@/components/controls/sidebar-search-input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { Button } from "@/ui/button";
+import { PurgeConfirmDialog } from "@/components/admin/purge-confirm-dialog";
 import { Spinner } from "@/ui/spinner";
 
 type TrashVideo = InferResponseType<typeof api.admin.maintenance.trash.$get, 200>["videos"][number];
@@ -22,6 +23,8 @@ export function MaintenanceTrash() {
     const [filter, setFilter] = useState("");
     const [restoringId, setRestoringId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [purgeTarget, setPurgeTarget] = useState<TrashVideo | null>(null);
+    const [purging, setPurging] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -48,6 +51,39 @@ export function MaintenanceTrash() {
         } finally {
             setRestoringId(null);
         }
+    }
+
+    async function onPurge(video: TrashVideo) {
+        setPurging(true);
+        setActionError(null);
+        // purge deletes one revision at a time, so a whole video is the sum of its revisions.
+        const purged = new Set<number>();
+        let filesLeft = false;
+        let failure: string | null = null;
+        try {
+            for (const revision of video.revisions) {
+                const res = await api.admin.maintenance.video.purge.$post({
+                    json: { videoId: video.id, revision: String(revision) },
+                });
+                // 207 means the row is gone but the file survived: worth reporting, not worth aborting.
+                // 404 means someone else already purged it, which is the outcome we wanted anyway.
+                if (![200, 207, 404].includes(res.status)) throw new Error(await readError(res));
+                if (res.status === 207) filesLeft = true;
+                purged.add(revision);
+            }
+        } catch (e) {
+            failure = `${t("maintenance.trash.purge.failed")}: ${e instanceof Error ? e.message : String(e)}`;
+        }
+        // Drop only what went through, so a retry resumes where it stopped. The Video row itself
+        // survives with an empty list: nothing in the API deletes it.
+        setVideos(rows => rows?.map(r =>
+            r.id === video.id ? { ...r, revisions: r.revisions.filter(n => !purged.has(n)) } : r) ?? null);
+        // Close first: the error is unreadable behind the modal.
+        setPurgeTarget(null);
+        setPurging(false);
+        // Both can be true at once, and orphaned files must not be hidden by the failure.
+        const warning = filesLeft ? t("maintenance.trash.purge.filesLeft", { title: video.title }) : null;
+        setActionError([failure, warning].filter(Boolean).join(" ") || null);
     }
 
     // Runs before the early returns below so the hook order stays stable.
@@ -90,7 +126,7 @@ export function MaintenanceTrash() {
                                 <TableHead>{t("maintenance.trash.columns.folder")}</TableHead>
                                 <TableHead>{t("maintenance.trash.columns.updatedAt")}</TableHead>
                                 <TableHead>{t("maintenance.trash.columns.revisions")}</TableHead>
-                                <TableHead><span className="sr-only">{t("maintenance.trash.restore")}</span></TableHead>
+                                <TableHead><span className="sr-only">{t("maintenance.trash.columns.actions")}</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -100,16 +136,26 @@ export function MaintenanceTrash() {
                                     <TableCell>{video.folderKey}</TableCell>
                                     <TableCell>{new Date(video.latestUpdatedAt).toLocaleDateString(locale)}</TableCell>
                                     <TableCell>{video.revisions.length}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => onRestore(video)}
-                                            disabled={restoringId === video.id}
-                                        >
-                                            {restoringId === video.id ? <Spinner /> : null}
-                                            {t("maintenance.trash.restore")}
-                                        </Button>
+                                    <TableCell>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => onRestore(video)}
+                                                disabled={restoringId === video.id}
+                                            >
+                                                {restoringId === video.id ? <Spinner /> : null}
+                                                {t("maintenance.trash.restore")}
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => { setActionError(null); setPurgeTarget(video); }}
+                                                disabled={video.revisions.length === 0}
+                                            >
+                                                {t("maintenance.trash.purge.action")}
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -119,6 +165,16 @@ export function MaintenanceTrash() {
             </div>
 
             {actionError && <p className="shrink-0 text-sm text-destructive">{actionError}</p>}
+
+            {purgeTarget && (
+                <PurgeConfirmDialog
+                    title={purgeTarget.title}
+                    revisions={purgeTarget.revisions.length}
+                    busy={purging}
+                    onConfirm={() => onPurge(purgeTarget)}
+                    onCancel={() => setPurgeTarget(null)}
+                />
+            )}
         </>
     );
 }
