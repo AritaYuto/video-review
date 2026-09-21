@@ -44,6 +44,7 @@ const LoginResponseSchema = z.object({
     email: z.string().nullable().optional(),
     displayName: z.string(),
     role: z.enum(["guest", "viewer", "admin"]),
+    provider: z.enum(["guest", "jira", "password"]),
 });
 
 export const loginRouter = createRouter()
@@ -51,7 +52,7 @@ export const loginRouter = createRouter()
         method: "post",
         summary: "Login as admin",
         description: "Logs in a user as an admin.",
-        path: "/user",
+        path: "/password",
         request: {
             body: {
                 content: {

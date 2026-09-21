@@ -22,7 +22,7 @@ export default function EditUserProfileDialog({
 }) {
     const MAX_SIZE = 1_000_000; // 1MB
     const t = useTranslations("edit-user-profile");
-    const { setDisplayName, displayName, userId, email, role } = useAuthStore();
+    const { setDisplayName, displayName, userId, email, role, provider } = useAuthStore();
 
     const [editDisplayName, setEditDisplayName] = useState<string>(displayName ?? "");
     const [apiToken, setApiToken] = useState<string | null>(null);
@@ -202,34 +202,39 @@ export default function EditUserProfileDialog({
                             onChange={(x) => setEditDisplayName(x.target.value)} />
                     </div>
 
-                    <Separator className="w-full" />
+                    {/* Only a password session can change a password; jira/guest have no password identity. */}
+                    {provider === "password" && (
+                        <>
+                            <Separator className="w-full" />
 
-                    <div className="w-full grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
-                            <Input id="currentPassword"
-                                type="password"
-                                autoComplete="current-password"
-                                value={currentPass}
-                                onChange={(x) => setCurrentPass(x.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="newPassword">{t("newPassword")}</Label>
-                            <Input id="newPassword"
-                                type="password"
-                                autoComplete="new-password"
-                                value={newPass}
-                                onChange={(x) => setNewPass(x.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
-                            <Input id="confirmPassword"
-                                type="password"
-                                autoComplete="new-password"
-                                value={confirmPass}
-                                onChange={(x) => setConfirmPass(x.target.value)} />
-                        </div>
-                    </div>
+                            <div className="w-full grid gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
+                                    <Input id="currentPassword"
+                                        type="password"
+                                        autoComplete="current-password"
+                                        value={currentPass}
+                                        onChange={(x) => setCurrentPass(x.target.value)} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="newPassword">{t("newPassword")}</Label>
+                                    <Input id="newPassword"
+                                        type="password"
+                                        autoComplete="new-password"
+                                        value={newPass}
+                                        onChange={(x) => setNewPass(x.target.value)} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+                                    <Input id="confirmPassword"
+                                        type="password"
+                                        autoComplete="new-password"
+                                        value={confirmPass}
+                                        onChange={(x) => setConfirmPass(x.target.value)} />
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     <div className="w-full">
                         {ControlRow(t("apiToken"), () => {

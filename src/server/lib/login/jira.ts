@@ -25,7 +25,7 @@ export async function loginWithJira(c: LoginRequest): Promise<LoginResponse> {
 
     const role: Role = 'viewer';
     let tokenPayload: Record<string, any> = {
-        id: userDB.id, displayName: userDB.displayName, role
+        id: userDB.id, displayName: userDB.displayName, role, provider: "jira"
     };
 
     let token: string | undefined = undefined;
@@ -41,6 +41,7 @@ export async function loginWithJira(c: LoginRequest): Promise<LoginResponse> {
         email: c.email,
         displayName: userDB.displayName,
         id: userDB.id,
+        provider: "jira",
     }
 }
 

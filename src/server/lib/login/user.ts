@@ -28,7 +28,7 @@ export async function loginUser(c: LoginRequest): Promise<LoginResponse> {
     }
 
     let tokenPayload: Record<string, any> = {
-        id: identity.user.id, displayName: identity.user.displayName, role: identity.user.role
+        id: identity.user.id, displayName: identity.user.displayName, role: identity.user.role, provider: "password"
     };
 
     let token: string | undefined = undefined;
@@ -44,5 +44,6 @@ export async function loginUser(c: LoginRequest): Promise<LoginResponse> {
         email: c.email,
         displayName: identity.user.displayName,
         id: identity.user.id,
+        provider: "password",
     }
 };

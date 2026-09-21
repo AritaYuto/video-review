@@ -3,12 +3,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { api } from "@/lib/api-client";
 import { Role } from "@/lib/role";
+import { LoginType } from "@/lib/auth-types";
 
 interface AuthState {
     displayName: string | null;
     userId: string | null;
     email: string | null;
     role: Role;
+    provider: LoginType | null;
     token: string | null;
 
     verifyAuth: () => Promise<string | null>;
@@ -18,6 +20,7 @@ interface AuthState {
         role: Role,
         token: string,
         displayName: string,
+        provider: LoginType,
     ) => void;
     setDisplayName: (name: string) => void;
     logout: () => void;
@@ -30,6 +33,7 @@ export const useAuthStore = create<AuthState>()(
             userId: null,
             email: null,
             role: "guest",
+            provider: null,
             token: null,
             canUseIssueTracker: false,
 
@@ -46,8 +50,8 @@ export const useAuthStore = create<AuthState>()(
                 return null;
             },
 
-            setAuth: (userId, email, role, token, displayName) => {
-                set({ userId, email, role, token, displayName });
+            setAuth: (userId, email, role, token, displayName, provider) => {
+                set({ userId, email, role, token, displayName, provider });
             },
 
             setDisplayName: (name) => {
@@ -56,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
 
             logout: () => {
                 void api.auth.logout.$post().catch(() => {});
-                set({ userId: null, token: null });
+                set({ userId: null, token: null, provider: null });
             },
         }),
         {

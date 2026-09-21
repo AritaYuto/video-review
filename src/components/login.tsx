@@ -24,7 +24,7 @@ export default function Login() {
     // Don't open on the guest tab when guest login is hidden.
     const initialType: LoginType =
         !env.PUBLIC_ALLOW_GUEST && env.PUBLIC_LOGIN_DEFAULT_TYPE === "guest"
-            ? "user"
+            ? "password"
             : env.PUBLIC_LOGIN_DEFAULT_TYPE;
 
     const [type, setType] = useState<LoginType>(initialType);
@@ -40,12 +40,12 @@ export default function Login() {
     const handleLogin = async () => {
         try {
             const res =
-                type === "user" ? await api.auth.login.user.$post({ json: { email: email ?? "", password } }) :
+                type === "password" ? await api.auth.login.password.$post({ json: { email: email ?? "", password } }) :
                 type === "jira" ? await api.auth.login.jira.$post({ json: { email: email ?? "" } }) :
                 await api.auth.login.guest.$post({ json: { displayName } });
             if (res.status !== 200) throw new Error("Failed to login");
             const data = await res.json();
-            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName);
+            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName, data.provider);
             router.push("/video-review/review");
         } catch (e) {
             alert(t("loginFailedMsg"));
@@ -58,7 +58,7 @@ export default function Login() {
                     <TabsList>
                         {env.PUBLIC_ALLOW_GUEST && <TabsTrigger value="guest">Guest</TabsTrigger>}
                         <TabsTrigger value="jira">JIRA</TabsTrigger>
-                        <TabsTrigger value="user">Email & Password</TabsTrigger>
+                        <TabsTrigger value="password">Email & Password</TabsTrigger>
                     </TabsList>
                     {env.PUBLIC_ALLOW_GUEST && (
                         <TabsContent value="guest">
@@ -88,7 +88,7 @@ export default function Login() {
                             <ButtonLogin exec={handleLogin} title={t("ok")} />
                         </AuthCard>
                     </TabsContent>
-                    <TabsContent value="user">
+                    <TabsContent value="password">
                         <AuthCard>
                             <div className="grid gap-3 mb-4">
                                 <Label htmlFor="email">{t("email")}</Label>
