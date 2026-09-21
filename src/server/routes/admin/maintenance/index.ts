@@ -22,6 +22,17 @@ const PurgeQuerySchema = z.object({
     revision: z.string().transform(v => parseInt(v)).optional(),
 });
 
+const TrashResponse = z.object({
+    videos: z.array(z.object({
+        id: z.string(),
+        title: z.string(),
+        folderKey: z.string(),
+        latestUpdatedAt: z.string(),
+        // Revisions still holding files. Purging a whole video means purging each of these.
+        revisions: z.array(z.number()),
+    })),
+});
+
 export const maintenanceRouter = createRouter()
     .openapi(createRoute({
         method: "post",
@@ -221,6 +232,55 @@ export const maintenanceRouter = createRouter()
 
         const configured = (await getApiSecretHash()) !== undefined;
         return c.json({ configured }, 200);
+    })
+    .openapi(createRoute({
+        method: "get",
+        summary: "List logically deleted videos",
+        description: "The admin dialog's trash: videos with deleted = true. Unpaginated: a trash bin stays small.",
+        path: "/trash",
+        responses: {
+            200: {
+                description: "Deleted videos, most recently updated first",
+                content: {
+                    "application/json": {
+                        schema: TrashResponse,
+                    },
+                },
+            },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+            500: errorResponse("Auth configuration is missing"),
+        },
+    }), async (c) => {
+        try {
+            await authorize(c.req.raw, ["admin"]);
+        } catch (e) {
+            if (e instanceof ServerError) {
+                return c.json({ error: e.message }, e.status as 401 | 403 | 500);
+            }
+            return c.json({ error: "unauthorized" }, 401);
+        }
+
+        const videos = await prisma.video.findMany({
+            where: { deleted: true },
+            select: {
+                id: true,
+                title: true,
+                folderKey: true,
+                latestUpdatedAt: true,
+                // Already purged revisions keep their row, so exclude them from the purge list.
+                revisions: { where: { deleted: false }, select: { revision: true } },
+            },
+            orderBy: [{ latestUpdatedAt: "desc" }, { id: "asc" }],
+        });
+
+        return c.json({
+            videos: videos.map(v => ({
+                ...v,
+                latestUpdatedAt: v.latestUpdatedAt.toISOString(),
+                revisions: v.revisions.map(r => r.revision).sort((a, b) => a - b),
+            })),
+        }, 200);
     })
     .openapi(createRoute({
         method: "get",
