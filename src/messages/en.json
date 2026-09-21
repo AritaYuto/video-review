@@ -250,14 +250,14 @@
                 },
                 "purge": {
                     "action": "Delete",
-                    "title": "Delete the video files",
-                    "description": "The files for {title} will be removed from storage.",
+                    "title": "Delete the video",
+                    "description": "{title}, its files and its comments will all be deleted.",
                     "irreversible": "This cannot be undone.",
                     "confirmLabel": "Type <word>{confirmWord}</word> to confirm",
                     "submit": "Delete",
                     "cancel": "Cancel",
                     "failed": "Failed to delete the files",
-                    "filesLeft": "{title}: the revisions were marked deleted, but some files could not be removed."
+                    "filesLeft": "{title}: the record is gone, but some files are still in storage."
                 }
             }
         }

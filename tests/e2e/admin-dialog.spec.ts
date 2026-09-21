@@ -172,7 +172,7 @@ test.describe("admin settings dialog", () => {
         await row.getByRole("button", { name: "Delete", exact: true }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
-        await expect(confirm.getByRole("heading", { name: "Delete the video files" })).toBeVisible();
+        await expect(confirm.getByRole("heading", { name: "Delete the video" })).toBeVisible();
         const submit = confirm.getByRole("button", { name: "Delete", exact: true });
         await expect(submit).toBeDisabled();
 
@@ -189,18 +189,17 @@ test.describe("admin settings dialog", () => {
 
         const purged = page.waitForResponse(r => r.url().endsWith("/admin/maintenance/video/purge"));
         await submit.click();
-        // Test storage holds no files, so purge answers 207.
+        // The test storage holds no real files, so purging reports partial success.
         expect((await purged).status()).toBe(207);
-        await expect(dialog.getByText(new RegExp(`${title}.*could not be removed`))).toBeVisible();
+        await expect(dialog.getByText(new RegExp(`${title}.*still in storage`))).toBeVisible();
 
-        // Reopening refetches: proves the revisions really went, not just the local list.
+        // Reopening refetches: proves the record really went, not just the local list.
         await page.reload();
         const reopened = await openSettings(page);
         await reopened.getByRole("button", { name: "Administration" }).click();
         await dialog.getByRole("tab", { name: "Videos" }).click();
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
-        await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
-        await expect(row.getByRole("button", { name: "Delete", exact: true })).toBeDisabled();
+        await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
     });
 
     test("physical delete purges every revision and keeps going after a 207", async ({ page }) => {
@@ -218,10 +217,16 @@ test.describe("admin settings dialog", () => {
             const body = route.request().postDataJSON() as { revision: string };
             const revision = Number(body.revision);
             purged.push(revision);
-            // The middle revision keeps its file: the loop must carry on to the last one.
+            // The middle revision reports that its file survived: the loop must still reach the last one.
             await route.fulfill(revision === 2
                 ? { status: 207, json: { warning: "files", videoId: "v1", revision } }
                 : { json: { success: true, videoId: "v1", revision } });
+        });
+
+        const destroyed: string[] = [];
+        await page.route("**/admin/maintenance/video/destroy", route => {
+            destroyed.push((route.request().postDataJSON() as { videoId: string }).videoId);
+            return route.fulfill({ json: { success: true, videoId: "v1" } });
         });
 
         const popover = await openSettings(page);
@@ -236,9 +241,14 @@ test.describe("admin settings dialog", () => {
         await confirm.getByLabel("Type Delete to confirm").fill("Delete");
         await confirm.getByRole("button", { name: "Delete", exact: true }).click();
 
-        await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
+        // The list is aria-hidden while the modal is up, so wait for the modal to go first.
+        await expect(confirm).toHaveCount(0);
+        await expect(row).toHaveCount(0);
         expect(purged).toEqual([1, 2, 3]);
-        await expect(dialog.getByText(/Three Revisions.*could not be removed/)).toBeVisible();
+        // A file that could not be deleted must not keep the record alive, or a video whose files
+        // are already gone from storage could never leave the trash.
+        expect(destroyed).toEqual(["v1"]);
+        await expect(dialog.getByText(/Three Revisions.*still in storage/)).toBeVisible();
     });
 
     test("a purge that fails mid-way keeps the revisions it did not reach", async ({ page }) => {

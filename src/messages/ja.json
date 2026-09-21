@@ -250,14 +250,14 @@
                 },
                 "purge": {
                     "action": "Delete",
-                    "title": "動画のファイルを削除",
-                    "description": "{title} のファイルをストレージから削除します",
+                    "title": "動画を削除",
+                    "description": "{title} とそのファイル・コメントをまとめて削除します",
                     "irreversible": "元に戻せません",
                     "confirmLabel": "確認のため <word>{confirmWord}</word> と入力してください",
                     "submit": "Delete",
                     "cancel": "キャンセル",
                     "failed": "ファイルの削除に失敗しました",
-                    "filesLeft": "{title}: リビジョンは削除済みにしましたが、一部のファイルを消せませんでした"
+                    "filesLeft": "{title}: レコードは削除しましたが、一部のファイルがストレージに残りました"
                 }
             }
         }

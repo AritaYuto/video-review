@@ -28,6 +28,7 @@ export function VideosTrash() {
 
     useEffect(() => {
         let cancelled = false;
+
         api.admin.maintenance.trash.$get()
             .then(async res => {
                 if (res.status !== 200) throw new Error(await readError(res));
@@ -35,16 +36,19 @@ export function VideosTrash() {
             })
             .then(rows => { if (!cancelled) setVideos(rows); })
             .catch(e => { if (!cancelled) setError(`${t("videos.trash.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
+
         return () => { cancelled = true; };
     }, []);
 
     async function onRestore(video: TrashVideo) {
         setRestoringId(video.id);
         setActionError(null);
+
         try {
             // The route parses deleted as a string ("true" | anything else).
             const res = await api.admin.maintenance.video.delete.$post({ json: { videoId: video.id, deleted: "false" } });
             if (res.status !== 200) throw new Error(await readError(res));
+
             setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
         } catch (e) {
             setActionError(`${t("videos.trash.restoreFailed")}: ${e instanceof Error ? e.message : String(e)}`);
@@ -56,31 +60,44 @@ export function VideosTrash() {
     async function onPurge(video: TrashVideo) {
         setPurging(true);
         setActionError(null);
+
         // purge deletes one revision at a time, so a whole video is the sum of its revisions.
         const purged = new Set<number>();
         let filesLeft = false;
         let failure: string | null = null;
+
         try {
             for (const revision of video.revisions) {
                 const res = await api.admin.maintenance.video.purge.$post({
                     json: { videoId: video.id, revision: String(revision) },
                 });
-                // 207 means the row is gone but the file survived: worth reporting, not worth aborting.
-                // 404 means someone else already purged it, which is the outcome we wanted anyway.
+
+                // Partial success (HTTP 207) means the revision row is gone but its file survived:
+                // worth reporting, not worth aborting. A missing revision (HTTP 404) means another
+                // admin purged it first, which is the outcome we wanted anyway.
                 if (![200, 207, 404].includes(res.status)) throw new Error(await readError(res));
                 if (res.status === 207) filesLeft = true;
+
                 purged.add(revision);
             }
+
+            // A missing video (HTTP 404) means another admin got there first: same outcome.
+            const res = await api.admin.maintenance.video.destroy.$post({ json: { videoId: video.id } });
+            if (![200, 404].includes(res.status)) throw new Error(await readError(res));
+
+            setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
         } catch (e) {
             failure = `${t("videos.trash.purge.failed")}: ${e instanceof Error ? e.message : String(e)}`;
+
+            // Drop only what went through, so a retry resumes where it stopped.
+            setVideos(rows => rows?.map(r =>
+                r.id === video.id ? { ...r, revisions: r.revisions.filter(n => !purged.has(n)) } : r) ?? null);
         }
-        // Drop only what went through, so a retry resumes where it stopped. The Video row itself
-        // survives with an empty list: nothing in the API deletes it.
-        setVideos(rows => rows?.map(r =>
-            r.id === video.id ? { ...r, revisions: r.revisions.filter(n => !purged.has(n)) } : r) ?? null);
+
         // Close first: the error is unreadable behind the modal.
         setPurgeTarget(null);
         setPurging(false);
+
         // Both can be true at once, and orphaned files must not be hidden by the failure.
         const warning = filesLeft ? t("videos.trash.purge.filesLeft", { title: video.title }) : null;
         setActionError([failure, warning].filter(Boolean).join(" ") || null);
@@ -89,8 +106,10 @@ export function VideosTrash() {
     // Runs before the early returns below so the hook order stays stable.
     const shown = useMemo(() => {
         const needle = filter.trim().toLowerCase();
+
         if (!videos) return [];
         if (!needle) return videos;
+
         return videos.filter(v =>
             v.title.toLowerCase().includes(needle) || v.folderKey.toLowerCase().includes(needle));
     }, [videos, filter]);
@@ -151,7 +170,6 @@ export function VideosTrash() {
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={() => { setActionError(null); setPurgeTarget(video); }}
-                                                disabled={video.revisions.length === 0}
                                             >
                                                 {t("videos.trash.purge.action")}
                                             </Button>
