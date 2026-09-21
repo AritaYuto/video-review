@@ -27,6 +27,16 @@ const UpdateRoleBody = z.object({
     role: z.enum(["viewer", "admin"]).optional(),
 });
 
+const UserListResponse = z.object({
+    users: z.array(z.object({
+        id: z.string(),
+        email: z.string().nullable(),
+        displayName: z.string(),
+        role: z.string(),
+        createdAt: z.string(),
+    })),
+});
+
 const WarmCacheBody = z.object({
     from: z.iso.datetime({ message: "from must be an ISO 8601 datetime string" }),
     to: z.iso.datetime({ message: "to must be an ISO 8601 datetime string" }),
@@ -228,6 +238,42 @@ export const adminRouter = createRouter()
             data: { role },
         });
         return c.json(updated, { status: 200 });
+    })
+    .openapi(createRoute({
+        method: "get",
+        summary: "List users",
+        description: "Lists every user for the admin dialog. Unpaginated: self-hosted teams are small.",
+        path: "/users",
+        responses: {
+            200: {
+                description: "Users ordered by creation time",
+                content: {
+                    "application/json": {
+                        schema: UserListResponse,
+                    },
+                },
+            },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+        },
+    }), async (c) => {
+        try {
+            await authorize(c.req.raw, ["admin"]);
+        } catch (e) {
+            if (e instanceof ServerError) {
+                return c.json({ error: e.message }, e.status as 401 | 403);
+            }
+            return c.json({ error: "unauthorized" }, 401);
+        }
+
+        // Explicit select so identities (and their secret hashes) are never loaded.
+        const users = await prisma.user.findMany({
+            select: { id: true, email: true, displayName: true, role: true, createdAt: true },
+            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        });
+        return c.json({
+            users: users.map(u => ({ ...u, createdAt: u.createdAt.toISOString() })),
+        }, 200);
     })
     .openapi(createRoute({
         method: "post",

@@ -154,6 +154,7 @@
         "languageOptionJa": "Japanese",
         "logout": "Logout",
         "editProfile": "Edit Profile",
+        "administration": "Administration",
         "editPrompt": "Edit Prompt",
         "aiSearch": "AI search (chat)",
         "aiSearchState": {
@@ -173,8 +174,6 @@
     "edit-user-profile": {
         "displayName": "Display Name",
         "title": "Edit Profile",
-        "apiToken": "",
-        "rotateApiToken": "Api Token Generate",
         "save": "Save",
         "cancel": "Cancel",
         "saving": "Saving...",
@@ -189,5 +188,47 @@
         "passwordMismatch": "New passwords do not match",
         "currentPasswordRequired": "Enter your current password",
         "currentPasswordWrong": "Current password is incorrect"
+    },
+    "admin-settings": {
+        "title": "Administration",
+        "sections": {
+            "users": "Users",
+            "apiToken": "API Token",
+            "integrations": "Integrations",
+            "maintenance": "Maintenance"
+        },
+        "empty": "Nothing to configure here yet.",
+        "users": {
+            "columns": {
+                "displayName": "Display name",
+                "email": "Email",
+                "role": "Role",
+                "createdAt": "Created"
+            },
+            "roles": {
+                "viewer": "Viewer",
+                "admin": "Admin"
+            },
+            "loadFailed": "Failed to load users",
+            "updateFailed": "Failed to update the role",
+            "create": {
+                "title": "Create user",
+                "displayName": "Display name",
+                "email": "Email",
+                "password": "Password",
+                "submit": "Create",
+                "failed": "Failed to create the user"
+            }
+        },
+        "apiToken": {
+            "description": "A token for the REST API and maintenance.",
+            "configured": "Configured",
+            "notConfigured": "Not configured",
+            "generate": "Generate",
+            "regenerate": "Regenerate",
+            "newTokenHint": "Copy it now with Ctrl+C. It is not shown again.",
+            "loadFailed": "Failed to load the status",
+            "failed": "Failed to generate the token"
+        }
     }
 }

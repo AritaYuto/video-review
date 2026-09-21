@@ -1,7 +1,7 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { authorize, getJwtSecret } from "@/server/lib/token";
+import { authorize, getJwtSecret, getApiSecretHash } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
@@ -190,6 +190,35 @@ export const maintenanceRouter = createRouter()
             create: { key: "API_TOKEN", valueHash: tokenHash },
         });
         return c.json({ token: apiToken }, 200);
+    })
+    .openapi(createRoute({
+        method: "get",
+        summary: "api token status",
+        path: "/api-token/status",
+        responses: {
+            200: {
+                description: "whether an api token is configured",
+                content: {
+                    "application/json": {
+                        schema: z.object({ configured: z.boolean() }),
+                    },
+                },
+            },
+            401: errorResponse("Unauthorized"),
+            403: errorResponse("Forbidden"),
+        },
+    }), async (c) => {
+        try {
+            await authorize(c.req.raw, ["admin"]);
+        } catch (e) {
+            if (e instanceof ServerError) {
+                return c.json({ error: e.message }, e.status as 401 | 403);
+            }
+            return c.json({ error: "unauthorized" }, 401);
+        }
+
+        const configured = (await getApiSecretHash()) !== undefined;
+        return c.json({ configured }, 200);
     })
     .openapi(createRoute({
         method: "get",

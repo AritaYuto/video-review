@@ -154,6 +154,7 @@
         "languageOptionJa": "日本語 (Japanese)",
         "logout": "ログアウト",
         "editProfile": "プロフィール編集",
+        "administration": "管理",
         "editPrompt": "プロンプト編集",
         "aiSearch": "AI 検索（チャット）",
         "aiSearchState": {
@@ -173,8 +174,6 @@
     "edit-user-profile": {
         "displayName": "表示名",
         "title": "プロフィール 編集",
-        "apiToken": "",
-        "rotateApiToken": "Api Token Generate",
         "save": "保存",
         "saving": "保存中…",
         "cancel": "キャンセル",
@@ -189,5 +188,47 @@
         "passwordMismatch": "新しいパスワードが一致しません",
         "currentPasswordRequired": "現在のパスワードを入力してください",
         "currentPasswordWrong": "現在のパスワードが違います"
+    },
+    "admin-settings": {
+        "title": "管理",
+        "sections": {
+            "users": "ユーザー",
+            "apiToken": "API Token",
+            "integrations": "連携",
+            "maintenance": "メンテナンス"
+        },
+        "empty": "まだ設定項目はありません",
+        "users": {
+            "columns": {
+                "displayName": "表示名",
+                "email": "メール",
+                "role": "権限",
+                "createdAt": "作成日"
+            },
+            "roles": {
+                "viewer": "閲覧者",
+                "admin": "管理者"
+            },
+            "loadFailed": "ユーザーの取得に失敗しました",
+            "updateFailed": "権限の更新に失敗しました",
+            "create": {
+                "title": "ユーザーを作成",
+                "displayName": "表示名",
+                "email": "メール",
+                "password": "パスワード",
+                "submit": "作成",
+                "failed": "ユーザーの作成に失敗しました"
+            }
+        },
+        "apiToken": {
+            "description": "RestAPI や maintenance で使用するトークンです",
+            "configured": "設定済み",
+            "notConfigured": "未設定",
+            "generate": "生成",
+            "regenerate": "再生成",
+            "newTokenHint": "Ctrl+C でコピーしてください。再表示されません",
+            "loadFailed": "状態の取得に失敗しました",
+            "failed": "トークンの生成に失敗しました"
+        }
     }
 }

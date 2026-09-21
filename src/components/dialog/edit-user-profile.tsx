@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { useAvatarStore } from "@/stores/avatar-store";
-import { ControlRow } from "@/components/controls/control-row";
 import { api } from "@/lib/api-client";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
@@ -22,10 +21,9 @@ export default function EditUserProfileDialog({
 }) {
     const MAX_SIZE = 1_000_000; // 1MB
     const t = useTranslations("edit-user-profile");
-    const { setDisplayName, displayName, userId, email, role, provider } = useAuthStore();
+    const { setDisplayName, displayName, userId, email, provider } = useAuthStore();
 
     const [editDisplayName, setEditDisplayName] = useState<string>(displayName ?? "");
-    const [apiToken, setApiToken] = useState<string | null>(null);
     const { icon, fetchAvatar } = useAvatarStore();
     const [file, setFile] = useState<File | null>(null);
     const [currentPass, setCurrentPass] = useState("");
@@ -105,26 +103,10 @@ export default function EditUserProfileDialog({
             }
             Close();
         } finally {
-            setApiToken("");
             setDisplayName(editDisplayName);
             setLoading(false);
         }
     };
-
-    async function onRotateApiToken() {
-        setError(null);
-
-        try {
-            const res = await api.admin.maintenance["api-token"].rotate.$post();
-            if (res.status === 200) {
-                setApiToken((await res.json()).token);
-            } else {
-                setError(t("rotateFailed"));
-            }
-        } catch {
-            setError(t("rotateFailed"));
-        }
-    }
 
     function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files?.[0];
@@ -140,7 +122,6 @@ export default function EditUserProfileDialog({
     }
 
     const Close = () => {
-        setApiToken("");
         setCurrentPass("");
         setNewPass("");
         setConfirmPass("");
@@ -236,30 +217,6 @@ export default function EditUserProfileDialog({
                         </>
                     )}
 
-                    <div className="w-full">
-                        {ControlRow(t("apiToken"), () => {
-                            return (
-                                <div className="flex justify-between">
-                                    <Button
-                                        variant="destructive"
-                                        onClick={onRotateApiToken}
-                                        disabled={loading}
-                                        className="w-full"
-                                    >
-                                        {t("rotateApiToken")}
-                                    </Button>
-                                </div>
-
-                            );
-                        }, role !== "admin")}
-                        <div>
-                            {apiToken && (
-                                <div className="mt-3 w-full rounded-md bg-background/60 p-2 text-xs break-all">
-                                    {apiToken}
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
                 <DialogFooter>
