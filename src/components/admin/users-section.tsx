@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "@/app/locale-provider";
 import { api } from "@/lib/api-client";
@@ -51,6 +51,8 @@ export function UsersSection() {
     const [newPassword, setNewPassword] = useState("");
     const [creating, setCreating] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
+    const [justAddedId, setJustAddedId] = useState<string | null>(null);
+    const listRef = useRef<HTMLDivElement>(null);
 
     async function loadUsers(): Promise<UserRow[]> {
         const res = await api.admin.users.$get();
@@ -92,11 +94,12 @@ export function UsersSection() {
         if (!canSubmit) return;
         setCreating(true);
         setCreateError(null);
+        const createdEmail = newEmail.trim();
         try {
             const res = await api.admin["create-user"].$post({
                 json: {
                     displayName: newDisplayName.trim() || undefined,
-                    email: newEmail.trim(),
+                    email: createdEmail,
                     pass: newPassword,
                 },
             });
@@ -107,7 +110,18 @@ export function UsersSection() {
             setNewEmail("");
             setNewPassword("");
             // The create route returns no row, so refetch to pick up the server-assigned id and date.
-            setUsers(await loadUsers());
+            const rows = await loadUsers();
+            setUsers(rows);
+            // Reveal the new user: scroll the list down to it and highlight it briefly.
+            const added = rows.find(r => r.email === createdEmail);
+            if (added) {
+                setJustAddedId(added.id);
+                requestAnimationFrame(() => {
+                    const el = listRef.current;
+                    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                });
+                window.setTimeout(() => setJustAddedId(id => (id === added.id ? null : id)), 2500);
+            }
         } catch (e) {
             setCreateError(`${t("users.create.failed")}: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
@@ -118,11 +132,11 @@ export function UsersSection() {
     return (
         <AdminSection title={t("sections.users")}>
             {loading ? (
-                <div className="flex justify-center py-6">
+                <div className="flex flex-1 items-center justify-center">
                     <Spinner />
                 </div>
             ) : (
-                <div className="max-h-80 overflow-y-auto">
+                <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -134,7 +148,7 @@ export function UsersSection() {
                         </TableHeader>
                         <TableBody>
                             {users.map(user => (
-                                <TableRow key={user.id}>
+                                <TableRow key={user.id} className={user.id === justAddedId ? "bg-accent transition-colors" : "transition-colors"}>
                                     <TableCell>{user.displayName}</TableCell>
                                     <TableCell>
                                         {user.email ?? <span className="text-muted-foreground">-</span>}
@@ -165,9 +179,9 @@ export function UsersSection() {
                     </Table>
                 </div>
             )}
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="shrink-0 text-sm text-destructive">{error}</p>}
 
-            <form onSubmit={onCreate} className="space-y-3 border-t pt-3">
+            <form onSubmit={onCreate} className="shrink-0 space-y-3 border-t pt-3">
                 <h4 className="text-sm font-medium">{t("users.create.title")}</h4>
                 <div className="grid gap-3 sm:grid-cols-3">
                     <div className="grid gap-2">
