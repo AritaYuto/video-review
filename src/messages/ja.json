@@ -246,7 +246,8 @@
                     "folder": "フォルダ",
                     "updatedAt": "更新日",
                     "revisions": "リビジョン",
-                    "actions": "操作"
+                    "actions": "操作",
+                    "expand": "リビジョン"
                 },
                 "purge": {
                     "action": "Delete",
@@ -258,7 +259,9 @@
                     "cancel": "キャンセル",
                     "failed": "ファイルの削除に失敗しました",
                     "filesLeft": "{title}: レコードは削除しましたが、一部のファイルがストレージに残りました"
-                }
+                },
+                "revisionRow": "リビジョン {revision}（{date} アップロード）",
+                "toggleRevisions": "{title} のリビジョンを表示"
             }
         }
     }

@@ -35,7 +35,7 @@ export default function AdminSettingsDialog({
 
     return (
         <Dialog open={open} onOpenChange={() => onClose()}>
-            <DialogContent className="sm:max-w-4xl" aria-describedby={undefined}>
+            <DialogContent className="sm:max-w-5xl" aria-describedby={undefined}>
                 <DialogHeader>
                     <DialogTitle>{t("title")}</DialogTitle>
                 </DialogHeader>

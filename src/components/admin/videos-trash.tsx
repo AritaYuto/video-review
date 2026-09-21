@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import type { InferResponseType } from "hono/client";
 import { useLocale } from "@/app/locale-provider";
 import { api, readError } from "@/lib/api-client";
@@ -12,6 +13,9 @@ import { PurgeConfirmDialog } from "@/components/admin/purge-confirm-dialog";
 import { Spinner } from "@/ui/spinner";
 
 type TrashVideo = InferResponseType<typeof api.admin.maintenance.trash.$get, 200>["videos"][number];
+
+// Ties the disclosure button to the child rows it reveals.
+const revisionRowId = (videoId: string, revision: number) => `trash-${videoId}-rev-${revision}`;
 
 // Renders as a fragment: the search field and the list are laid out by the AdminSection flex column.
 export function VideosTrash() {
@@ -25,6 +29,7 @@ export function VideosTrash() {
     const [actionError, setActionError] = useState<string | null>(null);
     const [purgeTarget, setPurgeTarget] = useState<TrashVideo | null>(null);
     const [purging, setPurging] = useState(false);
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
 
     useEffect(() => {
         let cancelled = false;
@@ -50,6 +55,7 @@ export function VideosTrash() {
             if (res.status !== 200) throw new Error(await readError(res));
 
             setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
+            collapse(video.id);
         } catch (e) {
             setActionError(`${t("videos.trash.restoreFailed")}: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
@@ -67,7 +73,7 @@ export function VideosTrash() {
         let failure: string | null = null;
 
         try {
-            for (const revision of video.revisions) {
+            for (const { revision } of video.revisions) {
                 const res = await api.admin.maintenance.video.purge.$post({
                     json: { videoId: video.id, revision: String(revision) },
                 });
@@ -86,12 +92,13 @@ export function VideosTrash() {
             if (![200, 404].includes(res.status)) throw new Error(await readError(res));
 
             setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
+            collapse(video.id);
         } catch (e) {
             failure = `${t("videos.trash.purge.failed")}: ${e instanceof Error ? e.message : String(e)}`;
 
             // Drop only what went through, so a retry resumes where it stopped.
             setVideos(rows => rows?.map(r =>
-                r.id === video.id ? { ...r, revisions: r.revisions.filter(n => !purged.has(n)) } : r) ?? null);
+                r.id === video.id ? { ...r, revisions: r.revisions.filter(n => !purged.has(n.revision)) } : r) ?? null);
         }
 
         // Close first: the error is unreadable behind the modal.
@@ -113,6 +120,24 @@ export function VideosTrash() {
         return videos.filter(v =>
             v.title.toLowerCase().includes(needle) || v.folderKey.toLowerCase().includes(needle));
     }, [videos, filter]);
+
+    function collapse(videoId: string) {
+        setExpanded(open => {
+            if (!open.has(videoId)) return open;
+            const next = new Set(open);
+            next.delete(videoId);
+            return next;
+        });
+    }
+
+    function toggleExpanded(videoId: string) {
+        setExpanded(open => {
+            const next = new Set(open);
+            if (next.has(videoId)) next.delete(videoId);
+            else next.add(videoId);
+            return next;
+        });
+    }
 
     if (error) {
         return <p className="shrink-0 text-sm text-destructive">{error}</p>;
@@ -141,6 +166,9 @@ export function VideosTrash() {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-9">
+                                    <span className="sr-only">{t("videos.trash.columns.expand")}</span>
+                                </TableHead>
                                 <TableHead>{t("videos.trash.columns.title")}</TableHead>
                                 <TableHead>{t("videos.trash.columns.folder")}</TableHead>
                                 <TableHead>{t("videos.trash.columns.updatedAt")}</TableHead>
@@ -150,32 +178,64 @@ export function VideosTrash() {
                         </TableHeader>
                         <TableBody>
                             {shown.map(video => (
-                                <TableRow key={video.id}>
-                                    <TableCell>{video.title}</TableCell>
-                                    <TableCell>{video.folderKey}</TableCell>
-                                    <TableCell>{new Date(video.latestUpdatedAt).toLocaleDateString(locale)}</TableCell>
-                                    <TableCell>{video.revisions.length}</TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => onRestore(video)}
-                                                disabled={restoringId === video.id}
-                                            >
-                                                {restoringId === video.id ? <Spinner /> : null}
-                                                {t("videos.trash.restore")}
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() => { setActionError(null); setPurgeTarget(video); }}
-                                            >
-                                                {t("videos.trash.purge.action")}
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
+                                <Fragment key={video.id}>
+                                    <TableRow>
+                                        <TableCell>
+                                            {video.revisions.length > 0 && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => toggleExpanded(video.id)}
+                                                    aria-expanded={expanded.has(video.id)}
+                                                    aria-controls={video.revisions.map(r => revisionRowId(video.id, r.revision)).join(" ")}
+                                                    aria-label={t("videos.trash.toggleRevisions", { title: video.title })}
+                                                >
+                                                    {expanded.has(video.id) ? <ChevronDown /> : <ChevronRight />}
+                                                </Button>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{video.title}</TableCell>
+                                        <TableCell>{video.folderKey}</TableCell>
+                                        <TableCell>{new Date(video.latestUpdatedAt).toLocaleDateString(locale)}</TableCell>
+                                        <TableCell>{video.revisions.length}</TableCell>
+                                        <TableCell>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => onRestore(video)}
+                                                    disabled={restoringId === video.id}
+                                                >
+                                                    {restoringId === video.id ? <Spinner /> : null}
+                                                    {t("videos.trash.restore")}
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => { setActionError(null); setPurgeTarget(video); }}
+                                                >
+                                                    {t("videos.trash.purge.action")}
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    {/* What Delete takes with the video. One self-describing cell, so
+                                        nothing lines up under a heading that means something else. */}
+                                    {expanded.has(video.id) && video.revisions.map(({ revision, uploadedAt }) => (
+                                        <TableRow key={revision} id={revisionRowId(video.id, revision)}>
+                                            <TableCell />
+                                            <TableCell colSpan={5}>
+                                                <span className="text-muted-foreground">
+                                                    {t("videos.trash.revisionRow", {
+                                                        revision,
+                                                        date: new Date(uploadedAt).toLocaleDateString(locale),
+                                                    })}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </Fragment>
                             ))}
                         </TableBody>
                     </Table>

@@ -35,6 +35,8 @@ async function openSettings(page: import("@playwright/test").Page) {
     return popover;
 }
 
+const REV = (revision: number) => ({ revision, uploadedAt: "2026-02-01T00:00:00.000Z" });
+
 test.describe("admin settings dialog", () => {
     test("an admin opens it from the settings popover and switches sections", async ({ page }) => {
         await loginAsAdmin(page);
@@ -104,8 +106,8 @@ test.describe("admin settings dialog", () => {
         await page.route("**/admin/maintenance/trash", route => route.fulfill({
             json: {
                 videos: [
-                    { id: "v1", title: "Alpha", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1] },
-                    { id: "v2", title: "Beta", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [1, 2] },
+                    { id: "v1", title: "Alpha", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1)] },
+                    { id: "v2", title: "Beta", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [REV(1), REV(2)] },
                 ],
             },
         }));
@@ -208,7 +210,7 @@ test.describe("admin settings dialog", () => {
         await page.route("**/admin/maintenance/trash", route => route.fulfill({
             json: {
                 videos: [
-                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1, 2, 3] },
+                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
                 ],
             },
         }));
@@ -256,7 +258,7 @@ test.describe("admin settings dialog", () => {
         await page.route("**/admin/maintenance/trash", route => route.fulfill({
             json: {
                 videos: [
-                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [1, 2, 3] },
+                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
                 ],
             },
         }));
@@ -291,6 +293,40 @@ test.describe("admin settings dialog", () => {
 
         await purgeOnce();
         expect(purged).toEqual([1, 2, 2]);
+    });
+
+    test("a trashed video lists the revisions the delete would take", async ({ page }) => {
+        await loginAsAdmin(page);
+        await page.route("**/admin/maintenance/trash", route => route.fulfill({
+            json: {
+                videos: [
+                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
+                    { id: "v2", title: "Nothing Left", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [] },
+                ],
+            },
+        }));
+
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Videos" }).click();
+
+        await expect(dialog.getByRole("row", { name: /Revision 2/ })).toHaveCount(0);
+
+        const toggle = dialog.getByRole("button", { name: "Show the revisions of Three Revisions" });
+        await toggle.click();
+        for (const revision of [1, 2, 3]) {
+            await expect(dialog.getByRole("row", { name: new RegExp(`Revision ${revision}`) })).toBeVisible();
+        }
+
+        await toggle.click();
+        await expect(dialog.getByRole("row", { name: /Revision 2/ })).toHaveCount(0);
+
+        // A video with everything already purged has nothing to expand, but still has a record to delete.
+        const emptyRow = dialog.getByRole("row", { name: /Nothing Left/ });
+        await expect(emptyRow.getByRole("button", { name: /Show the revisions/ })).toHaveCount(0);
+        await expect(emptyRow.getByRole("button", { name: "Delete", exact: true })).toBeEnabled();
     });
 
     test("a guest does not see the entry", async ({ page }) => {

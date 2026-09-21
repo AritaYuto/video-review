@@ -32,8 +32,11 @@ const TrashResponse = z.object({
         title: z.string(),
         folderKey: z.string(),
         latestUpdatedAt: z.string(),
-        // Revisions still holding files. Purging a whole video means purging each of these.
-        revisions: z.array(z.number()),
+        // Revisions still holding files. Deleting the video deletes each of these.
+        revisions: z.array(z.object({
+            revision: z.number(),
+            uploadedAt: z.string(),
+        })),
     })),
 });
 
@@ -272,8 +275,12 @@ export const maintenanceRouter = createRouter()
                 title: true,
                 folderKey: true,
                 latestUpdatedAt: true,
-                // Already purged revisions keep their row, so exclude them from the purge list.
-                revisions: { where: { deleted: false }, select: { revision: true } },
+                // Already purged revisions keep their row, so exclude them from the list.
+                revisions: {
+                    where: { deleted: false },
+                    select: { revision: true, uploadedAt: true },
+                    orderBy: { revision: "asc" },
+                },
             },
             orderBy: [{ latestUpdatedAt: "desc" }, { id: "asc" }],
         });
@@ -282,7 +289,7 @@ export const maintenanceRouter = createRouter()
             videos: videos.map(v => ({
                 ...v,
                 latestUpdatedAt: v.latestUpdatedAt.toISOString(),
-                revisions: v.revisions.map(r => r.revision).sort((a, b) => a - b),
+                revisions: v.revisions.map(r => ({ revision: r.revision, uploadedAt: r.uploadedAt.toISOString() })),
             })),
         }, 200);
     })

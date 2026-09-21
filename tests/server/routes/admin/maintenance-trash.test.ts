@@ -35,7 +35,10 @@ const DELETED_VIDEO = {
     title: "Cut 010",
     folderKey: "shots",
     latestUpdatedAt: new Date("2026-03-01T00:00:00.000Z"),
-    revisions: [{ revision: 3 }, { revision: 1 }],
+    revisions: [
+        { revision: 1, uploadedAt: new Date("2026-02-01T00:00:00.000Z") },
+        { revision: 3, uploadedAt: new Date("2026-02-20T00:00:00.000Z") },
+    ],
 };
 
 function trashRequest() {
@@ -49,7 +52,7 @@ describe("GET /trash", () => {
         prismaMock.video.findMany.mockResolvedValue([DELETED_VIDEO]);
     });
 
-    it("returns the deleted videos with their remaining revisions in ascending order", async () => {
+    it("returns the deleted videos with the revisions a delete would take", async () => {
         const res = await trashRequest();
 
         expect(res.status).toBe(200);
@@ -59,7 +62,10 @@ describe("GET /trash", () => {
                 title: "Cut 010",
                 folderKey: "shots",
                 latestUpdatedAt: "2026-03-01T00:00:00.000Z",
-                revisions: [1, 3],
+                revisions: [
+                    { revision: 1, uploadedAt: "2026-02-01T00:00:00.000Z" },
+                    { revision: 3, uploadedAt: "2026-02-20T00:00:00.000Z" },
+                ],
             }],
         });
     });
@@ -70,6 +76,8 @@ describe("GET /trash", () => {
         const args = prismaMock.video.findMany.mock.calls[0][0];
         expect(args.where).toEqual({ deleted: true });
         expect(args.select.revisions.where).toEqual({ deleted: false });
+        // The child rows read top to bottom, so the revisions arrive in order.
+        expect(args.select.revisions.orderBy).toEqual({ revision: "asc" });
         // The tiebreak keeps the order stable for videos imported in the same batch.
         expect(args.orderBy).toEqual([{ latestUpdatedAt: "desc" }, { id: "asc" }]);
     });
