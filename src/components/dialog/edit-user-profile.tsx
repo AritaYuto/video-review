@@ -10,6 +10,8 @@ import { useAvatarStore } from "@/stores/avatar-store";
 import { ControlRow } from "@/components/controls/control-row";
 import { api } from "@/lib/api-client";
 import { Input } from "@/ui/input";
+import { Label } from "@/ui/label";
+import { Separator } from "@/ui/separator";
 
 export default function EditUserProfileDialog({
     open,
@@ -26,6 +28,9 @@ export default function EditUserProfileDialog({
     const [apiToken, setApiToken] = useState<string | null>(null);
     const { icon, fetchAvatar } = useAvatarStore();
     const [file, setFile] = useState<File | null>(null);
+    const [currentPass, setCurrentPass] = useState("");
+    const [newPass, setNewPass] = useState("");
+    const [confirmPass, setConfirmPass] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +59,26 @@ export default function EditUserProfileDialog({
             const errorMsg = []
             setLoading(true);
             setError(null);
+
+            // The password fields are optional; validate them only when a change is started.
+            const changingPassword = !!(currentPass || newPass || confirmPass);
+            let passFields: { pass?: string; currentPass?: string } = {};
+            if (changingPassword) {
+                if (newPass.length < 6) {
+                    setError(t("passwordTooShort"));
+                    return;
+                }
+                if (newPass !== confirmPass) {
+                    setError(t("passwordMismatch"));
+                    return;
+                }
+                if (!currentPass) {
+                    setError(t("currentPasswordRequired"));
+                    return;
+                }
+                passFields = { pass: newPass, currentPass };
+            }
+
             if (file && email) {
                 const res = await api.avatar.upload.$put({ form: { email, file } });
                 if (res.status !== 200) {
@@ -61,11 +86,17 @@ export default function EditUserProfileDialog({
                 }
             }
 
-            const res = await api.user.update.$patch({ json: { userId: userId ?? undefined, displayName: editDisplayName } });
+            const res = await api.user.update.$patch({ json: { userId: userId ?? undefined, displayName: editDisplayName, ...passFields } });
             if (res.status === 200) {
                 setDisplayName(editDisplayName);
             } else {
-                errorMsg.push((await res.json()).error);
+                const err = (await res.json()).error;
+                // The owner guard also returns 403 ("forbidden"); only a password-time 403 means a bad current password.
+                if (res.status === 403 && passFields.pass && err !== "forbidden") {
+                    errorMsg.push(t("currentPasswordWrong"));
+                } else {
+                    errorMsg.push(err);
+                }
             }
 
             if(errorMsg.length > 0) {
@@ -110,6 +141,9 @@ export default function EditUserProfileDialog({
 
     const Close = () => {
         setApiToken("");
+        setCurrentPass("");
+        setNewPass("");
+        setConfirmPass("");
         onClose();
     }
 
@@ -159,16 +193,45 @@ export default function EditUserProfileDialog({
                         </div>
                     )}
 
-                    {ControlRow(t("displayName"), () => {
-                        return (
-                            <Input id="displayName"
-                                type="text"
-                                value={editDisplayName ?? ""}
-                                onChange={(x) => setEditDisplayName(x.target.value)} />
-                        );
-                    })}
+                    {/* Labels sit above full-width inputs so the layout holds for any label length. */}
+                    <div className="w-full grid gap-2">
+                        <Label htmlFor="displayName">{t("displayName")}</Label>
+                        <Input id="displayName"
+                            type="text"
+                            value={editDisplayName ?? ""}
+                            onChange={(x) => setEditDisplayName(x.target.value)} />
+                    </div>
 
-                    <div>
+                    <Separator className="w-full" />
+
+                    <div className="w-full grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
+                            <Input id="currentPassword"
+                                type="password"
+                                autoComplete="current-password"
+                                value={currentPass}
+                                onChange={(x) => setCurrentPass(x.target.value)} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="newPassword">{t("newPassword")}</Label>
+                            <Input id="newPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                value={newPass}
+                                onChange={(x) => setNewPass(x.target.value)} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+                            <Input id="confirmPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                value={confirmPass}
+                                onChange={(x) => setConfirmPass(x.target.value)} />
+                        </div>
+                    </div>
+
+                    <div className="w-full">
                         {ControlRow(t("apiToken"), () => {
                             return (
                                 <div className="flex justify-between">
