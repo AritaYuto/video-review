@@ -40,7 +40,7 @@ export default function AdminSettingsDialog({
                     <DialogTitle>{t("title")}</DialogTitle>
                 </DialogHeader>
 
-                <Tabs orientation="vertical" value={section} onValueChange={setSection} className="flex-row min-h-96">
+                <Tabs orientation="vertical" value={section} onValueChange={setSection} className="flex-row">
                     <TabsList className="flex-col h-auto w-44 mr-4 shrink-0 self-start items-stretch">
                         {SECTIONS.map(({ key, label }) => (
                             <TabsTrigger key={key} value={key} className="justify-start">
@@ -49,8 +49,9 @@ export default function AdminSettingsDialog({
                         ))}
                     </TabsList>
 
+                    {/* Fixed height so switching sections doesn't resize the dialog; each section scrolls its own content. */}
                     {SECTIONS.map(({ key, Component }) => (
-                        <TabsContent key={key} value={key} className="min-w-0">
+                        <TabsContent key={key} value={key} className="min-w-0 flex-1 h-120">
                             <Component />
                         </TabsContent>
                     ))}
