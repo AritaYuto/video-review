@@ -9,14 +9,14 @@ import { isAdmin } from "@/lib/role";
 import { UsersSection } from "@/components/admin/users-section";
 import { ApiTokenSection } from "@/components/admin/api-token-section";
 import { IntegrationsSection } from "@/components/admin/integrations-section";
-import { MaintenanceSection } from "@/components/admin/maintenance-section";
+import { VideosSection } from "@/components/admin/videos-section";
 
 // Add a section by appending here.
 const SECTIONS = [
     { key: "users", label: "sections.users", Component: UsersSection },
     { key: "apiToken", label: "sections.apiToken", Component: ApiTokenSection },
     { key: "integrations", label: "sections.integrations", Component: IntegrationsSection },
-    { key: "maintenance", label: "sections.maintenance", Component: MaintenanceSection },
+    { key: "videos", label: "sections.videos", Component: VideosSection },
 ] as const;
 
 export default function AdminSettingsDialog({

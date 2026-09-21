@@ -198,7 +198,7 @@
             "users": "Users",
             "apiToken": "API Token",
             "integrations": "Integrations",
-            "maintenance": "Maintenance"
+            "videos": "Videos"
         },
         "empty": "Nothing to configure here yet.",
         "users": {
@@ -233,7 +233,7 @@
             "loadFailed": "Failed to load the status",
             "failed": "Failed to generate the token"
         },
-        "maintenance": {
+        "videos": {
             "trash": {
                 "filterPlaceholder": "Filter by title or folder...",
                 "empty": "Nothing in the trash.",
@@ -250,10 +250,11 @@
                 },
                 "purge": {
                     "action": "Delete",
-                    "title": "Delete permanently",
-                    "description": "{title} and its {revisions} revision file(s) will be removed from storage. This cannot be undone.",
-                    "confirmLabel": "Type {word} to confirm",
-                    "submit": "Delete permanently",
+                    "title": "Delete the video files",
+                    "description": "The files for {title} will be removed from storage.",
+                    "irreversible": "This cannot be undone.",
+                    "confirmLabel": "Type <word>{confirmWord}</word> to confirm",
+                    "submit": "Delete",
                     "cancel": "Cancel",
                     "failed": "Failed to delete the files",
                     "filesLeft": "{title}: the revisions were marked deleted, but some files could not be removed."

@@ -14,7 +14,7 @@ import { Spinner } from "@/ui/spinner";
 type TrashVideo = InferResponseType<typeof api.admin.maintenance.trash.$get, 200>["videos"][number];
 
 // Renders as a fragment: the search field and the list are laid out by the AdminSection flex column.
-export function MaintenanceTrash() {
+export function VideosTrash() {
     const t = useTranslations("admin-settings");
     const { locale } = useLocale();
 
@@ -34,7 +34,7 @@ export function MaintenanceTrash() {
                 return (await res.json()).videos;
             })
             .then(rows => { if (!cancelled) setVideos(rows); })
-            .catch(e => { if (!cancelled) setError(`${t("maintenance.trash.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
+            .catch(e => { if (!cancelled) setError(`${t("videos.trash.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
         return () => { cancelled = true; };
     }, []);
 
@@ -47,7 +47,7 @@ export function MaintenanceTrash() {
             if (res.status !== 200) throw new Error(await readError(res));
             setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
         } catch (e) {
-            setActionError(`${t("maintenance.trash.restoreFailed")}: ${e instanceof Error ? e.message : String(e)}`);
+            setActionError(`${t("videos.trash.restoreFailed")}: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setRestoringId(null);
         }
@@ -72,7 +72,7 @@ export function MaintenanceTrash() {
                 purged.add(revision);
             }
         } catch (e) {
-            failure = `${t("maintenance.trash.purge.failed")}: ${e instanceof Error ? e.message : String(e)}`;
+            failure = `${t("videos.trash.purge.failed")}: ${e instanceof Error ? e.message : String(e)}`;
         }
         // Drop only what went through, so a retry resumes where it stopped. The Video row itself
         // survives with an empty list: nothing in the API deletes it.
@@ -82,7 +82,7 @@ export function MaintenanceTrash() {
         setPurgeTarget(null);
         setPurging(false);
         // Both can be true at once, and orphaned files must not be hidden by the failure.
-        const warning = filesLeft ? t("maintenance.trash.purge.filesLeft", { title: video.title }) : null;
+        const warning = filesLeft ? t("videos.trash.purge.filesLeft", { title: video.title }) : null;
         setActionError([failure, warning].filter(Boolean).join(" ") || null);
     }
 
@@ -109,24 +109,24 @@ export function MaintenanceTrash() {
                 <SidebarSearchInput
                     value={filter}
                     onChange={setFilter}
-                    placeholder={t("maintenance.trash.filterPlaceholder")}
+                    placeholder={t("videos.trash.filterPlaceholder")}
                 />
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto">
                 {shown.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                        {videos.length === 0 ? t("maintenance.trash.empty") : t("maintenance.trash.noMatch")}
+                        {videos.length === 0 ? t("videos.trash.empty") : t("videos.trash.noMatch")}
                     </p>
                 ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{t("maintenance.trash.columns.title")}</TableHead>
-                                <TableHead>{t("maintenance.trash.columns.folder")}</TableHead>
-                                <TableHead>{t("maintenance.trash.columns.updatedAt")}</TableHead>
-                                <TableHead>{t("maintenance.trash.columns.revisions")}</TableHead>
-                                <TableHead><span className="sr-only">{t("maintenance.trash.columns.actions")}</span></TableHead>
+                                <TableHead>{t("videos.trash.columns.title")}</TableHead>
+                                <TableHead>{t("videos.trash.columns.folder")}</TableHead>
+                                <TableHead>{t("videos.trash.columns.updatedAt")}</TableHead>
+                                <TableHead>{t("videos.trash.columns.revisions")}</TableHead>
+                                <TableHead><span className="sr-only">{t("videos.trash.columns.actions")}</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -145,7 +145,7 @@ export function MaintenanceTrash() {
                                                 disabled={restoringId === video.id}
                                             >
                                                 {restoringId === video.id ? <Spinner /> : null}
-                                                {t("maintenance.trash.restore")}
+                                                {t("videos.trash.restore")}
                                             </Button>
                                             <Button
                                                 variant="destructive"
@@ -153,7 +153,7 @@ export function MaintenanceTrash() {
                                                 onClick={() => { setActionError(null); setPurgeTarget(video); }}
                                                 disabled={video.revisions.length === 0}
                                             >
-                                                {t("maintenance.trash.purge.action")}
+                                                {t("videos.trash.purge.action")}
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -169,7 +169,6 @@ export function MaintenanceTrash() {
             {purgeTarget && (
                 <PurgeConfirmDialog
                     title={purgeTarget.title}
-                    revisions={purgeTarget.revisions.length}
                     busy={purging}
                     onConfirm={() => onPurge(purgeTarget)}
                     onCancel={() => setPurgeTarget(null)}

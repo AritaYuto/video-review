@@ -2,14 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { AdminSection } from "@/components/admin/admin-section";
-import { MaintenanceTrash } from "@/components/admin/maintenance-trash";
+import { VideosTrash } from "@/components/admin/videos-trash";
 
-export function MaintenanceSection() {
+export function VideosSection() {
     const t = useTranslations("admin-settings");
 
     return (
-        <AdminSection title={t("sections.maintenance")}>
-            <MaintenanceTrash />
+        <AdminSection title={t("sections.videos")}>
+            <VideosTrash />
         </AdminSection>
     );
 }

@@ -45,12 +45,12 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole("heading", { name: "Administration" })).toBeVisible();
-        for (const name of ["Users", "API Token", "Integrations", "Maintenance"]) {
+        for (const name of ["Users", "API Token", "Integrations", "Videos"]) {
             await expect(dialog.getByRole("tab", { name })).toBeVisible();
         }
 
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
-        await expect(dialog.getByRole("heading", { name: "Maintenance" })).toBeVisible();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
+        await expect(dialog.getByRole("heading", { name: "Videos" })).toBeVisible();
         await expect(dialog.getByRole("heading", { name: "Users" })).toHaveCount(0);
     });
 
@@ -88,7 +88,7 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
 
         // The seed marks every "Discarded" video as deleted, so the trash is never empty here.
         await expect(dialog.getByRole("row", { name: /Discarded #001/ })).toBeVisible();
@@ -114,7 +114,7 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
         const filter = dialog.getByPlaceholder("Filter by title or folder...");
 
         await filter.fill("01_PROTOTYPE");
@@ -133,7 +133,7 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
 
         // A retry runs against the same seeded DB, so each attempt restores a different video.
         // Counting down from #050 keeps clear of the videos the filter test expects to find.
@@ -151,7 +151,7 @@ test.describe("admin settings dialog", () => {
         await page.reload();
         const reopened = await openSettings(page);
         await reopened.getByRole("button", { name: "Administration" }).click();
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
         await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
     });
@@ -162,7 +162,7 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
 
         // A retry runs against the same seeded DB, so each attempt purges a different video.
         // Counting up from #040 keeps clear of both the restore test and the filter test's #001.
@@ -172,8 +172,13 @@ test.describe("admin settings dialog", () => {
         await row.getByRole("button", { name: "Delete", exact: true }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
-        const submit = confirm.getByRole("button", { name: "Delete permanently" });
+        await expect(confirm.getByRole("heading", { name: "Delete the video files" })).toBeVisible();
+        const submit = confirm.getByRole("button", { name: "Delete", exact: true });
         await expect(submit).toBeDisabled();
+
+        // The word has to be selectable, so it can be copied rather than retyped.
+        await confirm.locator("code").click();
+        expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("Delete");
 
         await confirm.getByLabel("Type Delete to confirm").fill("Delet");
         await expect(submit).toBeDisabled();
@@ -192,7 +197,7 @@ test.describe("admin settings dialog", () => {
         await page.reload();
         const reopened = await openSettings(page);
         await reopened.getByRole("button", { name: "Administration" }).click();
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
         await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
         await expect(row.getByRole("button", { name: "Delete", exact: true })).toBeDisabled();
@@ -223,13 +228,13 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
         const row = dialog.getByRole("row", { name: /Three Revisions/ });
         await row.getByRole("button", { name: "Delete", exact: true }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
         await confirm.getByLabel("Type Delete to confirm").fill("Delete");
-        await confirm.getByRole("button", { name: "Delete permanently" }).click();
+        await confirm.getByRole("button", { name: "Delete", exact: true }).click();
 
         await expect(row.getByRole("cell", { name: "0", exact: true })).toBeVisible();
         expect(purged).toEqual([1, 2, 3]);
@@ -258,14 +263,14 @@ test.describe("admin settings dialog", () => {
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByRole("tab", { name: "Videos" }).click();
         const row = dialog.getByRole("row", { name: /Three Revisions/ });
 
         async function purgeOnce() {
             await row.getByRole("button", { name: "Delete", exact: true }).click();
             const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
             await confirm.getByLabel("Type Delete to confirm").fill("Delete");
-            await confirm.getByRole("button", { name: "Delete permanently" }).click();
+            await confirm.getByRole("button", { name: "Delete", exact: true }).click();
         }
 
         await purgeOnce();

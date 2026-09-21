@@ -198,7 +198,7 @@
             "users": "ユーザー",
             "apiToken": "API Token",
             "integrations": "連携",
-            "maintenance": "メンテナンス"
+            "videos": "動画管理"
         },
         "empty": "まだ設定項目はありません",
         "users": {
@@ -233,7 +233,7 @@
             "loadFailed": "状態の取得に失敗しました",
             "failed": "トークンの生成に失敗しました"
         },
-        "maintenance": {
+        "videos": {
             "trash": {
                 "filterPlaceholder": "タイトル・フォルダで絞り込み",
                 "empty": "ゴミ箱は空です",
@@ -250,10 +250,11 @@
                 },
                 "purge": {
                     "action": "Delete",
-                    "title": "Delete permanently",
-                    "description": "{title} と {revisions} 件のリビジョンのファイルをストレージから削除します。元に戻せません",
-                    "confirmLabel": "確認のため {word} と入力してください",
-                    "submit": "Delete permanently",
+                    "title": "動画のファイルを削除",
+                    "description": "{title} のファイルをストレージから削除します",
+                    "irreversible": "元に戻せません",
+                    "confirmLabel": "確認のため <word>{confirmWord}</word> と入力してください",
+                    "submit": "Delete",
                     "cancel": "キャンセル",
                     "failed": "ファイルの削除に失敗しました",
                     "filesLeft": "{title}: リビジョンは削除済みにしましたが、一部のファイルを消せませんでした"
