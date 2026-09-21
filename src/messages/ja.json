@@ -181,6 +181,13 @@
         "saveFailed": "プロフィールの保存に失敗しました",
         "avatarHint": "PNG / JPEG形式、最大{max}, {size}まで",
         "change": "変更",
-        "fileTooLarge": "ファイルサイズ({size})が大きすぎます"
+        "fileTooLarge": "ファイルサイズ({size})が大きすぎます",
+        "currentPassword": "現在のパスワード",
+        "newPassword": "新しいパスワード",
+        "confirmPassword": "新しいパスワード（確認）",
+        "passwordTooShort": "パスワードは6文字以上にしてください",
+        "passwordMismatch": "新しいパスワードが一致しません",
+        "currentPasswordRequired": "現在のパスワードを入力してください",
+        "currentPasswordWrong": "現在のパスワードが違います"
     }
 }

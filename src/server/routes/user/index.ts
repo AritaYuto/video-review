@@ -5,12 +5,14 @@ import bcrypt from "bcrypt";
 import { UserSchema } from "@/schema/zod";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 import { authorize } from "@/server/lib/token";
+import { ServerError } from "@/server/lib/server-error";
 
 const UpdateProfileBody = z.object({
     userId: z.string().optional(),
     displayName: z.string().optional(),
     email: z.string().optional(),
     pass: z.string().min(6).optional(),
+    currentPass: z.string().optional(),
 });
 
 export const userRouter = createRouter()
@@ -50,6 +52,7 @@ export const userRouter = createRouter()
             userId,
             email,
             pass,
+            currentPass,
             displayName,
         } = body;
 
@@ -70,16 +73,20 @@ export const userRouter = createRouter()
             });
 
             if (pass) {
-                const hash = await bcrypt.hash(pass, 10);
+                // Re-authenticate with the current password before rotating it,
+                // so an unattended session cannot change the password.
+                const identity = await tx.identity.findFirst({
+                    where: { userId, provider: "password" },
+                });
+                if (!identity?.secretHash || !currentPass || !(await bcrypt.compare(currentPass, identity.secretHash))) {
+                    throw new ServerError("current password is incorrect", 403);
+                }
 
-                await tx.identity.updateMany({
-                    where: {
-                        userId,
-                        provider: "local",
-                    },
+                await tx.identity.update({
+                    where: { id: identity.id },
                     data: {
                         ...(email ? { providerUid: email } : {}),
-                        secretHash: hash,
+                        secretHash: await bcrypt.hash(pass, 10),
                     },
                 });
             }

@@ -1,6 +1,8 @@
 import { Role } from "@/lib/role";
 
-export type LoginType = "guest" | "jira" | "user";
+// How the current session authenticated. One vocabulary across the DB Identity.provider,
+// the JWT `provider` claim, and the login routes.
+export type LoginType = "guest" | "jira" | "password";
 
 export interface LoginRequest {
     displayName: string;
@@ -14,4 +16,5 @@ export interface LoginResponse {
     email?: string;
     displayName: string;
     role: Role
+    provider: LoginType
 }

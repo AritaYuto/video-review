@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import bcrypt from "bcrypt";
 import { ServerError } from "@/server/lib/server-error";
 
 // Prisma and authorize are mocked so this exercises the authorization rules
@@ -9,7 +10,8 @@ const prismaMock = vi.hoisted(() => ({
         update: vi.fn(),
     },
     identity: {
-        updateMany: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
     },
 }));
 
@@ -74,5 +76,50 @@ describe("PATCH /update", () => {
             where: { id: "user-a" },
             data: { displayName: "A renamed" },
         });
+    });
+
+    it("changes the password on the 'password' identity after verifying the current one", async () => {
+        authorizeMock.mockResolvedValue({ type: "jwt", decoded: { id: "user-a", role: "viewer" } });
+        const currentHash = await bcrypt.hash("old-pass", 10);
+        prismaMock.identity.findFirst.mockResolvedValue({ id: "identity-a", secretHash: currentHash });
+        prismaMock.identity.update.mockResolvedValue({});
+
+        const res = await updateRequest({ userId: "user-a", pass: "new-pass-123", currentPass: "old-pass" });
+
+        expect(res.status).toBe(200);
+        // The identity is looked up under provider "password" (login's provider), not "local".
+        expect(prismaMock.identity.findFirst).toHaveBeenCalledWith({
+            where: { userId: "user-a", provider: "password" },
+        });
+        expect(prismaMock.identity.update).toHaveBeenCalledTimes(1);
+        const updateArg = prismaMock.identity.update.mock.calls[0][0];
+        expect(updateArg.where).toEqual({ id: "identity-a" });
+        // The stored hash is a fresh hash of the new password, never the raw value.
+        expect(updateArg.data.secretHash).not.toBe("new-pass-123");
+        expect(await bcrypt.compare("new-pass-123", updateArg.data.secretHash)).toBe(true);
+    });
+
+    it("rejects a wrong current password without writing", async () => {
+        authorizeMock.mockResolvedValue({ type: "jwt", decoded: { id: "user-a", role: "viewer" } });
+        const currentHash = await bcrypt.hash("old-pass", 10);
+        prismaMock.identity.findFirst.mockResolvedValue({ id: "identity-a", secretHash: currentHash });
+
+        const res = await updateRequest({ userId: "user-a", pass: "new-pass-123", currentPass: "wrong-pass" });
+
+        // The guard throws ServerError(403); at this subrouter level the throw surfaces
+        // as Hono's default status (the 403 mapping via app.onError is covered elsewhere).
+        // What matters is that no password write happens.
+        expect(res.status).not.toBe(200);
+        expect(prismaMock.identity.update).not.toHaveBeenCalled();
+    });
+
+    it("rejects a password change that omits the current password", async () => {
+        authorizeMock.mockResolvedValue({ type: "jwt", decoded: { id: "user-a", role: "viewer" } });
+        prismaMock.identity.findFirst.mockResolvedValue({ id: "identity-a", secretHash: await bcrypt.hash("old-pass", 10) });
+
+        const res = await updateRequest({ userId: "user-a", pass: "new-pass-123" });
+
+        expect(res.status).not.toBe(200);
+        expect(prismaMock.identity.update).not.toHaveBeenCalled();
     });
 });

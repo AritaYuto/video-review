@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 export async function loginAsGuest(c: LoginRequest): Promise<LoginResponse> {
     let role: Role = 'guest';
     let tokenPayload: Record<string, any> = {
-        id: uuidv4(), displayName: c.displayName, role
+        id: uuidv4(), displayName: c.displayName, role, provider: "guest"
     };
 
     let token: string | undefined = undefined;
@@ -21,5 +21,6 @@ export async function loginAsGuest(c: LoginRequest): Promise<LoginResponse> {
         role,
         displayName: c.displayName,
         id: tokenPayload.id,
+        provider: "guest",
     }
 };

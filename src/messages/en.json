@@ -181,6 +181,13 @@
         "saveFailed": "Failed to save profile",
         "avatarHint": "PNG or JPEG. Max size {max}, size {size}.",
         "change": "Change",
-        "fileTooLarge": "The selected file({size}) is too large."
+        "fileTooLarge": "The selected file({size}) is too large.",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password",
+        "passwordTooShort": "Password must be at least 6 characters",
+        "passwordMismatch": "New passwords do not match",
+        "currentPasswordRequired": "Enter your current password",
+        "currentPasswordWrong": "Current password is incorrect"
     }
 }

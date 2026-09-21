@@ -23,10 +23,10 @@ export default function Bootstrap() {
         }
 
         try {
-            const login = await api.auth.login.user.$post({ json: { email, password: pass } });
+            const login = await api.auth.login.password.$post({ json: { email, password: pass } });
             if (login.status !== 200) throw new Error("Failed to login");
             const data = await login.json();
-            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName);
+            setAuth(data.id, data.email ?? null, data.role, data.token, data.displayName, data.provider);
             location.href = "/";
         } catch (e) {
             alert(t("loginFailedMsg"));
