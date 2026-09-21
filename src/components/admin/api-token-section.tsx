@@ -1,14 +1,87 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { api } from "@/lib/api-client";
 import { AdminSection } from "@/components/admin/admin-section";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+import { Spinner } from "@/ui/spinner";
+
+// Error routes without a content schema type json() as never, so read the body loosely.
+async function readError(res: { status: number; json: () => Promise<unknown> }): Promise<string> {
+    try {
+        const body = await res.json() as { error?: string } | null;
+        return body?.error ?? `HTTP ${res.status}`;
+    } catch {
+        return `HTTP ${res.status}`;
+    }
+}
 
 export function ApiTokenSection() {
     const t = useTranslations("admin-settings");
+    // null while the status is loading.
+    const [configured, setConfigured] = useState<boolean | null>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        api.admin.maintenance["api-token"].status.$get()
+            .then(async res => {
+                if (res.status !== 200) throw new Error(await readError(res));
+                return (await res.json()).configured;
+            })
+            .then(c => { if (!cancelled) setConfigured(c); })
+            .catch(e => { if (!cancelled) setError(`${t("apiToken.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
+        return () => { cancelled = true; };
+    }, []);
+
+    async function onRotate() {
+        setBusy(true);
+        setError(null);
+        try {
+            const res = await api.admin.maintenance["api-token"].rotate.$post();
+            if (res.status !== 200) throw new Error(await readError(res));
+            setToken((await res.json()).token);
+            setConfigured(true);
+        } catch (e) {
+            setError(`${t("apiToken.failed")}: ${e instanceof Error ? e.message : String(e)}`);
+        } finally {
+            setBusy(false);
+        }
+    }
 
     return (
         <AdminSection title={t("sections.apiToken")}>
-            <p className="text-sm text-muted-foreground">{t("empty")}</p>
+            <p className="shrink-0 text-sm text-muted-foreground">{t("apiToken.description")}</p>
+
+            <div className="shrink-0 flex items-center justify-between gap-4">
+                <span className="text-sm">
+                    {configured === null
+                        ? <Spinner />
+                        : configured ? t("apiToken.configured") : t("apiToken.notConfigured")}
+                </span>
+                <Button onClick={onRotate} disabled={busy || configured === null}>
+                    {busy ? <Spinner /> : null}
+                    {configured ? t("apiToken.regenerate") : t("apiToken.generate")}
+                </Button>
+            </div>
+
+            {token && (
+                <div className="shrink-0 space-y-2">
+                    <Input
+                        value={token}
+                        readOnly
+                        className="select-all font-mono text-xs"
+                        onFocus={(e) => e.target.select()}
+                    />
+                    <p className="text-xs text-muted-foreground">{t("apiToken.newTokenHint")}</p>
+                </div>
+            )}
+
+            {error && <p className="shrink-0 text-sm text-destructive">{error}</p>}
         </AdminSection>
     );
 }

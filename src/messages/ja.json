@@ -221,6 +221,16 @@
                 "submit": "作成",
                 "failed": "ユーザーの作成に失敗しました"
             }
+        },
+        "apiToken": {
+            "description": "RestAPI や maintenance で使用するトークンです",
+            "configured": "設定済み",
+            "notConfigured": "未設定",
+            "generate": "生成",
+            "regenerate": "再生成",
+            "newTokenHint": "Ctrl+C でコピーしてください。再表示されません",
+            "loadFailed": "状態の取得に失敗しました",
+            "failed": "トークンの生成に失敗しました"
         }
     }
 }

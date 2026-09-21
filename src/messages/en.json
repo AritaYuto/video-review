@@ -221,6 +221,16 @@
                 "submit": "Create",
                 "failed": "Failed to create the user"
             }
+        },
+        "apiToken": {
+            "description": "A token for the REST API and maintenance.",
+            "configured": "Configured",
+            "notConfigured": "Not configured",
+            "generate": "Generate",
+            "regenerate": "Regenerate",
+            "newTokenHint": "Copy it now with Ctrl+C. It is not shown again.",
+            "loadFailed": "Failed to load the status",
+            "failed": "Failed to generate the token"
         }
     }
 }
