@@ -148,7 +148,7 @@ export function UsersSection() {
                         </TableHeader>
                         <TableBody>
                             {users.map(user => (
-                                <TableRow key={user.id} className={user.id === justAddedId ? "bg-accent transition-colors" : "transition-colors"}>
+                                <TableRow key={user.id} data-state={user.id === justAddedId ? "selected" : undefined}>
                                     <TableCell>{user.displayName}</TableCell>
                                     <TableCell>
                                         {user.email ?? <span className="text-muted-foreground">-</span>}
