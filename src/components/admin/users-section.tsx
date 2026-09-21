@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "@/app/locale-provider";
-import { api } from "@/lib/api-client";
+import { api, readError } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 import { AdminSection } from "@/components/admin/admin-section";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
@@ -26,16 +26,6 @@ type AssignableRole = typeof ROLES[number];
 
 // Mirrors the server's zod rule so the button only enables for a request that can succeed.
 const MIN_PASSWORD_LENGTH = 6;
-
-// Error routes without a content schema type json() as never, so read the body loosely.
-async function readError(res: { status: number; json: () => Promise<unknown> }): Promise<string> {
-    try {
-        const body = await res.json() as { error?: string } | null;
-        return body?.error ?? `HTTP ${res.status}`;
-    } catch {
-        return `HTTP ${res.status}`;
-    }
-}
 
 export function UsersSection() {
     const t = useTranslations("admin-settings");

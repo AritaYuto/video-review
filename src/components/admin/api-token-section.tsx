@@ -2,21 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { api } from "@/lib/api-client";
+import { api, readError } from "@/lib/api-client";
 import { AdminSection } from "@/components/admin/admin-section";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Spinner } from "@/ui/spinner";
-
-// Error routes without a content schema type json() as never, so read the body loosely.
-async function readError(res: { status: number; json: () => Promise<unknown> }): Promise<string> {
-    try {
-        const body = await res.json() as { error?: string } | null;
-        return body?.error ?? `HTTP ${res.status}`;
-    } catch {
-        return `HTTP ${res.status}`;
-    }
-}
 
 export function ApiTokenSection() {
     const t = useTranslations("admin-settings");

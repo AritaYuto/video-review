@@ -44,3 +44,15 @@ export const api = {
     chatSearch: v1<typeof chatSearchRouter>("/chat/search"),
     thumbnail: v1<typeof thumbnailRouter>("/thumbnail"),
 };
+
+// Takes a structural type because error routes declare no content schema, which types their
+// json() as never. An error body is not guaranteed to be JSON either (a proxy can answer with
+// HTML), so fall back to the status code instead of letting the parse throw.
+export async function readError(res: { status: number; json: () => Promise<unknown> }): Promise<string> {
+    try {
+        const body = await res.json() as { error?: string } | null;
+        return body?.error ?? `HTTP ${res.status}`;
+    } catch {
+        return `HTTP ${res.status}`;
+    }
+}

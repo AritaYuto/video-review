@@ -43,6 +43,7 @@
   --text-2xs: 0.625rem;
   --text-3xs: 0.5rem;
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-info: var(--info);
   --radius-sm: calc(var(--radius) - 4px);
@@ -91,6 +92,8 @@
   /* Colours the shadcn set has no name for. */
   --primary-strong: #ff5500;
   --success: #32cd32;
+  /* Dark text: white on --success falls far below AA. */
+  --success-foreground: #181818;
   --warning: #eae60b;
   --info: #4aa3ff;
 }

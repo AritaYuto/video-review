@@ -232,6 +232,17 @@
             "newTokenHint": "Ctrl+C でコピーしてください。再表示されません",
             "loadFailed": "状態の取得に失敗しました",
             "failed": "トークンの生成に失敗しました"
+        },
+        "maintenance": {
+            "status": {
+                "title": "状態",
+                "hasAdmin": "管理者ユーザー",
+                "hasJwt": "JWT secret",
+                "initialized": "初期化",
+                "yes": "あり",
+                "no": "なし",
+                "loadFailed": "状態の取得に失敗しました"
+            }
         }
     }
 }
