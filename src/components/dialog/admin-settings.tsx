@@ -35,12 +35,13 @@ export default function AdminSettingsDialog({
 
     return (
         <Dialog open={open} onOpenChange={() => onClose()}>
-            <DialogContent className="sm:max-w-3xl" aria-describedby={undefined}>
+            <DialogContent className="sm:max-w-4xl" aria-describedby={undefined}>
                 <DialogHeader>
                     <DialogTitle>{t("title")}</DialogTitle>
                 </DialogHeader>
 
-                <Tabs orientation="vertical" value={section} onValueChange={setSection} className="flex-row">
+                {/* min-w-0: without it this grid item grows to its content and the sections overflow the dialog. */}
+                <Tabs orientation="vertical" value={section} onValueChange={setSection} className="flex-row min-w-0">
                     <TabsList className="flex-col h-auto w-44 mr-4 shrink-0 self-start items-stretch">
                         {SECTIONS.map(({ key, label }) => (
                             <TabsTrigger key={key} value={key} className="justify-start">
