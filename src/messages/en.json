@@ -249,6 +249,8 @@
                 "empty": "Nothing in the trash.",
                 "noMatch": "No video matches the filter.",
                 "loadFailed": "Failed to load the trash",
+                "restore": "Restore",
+                "restoreFailed": "Failed to restore the video",
                 "columns": {
                     "title": "Title",
                     "folder": "Folder",

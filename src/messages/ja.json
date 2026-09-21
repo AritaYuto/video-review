@@ -249,6 +249,8 @@
                 "empty": "ゴミ箱は空です",
                 "noMatch": "条件に合う動画はありません",
                 "loadFailed": "ゴミ箱の取得に失敗しました",
+                "restore": "復元",
+                "restoreFailed": "動画の復元に失敗しました",
                 "columns": {
                     "title": "タイトル",
                     "folder": "フォルダ",

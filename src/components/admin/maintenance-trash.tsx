@@ -7,6 +7,7 @@ import { useLocale } from "@/app/locale-provider";
 import { api, readError } from "@/lib/api-client";
 import { SidebarSearchInput } from "@/components/controls/sidebar-search-input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { Button } from "@/ui/button";
 import { Spinner } from "@/ui/spinner";
 
 type TrashVideo = InferResponseType<typeof api.admin.maintenance.trash.$get, 200>["videos"][number];
@@ -19,6 +20,8 @@ export function MaintenanceTrash() {
     const [videos, setVideos] = useState<TrashVideo[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState("");
+    const [restoringId, setRestoringId] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -31,6 +34,21 @@ export function MaintenanceTrash() {
             .catch(e => { if (!cancelled) setError(`${t("maintenance.trash.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
         return () => { cancelled = true; };
     }, []);
+
+    async function onRestore(video: TrashVideo) {
+        setRestoringId(video.id);
+        setActionError(null);
+        try {
+            // The route parses deleted as a string ("true" | anything else).
+            const res = await api.admin.maintenance.video.delete.$post({ json: { videoId: video.id, deleted: "false" } });
+            if (res.status !== 200) throw new Error(await readError(res));
+            setVideos(rows => rows?.filter(r => r.id !== video.id) ?? null);
+        } catch (e) {
+            setActionError(`${t("maintenance.trash.restoreFailed")}: ${e instanceof Error ? e.message : String(e)}`);
+        } finally {
+            setRestoringId(null);
+        }
+    }
 
     // Runs before the early returns below so the hook order stays stable.
     const shown = useMemo(() => {
@@ -72,6 +90,7 @@ export function MaintenanceTrash() {
                                 <TableHead>{t("maintenance.trash.columns.folder")}</TableHead>
                                 <TableHead>{t("maintenance.trash.columns.updatedAt")}</TableHead>
                                 <TableHead>{t("maintenance.trash.columns.revisions")}</TableHead>
+                                <TableHead><span className="sr-only">{t("maintenance.trash.restore")}</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -81,12 +100,25 @@ export function MaintenanceTrash() {
                                     <TableCell>{video.folderKey}</TableCell>
                                     <TableCell>{new Date(video.latestUpdatedAt).toLocaleDateString(locale)}</TableCell>
                                     <TableCell>{video.revisions.length}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => onRestore(video)}
+                                            disabled={restoringId === video.id}
+                                        >
+                                            {restoringId === video.id ? <Spinner /> : null}
+                                            {t("maintenance.trash.restore")}
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 )}
             </div>
+
+            {actionError && <p className="shrink-0 text-sm text-destructive">{actionError}</p>}
         </>
     );
 }

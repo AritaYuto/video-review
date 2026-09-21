@@ -164,6 +164,35 @@ test.describe("admin settings dialog", () => {
         await expect(dialog.getByText("Nothing in the trash.")).toHaveCount(0);
     });
 
+    test("an admin restores a video out of the trash", async ({ page }) => {
+        await loginAsAdmin(page);
+        const popover = await openSettings(page);
+        await popover.getByRole("button", { name: "Administration" }).click();
+
+        const dialog = page.getByRole("dialog");
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+
+        // A retry runs against the same seeded DB, so each attempt restores a different video.
+        // Counting down from #050 keeps clear of the videos the filter test expects to find.
+        const title = `Discarded #${String(50 - test.info().retry).padStart(3, "0")}`;
+        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
+        const row = dialog.getByRole("row", { name: new RegExp(title) });
+        await expect(row).toBeVisible();
+
+        const restored = page.waitForResponse(r => r.url().endsWith("/admin/maintenance/video/delete"));
+        await row.getByRole("button", { name: "Restore" }).click();
+        expect((await restored).status()).toBe(200);
+        await expect(row).toHaveCount(0);
+
+        // Reopening refetches: proves the video really left the trash, not just the local list.
+        await page.reload();
+        const reopened = await openSettings(page);
+        await reopened.getByRole("button", { name: "Administration" }).click();
+        await dialog.getByRole("tab", { name: "Maintenance" }).click();
+        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
+        await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
+    });
+
     test("a guest does not see the entry", async ({ page }) => {
         await loginAsGuest(page);
         const popover = await openSettings(page);
