@@ -5,7 +5,8 @@ import { NextCloudDriver } from "@/server/lib/storage/drivers/nextcloud";
 
 import "server-only";
 
-const INFO_SUFFIX = ".info";
+// Same name the local metadata store uses, so both backends look alike on disk.
+const META_SUFFIX = ".json";
 
 /**
  * Keeps tus upload metadata in Nextcloud, next to where the finished file will be, so an
@@ -19,7 +20,7 @@ export class NextcloudKvStore implements KvStore<Upload> {
     }
 
     async get(key: string): Promise<Upload | undefined> {
-        const res = await fetch(this.driver.pathUnderRoot(`${key}${INFO_SUFFIX}`), {
+        const res = await fetch(this.driver.pathUnderRoot(`${key}${META_SUFFIX}`), {
             headers: this.driver.getHeaders(),
         });
 
@@ -36,13 +37,13 @@ export class NextcloudKvStore implements KvStore<Upload> {
 
     async set(key: string, value: Upload): Promise<void> {
         await this.driver.directUploadFromBuffer(
-            `${key}${INFO_SUFFIX}`,
+            `${key}${META_SUFFIX}`,
             Readable.from(Buffer.from(JSON.stringify(value))),
             "application/json",
         );
     }
 
     async delete(key: string): Promise<void> {
-        await this.driver.deleteObject(`${key}${INFO_SUFFIX}`);
+        await this.driver.deleteObject(`${key}${META_SUFFIX}`);
     }
 }
