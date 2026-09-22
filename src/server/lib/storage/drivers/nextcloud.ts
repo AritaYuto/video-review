@@ -2,7 +2,6 @@ import { Buffer } from "node:buffer";
 import { Readable } from "stream";
 import { FileDriver } from "@/server/lib/storage/drivers";
 import fs, { createReadStream } from "fs";
-import { env } from "@/server/lib/env/storage-env";
 import { lookup } from "mime-types";
 
 export class NextCloudDriver implements FileDriver {
@@ -76,10 +75,7 @@ export class NextCloudDriver implements FileDriver {
             return `/api/v1/drawing/upload/transfer?session_id=${session_id}`
         }
         // "video/mp4"
-        if (env.VIDEO_REVIEW_UPLOAD_CHUNKED) {
-            return "/api/v1/videos/upload/tus";
-        }
-        return `/api/v1/videos/upload/transfer?session_id=${session_id}`
+        return "/api/v1/videos/upload/tus";
     }
 
     async fallbackURL(storageKey: string): Promise<string> {

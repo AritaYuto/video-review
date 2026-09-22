@@ -29,8 +29,8 @@ type TransferRequest = {
     onProgress?: (sentBytes: number, totalBytes: number) => void;
 };
 
-// Sends the bytes to the URL issued by an upload session. S3 is a presigned PUT; the app's own
-// routes are either the chunked upload or a single multipart request.
+// Sends the bytes to the URL issued by an upload session: a presigned PUT for S3, the chunked
+// route for videos, and a single request for the small PNGs of a drawing.
 export async function uploadToSession(data: TransferRequest): Promise<void> {
     if (data.session.storage === UploadStorageType.s3) {
         const res = await fetch(data.url, {

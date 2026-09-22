@@ -4,8 +4,6 @@ import { UploadStorageType } from "@prisma/client";
 export const env = {
     VIDEO_REVIEW_STORAGE: typeEnv<UploadStorageType>(process.env.VIDEO_REVIEW_STORAGE, UploadStorageType.local),
     VIDEO_REVIEW_LOCAL_ROOTDIR: process.env.VIDEO_REVIEW_LOCAL_ROOTDIR,
-    // Migration flag: set to "false" to put video uploads back on the single-request route.
-    VIDEO_REVIEW_UPLOAD_CHUNKED: process.env.VIDEO_REVIEW_UPLOAD_CHUNKED !== "false",
     VIDEO_REVIEW_UPLOAD_CHUNK_MB: positiveNumberEnv(process.env.VIDEO_REVIEW_UPLOAD_CHUNK_MB, 16),
     S3_BUCKET: process.env.S3_BUCKET,
     S3_REGION: process.env.S3_REGION,
