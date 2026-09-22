@@ -95,7 +95,8 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Videos" }).click();
 
-        await dialog.getByPlaceholder("Filter by title or folder...").fill("Archived Playtest #100");
+        // Lower case on purpose: an admin should not have to match the title's case.
+        await dialog.getByPlaceholder("Filter by title or folder...").fill("archived playtest #100");
         await expect(dialog.getByRole("row", { name: /Archived Playtest #100/ })).toBeVisible();
         await expect(dialog.getByRole("row", { name: /Archived Playtest #101/ })).toHaveCount(0);
     });
