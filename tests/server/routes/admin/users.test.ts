@@ -21,6 +21,7 @@ const FIRST = {
     email: "admin@example.com",
     displayName: "admin",
     role: "admin",
+    avatarPath: null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
@@ -29,6 +30,7 @@ const SECOND = {
     email: null,
     displayName: "sso-user",
     role: "viewer",
+    avatarPath: "avatars/user-2.png",
     createdAt: new Date("2026-02-01T00:00:00.000Z"),
 };
 
@@ -43,7 +45,7 @@ describe("GET /users", () => {
         prismaMock.user.findMany.mockResolvedValue([FIRST, SECOND]);
     });
 
-    it("returns the users in creation order with only the public fields", async () => {
+    it("returns the users in creation order, without reaching identities", async () => {
         const res = await listRequest();
 
         expect(res.status).toBe(200);
@@ -54,6 +56,7 @@ describe("GET /users", () => {
             email: "admin@example.com",
             displayName: "admin",
             role: "admin",
+            avatarPath: null,
             createdAt: "2026-01-01T00:00:00.000Z",
         });
         expect(body.users[1].email).toBeNull();
@@ -61,8 +64,9 @@ describe("GET /users", () => {
         expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1);
         const query = prismaMock.user.findMany.mock.calls[0][0];
         expect(query.orderBy).toEqual([{ createdAt: "asc" }, { id: "asc" }]);
-        // The query itself must not reach identities, where secret hashes live.
-        expect(query.select).toEqual({ id: true, email: true, displayName: true, role: true, createdAt: true });
+        // Secret hashes live on Identity, and Prisma leaves relations out unless asked for them.
+        expect(query.select).toBeUndefined();
+        expect(query.include).toBeUndefined();
     });
 
     it("returns 403 to non-admins without querying users", async () => {
