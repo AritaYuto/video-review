@@ -35,7 +35,10 @@ async function openSettings(page: import("@playwright/test").Page) {
     return popover;
 }
 
-const REV = (revision: number) => ({ revision, uploadedAt: "2026-02-01T00:00:00.000Z" });
+// A retry runs against the same seeded DB, so each attempt takes a different video.
+function seededTitle(base: number) {
+    return `Feature Review #${String(base + 9 * test.info().retry).padStart(3, "0")}`;
+}
 
 test.describe("admin settings dialog", () => {
     test("an admin opens it from the settings popover and switches sections", async ({ page }) => {
@@ -84,7 +87,7 @@ test.describe("admin settings dialog", () => {
         await expect(row.getByRole("combobox")).toHaveText("Admin");
     });
 
-    test("an admin browses and filters the trash", async ({ page }) => {
+    test("an admin finds a video with the filter", async ({ page }) => {
         await loginAsAdmin(page);
         const popover = await openSettings(page);
         await popover.getByRole("button", { name: "Administration" }).click();
@@ -92,44 +95,32 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Videos" }).click();
 
-        // The seed marks every "Discarded" video as deleted, so the trash is never empty here.
-        await expect(dialog.getByRole("row", { name: /Discarded #001/ })).toBeVisible();
-
-        await dialog.getByPlaceholder("Filter by title or folder...").fill("Discarded #007");
-        await expect(dialog.getByRole("row", { name: /Discarded #007/ })).toBeVisible();
-        await expect(dialog.getByRole("row", { name: /Discarded #001/ })).toHaveCount(0);
+        await dialog.getByPlaceholder("Filter by title or folder...").fill("Archived Playtest #100");
+        await expect(dialog.getByRole("row", { name: /Archived Playtest #100/ })).toBeVisible();
+        await expect(dialog.getByRole("row", { name: /Archived Playtest #101/ })).toHaveCount(0);
     });
 
-    test("the trash filter matches the folder and ignores case", async ({ page }) => {
+    test("expanding a video lists the revisions a delete would take", async ({ page }) => {
         await loginAsAdmin(page);
-        // Stubbed so the two rows differ only in the fields the filter reads.
-        await page.route("**/admin/maintenance/trash", route => route.fulfill({
-            json: {
-                videos: [
-                    { id: "v1", title: "Alpha", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1)] },
-                    { id: "v2", title: "Beta", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [REV(1), REV(2)] },
-                ],
-            },
-        }));
-
         const popover = await openSettings(page);
         await popover.getByRole("button", { name: "Administration" }).click();
 
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Videos" }).click();
-        const filter = dialog.getByPlaceholder("Filter by title or folder...");
 
-        await filter.fill("01_PROTOTYPE");
-        await expect(dialog.getByRole("row", { name: /Alpha/ })).toBeVisible();
-        await expect(dialog.getByRole("row", { name: /Beta/ })).toHaveCount(0);
+        const title = seededTitle(3);
+        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
+        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toHaveCount(0);
 
-        // An empty result is not an empty trash, and the two say different things.
-        await filter.fill("no such video");
-        await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
-        await expect(dialog.getByText("Nothing in the trash.")).toHaveCount(0);
+        const toggle = dialog.getByRole("button", { name: `Show the revisions of ${title}` });
+        await toggle.click();
+        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toBeVisible();
+
+        await toggle.click();
+        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toHaveCount(0);
     });
 
-    test("an admin restores a video out of the trash", async ({ page }) => {
+    test("deleting every revision hides the video, and the word must be typed", async ({ page }) => {
         await loginAsAdmin(page);
         const popover = await openSettings(page);
         await popover.getByRole("button", { name: "Administration" }).click();
@@ -137,44 +128,11 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Videos" }).click();
 
-        // A retry runs against the same seeded DB, so each attempt restores a different video.
-        // Counting down from #050 keeps clear of the videos the filter test expects to find.
-        const title = `Discarded #${String(50 - test.info().retry).padStart(3, "0")}`;
+        const title = seededTitle(9);
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
-        const row = dialog.getByRole("row", { name: new RegExp(title) });
-        await expect(row).toBeVisible();
-
-        const restored = page.waitForResponse(r => r.url().endsWith("/admin/maintenance/video/delete"));
-        await row.getByRole("button", { name: "Restore" }).click();
-        expect((await restored).status()).toBe(200);
-        await expect(row).toHaveCount(0);
-
-        // Reopening refetches: proves the video really left the trash, not just the local list.
-        await page.reload();
-        const reopened = await openSettings(page);
-        await reopened.getByRole("button", { name: "Administration" }).click();
-        await dialog.getByRole("tab", { name: "Videos" }).click();
-        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
-        await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
-    });
-
-    test("physical delete is gated behind typing Delete", async ({ page }) => {
-        await loginAsAdmin(page);
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Videos" }).click();
-
-        // A retry runs against the same seeded DB, so each attempt purges a different video.
-        // Counting up from #040 keeps clear of both the restore test and the filter test's #001.
-        const title = `Discarded #${String(40 + test.info().retry).padStart(3, "0")}`;
-        await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
-        const row = dialog.getByRole("row", { name: new RegExp(title) });
-        await row.getByRole("button", { name: "Delete", exact: true }).click();
+        await dialog.getByRole("button", { name: `Delete every revision of ${title}` }).click();
 
         const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
-        await expect(confirm.getByRole("heading", { name: "Delete the video" })).toBeVisible();
         const submit = confirm.getByRole("button", { name: "Delete", exact: true });
         await expect(submit).toBeDisabled();
 
@@ -189,144 +147,19 @@ test.describe("admin settings dialog", () => {
         await confirm.getByLabel("Type Delete to confirm").fill("Delete");
         await expect(submit).toBeEnabled();
 
-        const purged = page.waitForResponse(r => r.url().endsWith("/admin/maintenance/video/purge"));
         await submit.click();
+        await expect(confirm).toHaveCount(0);
         // The test storage holds no real files, so purging reports partial success.
-        expect((await purged).status()).toBe(207);
-        await expect(dialog.getByText(new RegExp(`${title}.*still in storage`))).toBeVisible();
+        await expect(dialog.getByText("Some files could not be removed and are still in storage.")).toBeVisible();
 
-        // Reopening refetches: proves the record really went, not just the local list.
+        // Losing its last revision takes the video out of the list, which a refetch proves.
+        await expect(dialog.getByRole("row", { name: new RegExp(title) })).toHaveCount(0);
         await page.reload();
         const reopened = await openSettings(page);
         await reopened.getByRole("button", { name: "Administration" }).click();
         await dialog.getByRole("tab", { name: "Videos" }).click();
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
         await expect(dialog.getByText("No video matches the filter.")).toBeVisible();
-    });
-
-    test("physical delete purges every revision and keeps going after a 207", async ({ page }) => {
-        await loginAsAdmin(page);
-        // Seeded videos have a single revision, so the bundling only shows up against a stub.
-        await page.route("**/admin/maintenance/trash", route => route.fulfill({
-            json: {
-                videos: [
-                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
-                ],
-            },
-        }));
-        const purged: number[] = [];
-        await page.route("**/admin/maintenance/video/purge", async route => {
-            const body = route.request().postDataJSON() as { revision: string };
-            const revision = Number(body.revision);
-            purged.push(revision);
-            // The middle revision reports that its file survived: the loop must still reach the last one.
-            await route.fulfill(revision === 2
-                ? { status: 207, json: { warning: "files", videoId: "v1", revision } }
-                : { json: { success: true, videoId: "v1", revision } });
-        });
-
-        const destroyed: string[] = [];
-        await page.route("**/admin/maintenance/video/destroy", route => {
-            destroyed.push((route.request().postDataJSON() as { videoId: string }).videoId);
-            return route.fulfill({ json: { success: true, videoId: "v1" } });
-        });
-
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Videos" }).click();
-        const row = dialog.getByRole("row", { name: /Three Revisions/ });
-        await row.getByRole("button", { name: "Delete", exact: true }).click();
-
-        const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
-        await confirm.getByLabel("Type Delete to confirm").fill("Delete");
-        await confirm.getByRole("button", { name: "Delete", exact: true }).click();
-
-        // The list is aria-hidden while the modal is up, so wait for the modal to go first.
-        await expect(confirm).toHaveCount(0);
-        await expect(row).toHaveCount(0);
-        expect(purged).toEqual([1, 2, 3]);
-        // A file that could not be deleted must not keep the record alive, or a video whose files
-        // are already gone from storage could never leave the trash.
-        expect(destroyed).toEqual(["v1"]);
-        await expect(dialog.getByText(/Three Revisions.*still in storage/)).toBeVisible();
-    });
-
-    test("a purge that fails mid-way keeps the revisions it did not reach", async ({ page }) => {
-        await loginAsAdmin(page);
-        await page.route("**/admin/maintenance/trash", route => route.fulfill({
-            json: {
-                videos: [
-                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
-                ],
-            },
-        }));
-        const purged: number[] = [];
-        await page.route("**/admin/maintenance/video/purge", async route => {
-            const revision = Number((route.request().postDataJSON() as { revision: string }).revision);
-            purged.push(revision);
-            await route.fulfill(revision === 2
-                ? { status: 500, json: { error: "boom" } }
-                : { json: { success: true, videoId: "v1", revision } });
-        });
-
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Videos" }).click();
-        const row = dialog.getByRole("row", { name: /Three Revisions/ });
-
-        async function purgeOnce() {
-            await row.getByRole("button", { name: "Delete", exact: true }).click();
-            const confirm = page.getByRole("dialog").filter({ hasText: "Type Delete to confirm" });
-            await confirm.getByLabel("Type Delete to confirm").fill("Delete");
-            await confirm.getByRole("button", { name: "Delete", exact: true }).click();
-        }
-
-        await purgeOnce();
-        await expect(dialog.getByText(/Failed to delete the files/)).toBeVisible();
-        // Revision 1 went through, so only 2 and 3 are left to try again.
-        await expect(row.getByRole("cell", { name: "2", exact: true })).toBeVisible();
-        expect(purged).toEqual([1, 2]);
-
-        await purgeOnce();
-        expect(purged).toEqual([1, 2, 2]);
-    });
-
-    test("a trashed video lists the revisions the delete would take", async ({ page }) => {
-        await loginAsAdmin(page);
-        await page.route("**/admin/maintenance/trash", route => route.fulfill({
-            json: {
-                videos: [
-                    { id: "v1", title: "Three Revisions", folderKey: "01_prototype", latestUpdatedAt: "2026-03-01T00:00:00.000Z", revisions: [REV(1), REV(2), REV(3)] },
-                    { id: "v2", title: "Nothing Left", folderKey: "06_ui", latestUpdatedAt: "2026-03-02T00:00:00.000Z", revisions: [] },
-                ],
-            },
-        }));
-
-        const popover = await openSettings(page);
-        await popover.getByRole("button", { name: "Administration" }).click();
-
-        const dialog = page.getByRole("dialog");
-        await dialog.getByRole("tab", { name: "Videos" }).click();
-
-        await expect(dialog.getByRole("row", { name: /Revision 2/ })).toHaveCount(0);
-
-        const toggle = dialog.getByRole("button", { name: "Show the revisions of Three Revisions" });
-        await toggle.click();
-        for (const revision of [1, 2, 3]) {
-            await expect(dialog.getByRole("row", { name: new RegExp(`Revision ${revision}`) })).toBeVisible();
-        }
-
-        await toggle.click();
-        await expect(dialog.getByRole("row", { name: /Revision 2/ })).toHaveCount(0);
-
-        // A video with everything already purged has nothing to expand, but still has a record to delete.
-        const emptyRow = dialog.getByRole("row", { name: /Nothing Left/ });
-        await expect(emptyRow.getByRole("button", { name: /Show the revisions/ })).toHaveCount(0);
-        await expect(emptyRow.getByRole("button", { name: "Delete", exact: true })).toBeEnabled();
     });
 
     test("a guest does not see the entry", async ({ page }) => {

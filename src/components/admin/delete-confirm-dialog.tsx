@@ -10,8 +10,16 @@ import { Spinner } from "@/ui/spinner";
 // Typed verbatim in every locale, so a translation can never soften the guard.
 const CONFIRM_WORD = "Delete";
 
-export function PurgeConfirmDialog({ title, busy, onConfirm, onCancel }: {
+export type DeleteTarget = {
+    videoId: string;
     title: string;
+    revisions: number[];
+    // Every revision goes, so the video is hidden afterwards.
+    whole: boolean;
+};
+
+export function DeleteConfirmDialog({ target, busy, onConfirm, onCancel }: {
+    target: DeleteTarget;
     busy: boolean;
     onConfirm: () => void;
     onCancel: () => void;
@@ -23,18 +31,25 @@ export function PurgeConfirmDialog({ title, busy, onConfirm, onCancel }: {
         <Dialog open onOpenChange={(open) => { if (!open && !busy) onCancel(); }}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{t("videos.trash.purge.title")}</DialogTitle>
+                    <DialogTitle>{t("videos.delete.title")}</DialogTitle>
                     <DialogDescription>
-                        <span className="block">{t("videos.trash.purge.description", { title })}</span>
-                        <span className="block">{t("videos.trash.purge.irreversible")}</span>
+                        <span className="block">
+                            {target.whole
+                                ? t("videos.delete.wholeSummary", { title: target.title })
+                                : t("videos.delete.revisionSummary", {
+                                    title: target.title,
+                                    revisions: target.revisions.join(", "),
+                                })}
+                        </span>
+                        <span className="block">{t("videos.delete.irreversible")}</span>
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-2">
                     {/* Not a Label: it is select-none, and clicking one moves focus to the input,
                         so the word could not be selected and copied the way AWS and Grafana allow. */}
-                    <p id="admin-purge-confirm-hint" className="text-sm font-medium">
-                        {t.rich("videos.trash.purge.confirmLabel", {
+                    <p id="admin-delete-confirm-hint" className="text-sm font-medium">
+                        {t.rich("videos.delete.confirmLabel", {
                             confirmWord: CONFIRM_WORD,
                             word: (chunks) => (
                                 <code className="select-all rounded bg-muted px-1 font-mono">{chunks}</code>
@@ -42,7 +57,7 @@ export function PurgeConfirmDialog({ title, busy, onConfirm, onCancel }: {
                         })}
                     </p>
                     <Input
-                        aria-labelledby="admin-purge-confirm-hint"
+                        aria-labelledby="admin-delete-confirm-hint"
                         autoComplete="off"
                         value={typed}
                         onChange={(e) => setTyped(e.target.value)}
@@ -51,7 +66,7 @@ export function PurgeConfirmDialog({ title, busy, onConfirm, onCancel }: {
 
                 <DialogFooter>
                     <Button variant="outline" onClick={onCancel} disabled={busy}>
-                        {t("videos.trash.purge.cancel")}
+                        {t("videos.delete.cancel")}
                     </Button>
                     <Button
                         variant="destructive"
@@ -59,7 +74,7 @@ export function PurgeConfirmDialog({ title, busy, onConfirm, onCancel }: {
                         disabled={busy || typed !== CONFIRM_WORD}
                     >
                         {busy ? <Spinner /> : null}
-                        {t("videos.trash.purge.submit")}
+                        {t("videos.delete.submit")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

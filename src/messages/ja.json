@@ -234,34 +234,33 @@
             "failed": "トークンの生成に失敗しました"
         },
         "videos": {
-            "trash": {
-                "filterPlaceholder": "タイトル・フォルダで絞り込み",
-                "empty": "ゴミ箱は空です",
-                "noMatch": "条件に合う動画はありません",
-                "loadFailed": "ゴミ箱の取得に失敗しました",
-                "restore": "Restore",
-                "restoreFailed": "復元に失敗しました",
-                "columns": {
-                    "title": "タイトル",
-                    "folder": "フォルダ",
-                    "updatedAt": "更新日",
-                    "revisions": "リビジョン",
-                    "actions": "操作",
-                    "expand": "リビジョン"
-                },
-                "purge": {
-                    "action": "Delete",
-                    "title": "動画を削除",
-                    "description": "{title} とそのファイル・コメントをまとめて削除します",
-                    "irreversible": "元に戻せません",
-                    "confirmLabel": "確認のため <word>{confirmWord}</word> と入力してください",
-                    "submit": "Delete",
-                    "cancel": "キャンセル",
-                    "failed": "ファイルの削除に失敗しました",
-                    "filesLeft": "{title}: レコードは削除しましたが、一部のファイルがストレージに残りました"
-                },
-                "revisionRow": "リビジョン {revision}（{date} アップロード）",
-                "toggleRevisions": "{title} のリビジョンを表示"
+            "loadFailed": "動画の取得に失敗しました",
+            "filterPlaceholder": "タイトル・フォルダで絞り込み",
+            "limited": "先頭 {limit} 件を表示しています。続きは絞り込んでください",
+            "noMatch": "条件に合う動画はありません",
+            "revisionRow": "リビジョン {revision}（{date} アップロード）",
+            "toggleRevisions": "{title} のリビジョンを表示",
+            "columns": {
+                "expand": "リビジョン",
+                "title": "タイトル",
+                "folder": "フォルダ",
+                "updatedAt": "更新日",
+                "revisions": "リビジョン",
+                "actions": "操作"
+            },
+            "delete": {
+                "action": "Delete",
+                "wholeLabel": "{title} の全リビジョンを削除",
+                "revisionLabel": "{title} のリビジョン {revision} を削除",
+                "title": "動画のファイルを削除",
+                "wholeSummary": "{title} の全リビジョンのファイルを削除し、動画は一覧から消えます",
+                "revisionSummary": "{title} のリビジョン {revisions} のファイルを削除します",
+                "irreversible": "元に戻せません",
+                "confirmLabel": "確認のため <word>{confirmWord}</word> と入力してください",
+                "submit": "Delete",
+                "cancel": "キャンセル",
+                "failed": "ファイルの削除に失敗しました",
+                "filesLeft": "一部のファイルを消せず、ストレージに残りました"
             }
         }
     }
