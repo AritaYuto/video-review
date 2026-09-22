@@ -8,6 +8,7 @@ import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { ASSIGNABLE_ROLES } from "@/lib/role";
 import bcrypt from "bcrypt";
 import { hash, randomBytes } from "crypto";
 
@@ -24,7 +25,7 @@ const CreateUserBody = z.object({
 
 const UpdateRoleBody = z.object({
     userId: z.string().optional(),
-    role: z.enum(["viewer", "admin"]).optional(),
+    role: z.enum(ASSIGNABLE_ROLES).optional(),
 });
 
 const UserListResponse = z.object({

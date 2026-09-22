@@ -5,10 +5,7 @@ import { useLocale } from "@/app/locale-provider";
 import { TableCell, TableRow } from "@/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import type { User } from "@/lib/db-types";
-
-export const ROLES = ["viewer", "admin"] as const;
-
-export type AssignableRole = typeof ROLES[number];
+import { ASSIGNABLE_ROLES, type AssignableRole } from "@/lib/role";
 
 export function UserRow({ user, isSelf, justAdded, onRoleChange }: {
     user: User;
@@ -36,7 +33,7 @@ export function UserRow({ user, isSelf, justAdded, onRoleChange }: {
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {ROLES.map(role => (
+                        {ASSIGNABLE_ROLES.map(role => (
                             <SelectItem key={role} value={role}>
                                 {t(`users.roles.${role}`)}
                             </SelectItem>
