@@ -68,7 +68,7 @@ jobs:
           # Exclude integration tests that require external services (LLM, MCP)
           # not available in CI. They are covered by skipIf guards but we exclude
           # the files explicitly to keep CI output clean.
-          npm run test:hono -- --ignore="tests/server/routes/videos/vcs-summary.integration.test.ts"
+          npm run test:hono -- --ignore="tests/server/routes/videos/vcs-summary.integration.test.ts" --ignore="tests/server/lib/storage/tus-nextcloud.integration.test.ts"
       - name: Publish test report
         if: always()
         uses: dorny/test-reporter@v2
