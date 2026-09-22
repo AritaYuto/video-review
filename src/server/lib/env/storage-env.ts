@@ -1,9 +1,12 @@
-import { typeEnv } from "@/lib/env/helpers";
+import { booleanEnv, positiveNumberEnv, typeEnv } from "@/lib/env/helpers";
 import { UploadStorageType } from "@prisma/client";
 
 export const env = {
     VIDEO_REVIEW_STORAGE: typeEnv<UploadStorageType>(process.env.VIDEO_REVIEW_STORAGE, UploadStorageType.local),
     VIDEO_REVIEW_LOCAL_ROOTDIR: process.env.VIDEO_REVIEW_LOCAL_ROOTDIR,
+    // Migration flag: sends video uploads through the chunked route instead of the single request.
+    VIDEO_REVIEW_UPLOAD_CHUNKED: booleanEnv(process.env.VIDEO_REVIEW_UPLOAD_CHUNKED),
+    VIDEO_REVIEW_UPLOAD_CHUNK_MB: positiveNumberEnv(process.env.VIDEO_REVIEW_UPLOAD_CHUNK_MB, 16),
     S3_BUCKET: process.env.S3_BUCKET,
     S3_REGION: process.env.S3_REGION,
     S3_LOCALSTACK_ENDPOINT: process.env.S3_LOCALSTACK_ENDPOINT === "" ? undefined : process.env.S3_LOCALSTACK_ENDPOINT,

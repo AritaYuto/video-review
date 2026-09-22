@@ -3,6 +3,7 @@ import { pipeline } from "stream/promises";
 import { FileDriver } from "@/server/lib/storage/drivers";
 import fs from "fs";
 import path from "path";
+import { env } from "@/server/lib/env/storage-env";
 
 
 export class LocalDriver implements FileDriver {
@@ -102,6 +103,9 @@ export class LocalDriver implements FileDriver {
             return `/api/v1/drawing/upload/transfer?session_id=${session_id}`
         }
         // "video/mp4"
+        if (env.VIDEO_REVIEW_UPLOAD_CHUNKED) {
+            return "/api/v1/videos/upload/tus";
+        }
         return `/api/v1/videos/upload/transfer?session_id=${session_id}`
     }
 
