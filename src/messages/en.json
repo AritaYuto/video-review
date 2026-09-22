@@ -33,7 +33,8 @@
         "cancel": "Cancel",
         "upload": "Upload",
         "uploading": "Uploading...",
-        "errorUpload": "Video upload failed. Please contact the admin"
+        "errorUpload": "Video upload failed. Please contact the admin",
+        "errorUploadTooLarge": "The file was rejected as too large. A proxy in front of the server may limit the upload size"
     },
     "video-search": {
         "title": "Video Search",

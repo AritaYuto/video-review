@@ -10,7 +10,13 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 	. "videoreview-maintenance/internal/lib"
+)
+
+const (
+	uploadStatusInterval    = 2 * time.Second
+	uploadStatusMaxAttempts = 150
 )
 
 func RunUploadVideo(cmd string, args []string) {
@@ -125,18 +131,24 @@ func RunUploadVideo(cmd string, args []string) {
 		}
 	}
 
-	for {
+	// The server reports "progress" until the bytes show up, so wait between attempts.
+	uploaded := false
+	for attempt := 0; attempt < uploadStatusMaxAttempts; attempt++ {
 		status, err := uploadStatus(session.Session.ID)
 		if err != nil {
 			fmt.Println("failed to get upload status:", err)
 			return
 		}
 		if status.Status == "uploaded" {
-			break
-		} else if status.Status == "failed" {
-			fmt.Println("Upload failed.")
+			uploaded = true
 			break
 		}
+		time.Sleep(uploadStatusInterval)
+	}
+
+	if !uploaded {
+		fmt.Println("timed out waiting for the uploaded file to appear in storage")
+		return
 	}
 
 	Fetch(FetchOptions{
