@@ -10,7 +10,6 @@ import { Spinner } from "@/ui/spinner";
 
 export function ApiTokenSection() {
     const t = useTranslations("admin-settings");
-    // null while the status is loading.
     const [configured, setConfigured] = useState<boolean | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -18,13 +17,19 @@ export function ApiTokenSection() {
 
     useEffect(() => {
         let cancelled = false;
-        api.admin.maintenance["api-token"].status.$get()
-            .then(async res => {
+
+        void (async () => {
+            try {
+                const res = await api.admin.maintenance["api-token"].status.$get();
                 if (res.status !== 200) throw new Error(await readError(res));
-                return (await res.json()).configured;
-            })
-            .then(c => { if (!cancelled) setConfigured(c); })
-            .catch(e => { if (!cancelled) setError(`${t("apiToken.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
+
+                const { configured } = await res.json();
+                if (!cancelled) setConfigured(configured);
+            } catch (e) {
+                if (!cancelled) setError(`${t("apiToken.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`);
+            }
+        })();
+
         return () => { cancelled = true; };
     }, []);
 

@@ -14,9 +14,9 @@ import { VideosSection } from "@/components/admin/videos-section";
 // Add a section by appending here.
 const SECTIONS = [
     { key: "users", label: "sections.users", Component: UsersSection },
-    { key: "apiToken", label: "sections.apiToken", Component: ApiTokenSection },
-    { key: "integrations", label: "sections.integrations", Component: IntegrationsSection },
     { key: "videos", label: "sections.videos", Component: VideosSection },
+    { key: "integrations", label: "sections.integrations", Component: IntegrationsSection },
+    { key: "apiToken", label: "sections.apiToken", Component: ApiTokenSection },
 ] as const;
 
 export default function AdminSettingsDialog({
