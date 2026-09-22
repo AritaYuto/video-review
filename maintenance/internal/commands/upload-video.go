@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 	. "videoreview-maintenance/internal/lib"
 )
@@ -17,6 +18,9 @@ import (
 const (
 	uploadStatusInterval    = 2 * time.Second
 	uploadStatusMaxAttempts = 150
+
+	// Path init hands back when the server is set up for chunked uploads.
+	tusUploadPath = "/api/v1/videos/upload/tus"
 )
 
 func RunUploadVideo(cmd string, args []string) {
@@ -93,6 +97,20 @@ func RunUploadVideo(cmd string, args []string) {
 			fmt.Printf("failed to upload to S3: status %d: %s\n", resp.StatusCode, string(b))
 			return
 		}
+	} else if strings.HasSuffix(session.URL, tusUploadPath) {
+		// Chunked upload: the bytes go up in pieces, so an upload size limit in front of the
+		// server never sees the whole file at once.
+		info, err := file.Stat()
+		if err != nil {
+			fmt.Println("failed to read video file size:", err)
+			return
+		}
+
+		uploader := newTusUploader(GlobalConfig.BaseURL+session.URL, GlobalConfig.APIToken, session.ChunkSize)
+		if err := uploader.Upload(file, info.Size(), session.Session.ID); err != nil {
+			fmt.Println("failed to upload video:", err)
+			return
+		}
 	} else {
 		// local or nextCloud upload
 		body := &bytes.Buffer{}
@@ -131,24 +149,27 @@ func RunUploadVideo(cmd string, args []string) {
 		}
 	}
 
-	// The server reports "progress" until the bytes show up, so wait between attempts.
-	uploaded := false
-	for attempt := 0; attempt < uploadStatusMaxAttempts; attempt++ {
-		status, err := uploadStatus(session.Session.ID)
-		if err != nil {
-			fmt.Println("failed to get upload status:", err)
+	// A chunked upload already knows it is complete: the last chunk was acknowledged. The
+	// other routes answer before the bytes reach storage, so they are waited for.
+	if !strings.HasSuffix(session.URL, tusUploadPath) {
+		uploaded := false
+		for attempt := 0; attempt < uploadStatusMaxAttempts; attempt++ {
+			status, err := uploadStatus(session.Session.ID)
+			if err != nil {
+				fmt.Println("failed to get upload status:", err)
+				return
+			}
+			if status.Status == "uploaded" {
+				uploaded = true
+				break
+			}
+			time.Sleep(uploadStatusInterval)
+		}
+
+		if !uploaded {
+			fmt.Println("timed out waiting for the uploaded file to appear in storage")
 			return
 		}
-		if status.Status == "uploaded" {
-			uploaded = true
-			break
-		}
-		time.Sleep(uploadStatusInterval)
-	}
-
-	if !uploaded {
-		fmt.Println("timed out waiting for the uploaded file to appear in storage")
-		return
 	}
 
 	Fetch(FetchOptions{
