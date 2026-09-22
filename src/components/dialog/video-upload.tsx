@@ -12,7 +12,11 @@ import { UploadSession } from "@/lib/db-types";
 
 const POLL_FAILURE_LIMIT = 3;
 
-export default function VideoUploadDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function VideoUploadDialog({ open, onClose }: {
+    open: boolean;
+    /** Carries the video that was just uploaded, so the list can reveal it. */
+    onClose: (uploadedVideoId?: string) => void;
+}) {
     type UploadStep = "input" | "uploading" | "done" | "error";
 
     const t = useTranslations("video-upload");
@@ -22,6 +26,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
     const [step, setStep] = useState<UploadStep>("input");
     const [session, setSession] = useState<UploadSession | null>(null);
     const [message, setMessage] = useState("");
+    const [percent, setPercent] = useState<number | null>(null);
 
     useEffect(() => {
         void (async () => {
@@ -41,6 +46,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             setFile(null);
             setSelectedFolderKey("");
             setSession(null);
+            setPercent(null);
         }
     }, [open])
 
@@ -58,7 +64,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             const initRes = await api.videos.upload.init.$post({ form: { title, folderKey: selectedFolderKey } });
             if (!initRes.ok) throw new Error("upload init failed");
             // The init route parses its multipart body by hand and declares no response schema.
-            const init = (await initRes.json()) as { url: string; session: UploadSession };
+            const init = (await initRes.json()) as { url: string; session: UploadSession; chunkSize: number };
 
             setSession(init.session);
             setStep("uploading");
@@ -67,7 +73,9 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             await uploadToSession({
                 url: init.url,
                 session: init.session,
+                chunkSize: init.chunkSize,
                 file,
+                onProgress: (sent, total) => setPercent(Math.floor((sent / total) * 100)),
             });
 
         } catch (e) {
@@ -105,7 +113,8 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
                     return;
                 }
 
-                const { status } = await res.json();
+                const body = await res.json();
+                const { status } = body;
 
                 if (status === "uploaded") {
                     const finishRes = await api.videos.upload.finish.$post({ query: { session_id: session.id } });
@@ -120,7 +129,7 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
 
                 if (status === "completed") {
                     setStep("done");
-                    onClose();
+                    onClose(body.videoId);
                     return;
                 }
 
@@ -148,7 +157,9 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             title={t("title")}
             onSubmit={handleUpload}
             cancelLabel={t("cancel")}
-            submitLabel={step === "uploading" ? t("uploading") : t("upload")}
+            submitLabel={step === "uploading"
+                ? (percent === null ? t("uploading") : t("uploadingPercent", { percent }))
+                : t("upload")}
             cancelDisabled={step === "uploading"}
             submitDisabled={!file || step !== "input"}
             message={message}

@@ -33,6 +33,7 @@
         "cancel": "Cancel",
         "upload": "Upload",
         "uploading": "Uploading...",
+        "uploadingPercent": "Uploading... {percent}%",
         "errorUpload": "Video upload failed. Please contact the admin",
         "errorUploadTooLarge": "The file was rejected as too large. A proxy in front of the server may limit the upload size"
     },
@@ -54,6 +55,7 @@
     },
     "video-list-panel": {
         "title": "Video list",
+        "upload": "Upload video",
         "thumbnails": "Thumbnails",
         "thumbnailsClose": "Close thumbnails"
     },
