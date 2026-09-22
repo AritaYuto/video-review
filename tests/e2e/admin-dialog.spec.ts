@@ -101,7 +101,7 @@ test.describe("admin settings dialog", () => {
         await expect(dialog.getByRole("row", { name: /Archived Playtest #101/ })).toHaveCount(0);
     });
 
-    test("expanding a video lists the revisions a delete would take", async ({ page }) => {
+    test("a single-revision video offers no disclosure", async ({ page }) => {
         await loginAsAdmin(page);
         const popover = await openSettings(page);
         await popover.getByRole("button", { name: "Administration" }).click();
@@ -109,16 +109,11 @@ test.describe("admin settings dialog", () => {
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("tab", { name: "Videos" }).click();
 
+        // Every seeded video has one revision, whose row would only repeat what the video row says.
         const title = seededTitle(3);
         await dialog.getByPlaceholder("Filter by title or folder...").fill(title);
-        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toHaveCount(0);
-
-        const toggle = dialog.getByRole("button", { name: `Show the revisions of ${title}` });
-        await toggle.click();
-        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toBeVisible();
-
-        await toggle.click();
-        await expect(dialog.getByRole("row", { name: /Revision 1, uploaded/ })).toHaveCount(0);
+        await expect(dialog.getByRole("row", { name: new RegExp(title) })).toBeVisible();
+        await expect(dialog.getByRole("button", { name: `Show the revisions of ${title}` })).toHaveCount(0);
     });
 
     test("deleting every revision hides the video, and the word must be typed", async ({ page }) => {

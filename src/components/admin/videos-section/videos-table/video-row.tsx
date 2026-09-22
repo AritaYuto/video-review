@@ -22,7 +22,9 @@ export function VideoRow({ video, expanded, onToggle, onDelete }: {
     return (
         <TableRow>
             <TableCell>
-                {video.revisions.length > 0 && (
+                {/* With one revision the child row would only repeat the count, and its delete
+                    would do what this row's already does. */}
+                {video.revisions.length > 1 && (
                     <Button
                         variant="ghost"
                         size="icon"
