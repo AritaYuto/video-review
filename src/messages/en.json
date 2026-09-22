@@ -236,7 +236,6 @@
         "videos": {
             "loadFailed": "Failed to load the videos",
             "filterPlaceholder": "Filter by title or folder...",
-            "limited": "Showing the first {limit}. Narrow the filter to reach the rest.",
             "noMatch": "No video matches the filter.",
             "revisionRow": "Revision {revision}, uploaded {date}",
             "toggleRevisions": "Show the revisions of {title}",

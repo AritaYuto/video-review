@@ -236,7 +236,6 @@
         "videos": {
             "loadFailed": "動画の取得に失敗しました",
             "filterPlaceholder": "タイトル・フォルダで絞り込み",
-            "limited": "先頭 {limit} 件を表示しています。続きは絞り込んでください",
             "noMatch": "条件に合う動画はありません",
             "revisionRow": "リビジョン {revision}（{date} アップロード）",
             "toggleRevisions": "{title} のリビジョンを表示",

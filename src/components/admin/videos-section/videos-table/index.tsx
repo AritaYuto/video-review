@@ -11,8 +11,7 @@ import { RevisionRow } from "@/components/admin/videos-section/videos-table/revi
 import type { VideoWithRevisionList } from "@/lib/db-types";
 import { Spinner } from "@/ui/spinner";
 
-// The library can hold thousands of videos; the filter is how you reach the rest.
-const LIMIT = 100;
+// The filter runs on the server, so wait for a pause in typing before asking again.
 const FILTER_DEBOUNCE_MS = 300;
 
 // A fragment: the search field and the list are laid out by the AdminSection flex column.
@@ -38,7 +37,6 @@ export function VideosTable() {
                     query: {
                         // Query values travel as strings; the route parses them.
                         includeRevisions: "true",
-                        limit: String(LIMIT),
                         filterTree: filter.trim() || undefined,
                     },
                 });
@@ -119,8 +117,6 @@ export function VideosTable() {
         setReloadToken(token => token + 1);
     }
 
-    const atLimit = videos !== null && videos.length >= LIMIT;
-
     if (error) {
         return <p className="shrink-0 text-sm text-destructive">{error}</p>;
     }
@@ -134,10 +130,6 @@ export function VideosTable() {
                     placeholder={t("videos.filterPlaceholder")}
                 />
             </div>
-
-            {atLimit && (
-                <p className="shrink-0 text-xs text-muted-foreground">{t("videos.limited", { limit: LIMIT })}</p>
-            )}
 
             <div className="flex-1 min-h-0 overflow-y-auto">
                 {videos === null ? (
