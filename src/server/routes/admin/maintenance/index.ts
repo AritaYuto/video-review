@@ -80,6 +80,7 @@ export const maintenanceRouter = createRouter()
     .openapi(createRoute({
         method: "post",
         summary: "Delete actual video files and mark all related VideoRevision as deleted",
+        description: "Repoints the video at its newest surviving revision, or marks it deleted when none is left.",
         path: "video/purge",
         request: {
             body: {
@@ -130,9 +131,30 @@ export const maintenanceRouter = createRouter()
             return c.json({ error: "video not found" }, 404);
         }
 
-        await prisma.videoRevision.update({
-            where: { id: videoRevision.id },
-            data: { deleted: true },
+        await prisma.$transaction(async (tx) => {
+            // Concurrent purges on the same video would each miss the other's revision and
+            // write a wrong pointer below.
+            await tx.$executeRaw`SELECT id FROM "Video" WHERE id = ${videoId} FOR UPDATE`;
+
+            await tx.videoRevision.update({
+                where: { id: videoRevision.id },
+                data: { deleted: true },
+            });
+
+            const newest = await tx.videoRevision.findFirst({
+                where: { videoId, deleted: false },
+                orderBy: { revision: "desc" },
+                select: { revision: true },
+            });
+
+            // Players and thumbnails follow latestRevisionNum, so it must never name a purged revision.
+            await tx.video.update({
+                where: { id: videoId },
+                data: newest
+                    ? { latestRevisionNum: newest.revision }
+                    // The record stays: a re-upload of the same title picks its comments back up.
+                    : { latestRevisionNum: null, deleted: true },
+            });
         });
 
         try {
