@@ -88,7 +88,13 @@ export default function VideoListPanelHeader(
                     >
                         <LayoutGrid className="size-5" />
                     </Button>
-                    <Button variant="toolbar" size="icon-sm" hidden={isGuest(role)} onClick={() => onUploadDialogShow()}>
+                    <Button
+                        variant="toolbar"
+                        size="icon-sm"
+                        hidden={isGuest(role)}
+                        onClick={() => onUploadDialogShow()}
+                        title={t("upload")}
+                    >
                         <Plus className="size-5" />
                     </Button>
                 </div>
