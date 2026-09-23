@@ -1,0 +1,47 @@
+name: pr-check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build
+        env:
+          CI_BUILD: true
+
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/build-cli
+
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web-runtime
+            dockerfile: docker/web/Dockerfile
+          - name: web-prod
+            dockerfile: docker/web/Dockerfile.prod
+          - name: video-processing
+            dockerfile: docker/video-processing/Dockerfile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/build-images
+        with:
+          name: ${{ matrix.name }}
+          dockerfile: ${{ matrix.dockerfile }}

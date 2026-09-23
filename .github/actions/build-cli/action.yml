@@ -1,0 +1,35 @@
+name: Build the maintenance CLI
+description: Cross-compiles the CLI and, when asked, leaves the binaries in dist/
+
+inputs:
+  package:
+    description: Write the binaries to maintenance/dist instead of discarding them
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: maintenance/go.mod
+
+    - name: Build
+      shell: bash
+      working-directory: maintenance
+      run: go build ./...
+
+    - name: Test
+      shell: bash
+      working-directory: maintenance
+      run: go test ./...
+
+    - name: Cross-compile
+      if: inputs.package == 'true'
+      shell: bash
+      working-directory: maintenance
+      run: |
+        mkdir -p dist
+        GOOS=linux GOARCH=amd64 go build -o dist/video-review-cli-linux-amd64 .
+        GOOS=windows GOARCH=amd64 go build -o dist/video-review-cli-windows-amd64.exe .
