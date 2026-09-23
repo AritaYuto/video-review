@@ -1,7 +1,7 @@
 import { PrismaTypes } from "@/lib/db-types";
 import { prisma } from "@/server/lib/db";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { authorize, getJwtSecret, getApiSecretHash } from "@/server/lib/token";
+import { authorize, getJwtSecret, getApiSecretHash, invalidateSecret, Secrets } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { createRoute } from "@hono/zod-openapi";
 import { createRouter } from "@/server/lib/openapi/router";
@@ -189,6 +189,8 @@ export const maintenanceRouter = createRouter()
             update: { valueHash: tokenHash },
             create: { key: "API_TOKEN", valueHash: tokenHash },
         });
+        invalidateSecret(Secrets.API);
+
         return c.json({ token: apiToken }, 200);
     })
     .openapi(createRoute({

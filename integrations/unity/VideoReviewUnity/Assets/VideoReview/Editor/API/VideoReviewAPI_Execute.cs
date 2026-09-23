@@ -40,7 +40,6 @@ namespace VideoReview.Editor.API
             if (!string.IsNullOrWhiteSpace(apiToken))
             {
                 psi.EnvironmentVariables["VIDEO_REVIEW_API_TOKEN"] = apiToken;
-                psi.EnvironmentVariables["ADMIN_MAINTENANCE_TOKEN"] = apiToken;
             }
 
             using var process = new Process { StartInfo = psi };
