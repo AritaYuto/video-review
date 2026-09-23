@@ -63,8 +63,9 @@ export const uploadStatusRouter = createRouter()
 
         const session = await getSession(session_id);
         if (session) {
-            const hasObject = await VideoReviewStorage.hasObject(session.storage);
-            const status = hasObject ? ("progress" as const) : ("uploaded" as const);
+            // Local storage moves the file to its final key only once the transfer is complete.
+            const hasObject = await VideoReviewStorage.hasObject(session.storageKey);
+            const status = hasObject ? ("uploaded" as const) : ("progress" as const);
             return c.json({
                 status: status,
                 nextRev: session.nextRev,

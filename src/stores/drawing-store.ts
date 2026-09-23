@@ -29,15 +29,19 @@ export const useDrawingStore = create<DrawingState>((set, get) => ({
         return new Promise<string | null>((resolve) => {
             c.toBlob(async (blob) => {
                 if (!blob) return resolve(null);
-                
 
-                const initRes = await api.drawing.upload.init.$post({ form: { path: path ?? "" } });
-                if (initRes.status !== 200) return resolve(null);
-                const init = await initRes.json();
-                await uploadToSession({ url: init.url, session: init.session, file: blob });
-                const finishRes = await api.drawing.upload.finish.$post({ query: { session_id: init.session.id } });
+                // Nothing awaits this callback, so a rejected transfer would never resolve.
+                try {
+                    const initRes = await api.drawing.upload.init.$post({ form: { path: path ?? "" } });
+                    if (initRes.status !== 200) return resolve(null);
+                    const init = await initRes.json();
+                    await uploadToSession({ url: init.url, session: init.session, file: blob });
+                    const finishRes = await api.drawing.upload.finish.$post({ query: { session_id: init.session.id } });
 
-                resolve(finishRes.status === 200 ? (await finishRes.json()).filePath : null);
+                    resolve(finishRes.status === 200 ? (await finishRes.json()).filePath : null);
+                } catch {
+                    resolve(null);
+                }
             }, "image/png");
         });
     },

@@ -6,7 +6,6 @@ import { getSession } from "@/server/lib/upload-session";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { receiveMultipart } from "@/server/lib/utils/receive-multipart";
 import { VideoReviewStorage } from "@/server/lib/storage";
-import { prisma } from "@/server/lib/db";
 
 const TransferQuerySchema = z.object({
     session_id: z.string().min(1),
@@ -52,8 +51,6 @@ export const transferRouter = createRouter()
         if (!session) {
             return c.json({ error: "missing session" }, { status: 400 });
         }
-
-        const video = await prisma.video.findFirst({ where: { title: session.title, folderKey: session.folderKey } });
 
         return receiveMultipart(c.req.raw, async (tmpFilePath) => {
             await VideoReviewStorage.directUploadFromFile(session.storageKey, tmpFilePath);

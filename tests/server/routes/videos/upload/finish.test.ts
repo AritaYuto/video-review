@@ -1,9 +1,19 @@
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/server/lib/db";
 
+const mocks = vi.hoisted(() => ({
+    hasObject: vi.fn(),
+}));
+
 vi.mock("@/server/lib/token", () => ({
     authorize: vi.fn(),
+}));
+
+vi.mock("@/server/lib/storage", () => ({
+    VideoReviewStorage: {
+        hasObject: mocks.hasObject,
+    },
 }));
 
 import { authorize } from "@/server/lib/token";
@@ -50,6 +60,11 @@ async function createUploadSession(params: {
 }
 
 describe("videos upload finishRouter (DB)", () => {
+    beforeEach(() => {
+        mocks.hasObject.mockReset();
+        mocks.hasObject.mockResolvedValue(true);
+    });
+
     afterAll(async () => {
         if (createdSessionIds.length > 0) {
             await prisma.uploadSession.deleteMany({
@@ -102,6 +117,46 @@ describe("videos upload finishRouter (DB)", () => {
 
         expect(res.status).toBe(400);
         await expect(res.json()).resolves.toEqual({ error: "missing session" });
+    });
+
+    it("returns 409 and keeps the video unpublished when the file is not in storage", async () => {
+        vi.mocked(authorize).mockResolvedValueOnce({ type: "api-token", role: "admin" });
+        mocks.hasObject.mockResolvedValue(false);
+
+        const title = `Upload Finish ${randomUUID().slice(0, 8)}`;
+        const folderKey = `upload-tests-${randomUUID().slice(0, 8)}`;
+        const storageKey = `videos/${folderKey}/${title}/rev_001.mp4`;
+        const sessionId = randomUUID();
+
+        const video = await createVideoDraft(title, folderKey);
+        await createUploadSession({
+            id: sessionId,
+            title,
+            folderKey,
+            scenePath: null,
+            nextRev: 1,
+            storageKey,
+        });
+
+        const res = await finishRouter.request(`http://localhost/?session_id=${sessionId}`, {
+            method: "POST",
+        });
+
+        expect(res.status).toBe(409);
+        expect(mocks.hasObject).toHaveBeenCalledWith(storageKey);
+
+        const revision = await prisma.videoRevision.findUnique({ where: { id: sessionId } });
+        expect(revision).toBeNull();
+
+        // The session survives so the same upload can be retried.
+        const session = await prisma.uploadSession.findUnique({ where: { id: sessionId } });
+        expect(session).not.toBeNull();
+
+        const unpublished = await prisma.video.findUnique({
+            where: { id: video.id },
+            select: { deleted: true, latestRevisionNum: true },
+        });
+        expect(unpublished).toEqual({ deleted: true, latestRevisionNum: null });
     });
 
     it("creates revision, publishes video, and deletes upload session", async () => {

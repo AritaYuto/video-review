@@ -13,13 +13,25 @@ export async function receiveMultipart(req: Request, onUploadProcess: (filename:
         const busboy = Busboy({ headers: { "content-type": contentType } });
 
         let tmpFilePath: string | null = null;
+        let writeStream: fs.WriteStream | null = null;
         let writeFinished: Promise<void> | null = null;
 
         let responded = false;
+        // The caller awaits this promise, so every failure path has to resolve it.
         const fail = (err: any) => {
             if (responded) return;
             responded = true;
-            return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+
+            console.error("[receiveMultipart] failed", err);
+
+            // pipe() leaves the destination open when the source errors, and an unlinked file
+            // with an open descriptor keeps its disk space.
+            writeStream?.destroy();
+            if (tmpFilePath) {
+                fs.promises.unlink(tmpFilePath).catch(() => { });
+            }
+
+            resolve(NextResponse.json({ error: "Upload failed" }, { status: 500 }));
         };
 
         busboy.on("file", (_name, file, info) => {
@@ -30,17 +42,18 @@ export async function receiveMultipart(req: Request, onUploadProcess: (filename:
                 const unique = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
                 tmpFilePath = path.join(tmpDir, unique + "_" + info.filename);
 
-                const writeStream = fs.createWriteStream(tmpFilePath);
+                writeStream = fs.createWriteStream(tmpFilePath);
 
+                const target = writeStream;
                 file.on("error", err => fail(err));
-                writeStream.on("error", err => fail(err));
+                target.on("error", err => fail(err));
 
                 writeFinished = new Promise((resolveWrite) => {
-                    writeStream.on("finish", resolveWrite);
+                    target.on("finish", resolveWrite);
                 });
 
                 try {
-                    file.pipe(writeStream);
+                    file.pipe(target);
                 } catch (err) {
                     fail(err);
                 }

@@ -3,12 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/ui/input";
 import { api } from "@/lib/api-client";
-import { uploadToSession } from "@/lib/upload-transfer";
+import { UploadTransferError, uploadToSession } from "@/lib/upload-transfer";
 import { FormDialog } from "@/components/dialog/form-dialog";
 import { Upload } from "lucide-react";
 import path from "path";
 import { useTranslations } from "next-intl";
 import { UploadSession } from "@/lib/db-types";
+
+const POLL_FAILURE_LIMIT = 3;
 
 export default function VideoUploadDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     type UploadStep = "input" | "uploading" | "done" | "error";
@@ -61,15 +63,18 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
             setSession(init.session);
             setStep("uploading");
 
-            uploadToSession({
+            // Polling starts alongside the transfer; a rejected transfer has to stop it.
+            await uploadToSession({
                 url: init.url,
                 session: init.session,
                 file,
             });
 
-        } catch {
+        } catch (e) {
             setStep("error");
-            setMessage(t("errorUploadFailed"));
+            setMessage(e instanceof UploadTransferError && e.status === 413
+                ? t("errorUploadTooLarge")
+                : t("errorUpload"));
         }
     };
 
@@ -77,16 +82,40 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
         if (step !== "uploading" || !session) return;
 
         let cancelled = false;
+        // A large upload is polled hundreds of times, so only a run of failures is a real one.
+        let consecutiveFailures = 0;
 
         const timer = setInterval(async () => {
             try {
                 const res = await api.uploadStatus.index.$get({ query: { session_id: session.id } });
+                if (cancelled) return;
 
-                if (cancelled || res.status !== 200) return;
+                // The session is gone and no revision was created, so nothing will ever complete.
+                if (res.status === 404) {
+                    setStep("error");
+                    setMessage(t("errorUpload"));
+                    return;
+                }
+                // The client resolves any other status instead of throwing.
+                if (res.status !== 200) {
+                    if (++consecutiveFailures >= POLL_FAILURE_LIMIT) {
+                        setStep("error");
+                        setMessage(t("errorUpload"));
+                    }
+                    return;
+                }
+
                 const { status } = await res.json();
 
                 if (status === "uploaded") {
-                    await api.videos.upload.finish.$post({ query: { session_id: session.id } });
+                    const finishRes = await api.videos.upload.finish.$post({ query: { session_id: session.id } });
+                    if (cancelled) return;
+
+                    if (!finishRes.ok) {
+                        setStep("error");
+                        setMessage(t("errorUpload"));
+                        return;
+                    }
                 }
 
                 if (status === "completed") {
@@ -94,11 +123,14 @@ export default function VideoUploadDialog({ open, onClose }: { open: boolean; on
                     onClose();
                     return;
                 }
-            } catch (e: any) {
-                if (e?.status === 404) {
+
+                consecutiveFailures = 0;
+            } catch {
+                if (cancelled) return;
+
+                if (++consecutiveFailures >= POLL_FAILURE_LIMIT) {
                     setStep("error");
-                    setMessage(t("errorUploadFailed"));
-                    return;
+                    setMessage(t("errorUpload"));
                 }
             }
         }, 1500);

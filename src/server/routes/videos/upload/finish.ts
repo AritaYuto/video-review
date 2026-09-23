@@ -6,6 +6,7 @@ import { ServerError } from "@/server/lib/server-error";
 import { deleteSession, getSession } from "@/server/lib/upload-session";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 import { VideoRevisionSchema } from "@/schema/zod";
+import { VideoReviewStorage } from "@/server/lib/storage";
 
 export const finishRouter = createRouter()
     .openapi(createRoute({
@@ -24,6 +25,7 @@ export const finishRouter = createRouter()
                 },
             },
             400: errorResponse("Bad request"),
+            409: errorResponse("The uploaded file is not in storage"),
             401: errorResponse("Unauthorized"),
             403: errorResponse("Forbidden"),
             500: errorResponse("Auth configuration is missing"),
@@ -51,6 +53,12 @@ export const finishRouter = createRouter()
         const vcsWatchPaths = session.vcsWatchPaths
         const nextRev = session.nextRev;
         const storageKey = session.storageKey;
+
+        // The transfer can fail after the session is created, so the file has to be in storage
+        // before a revision publishes it.
+        if (!await VideoReviewStorage.hasObject(storageKey)) {
+            return c.json({ error: "the uploaded file is not in storage" }, 409);
+        }
 
         const revision = await prisma.$transaction(async (tx) => {
             let video = await tx.video.findFirst({ where: { title, folderKey } });
