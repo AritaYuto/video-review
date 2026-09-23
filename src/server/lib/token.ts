@@ -4,7 +4,7 @@ import { prisma } from "@/server/lib/db";
 import { ServerError } from "@/server/lib/server-error";
 import { env } from "@/server/lib/env";
 import "server-only"
-import { hash } from "crypto";
+import { hash, timingSafeEqual } from "crypto";
 import { Context } from "hono";
 import { getCookie } from "hono/cookie";
 
@@ -17,7 +17,8 @@ type SecretKey = {
 
 export const Secrets = {
     JWT: { dbKey: "JWT_SECRET", envKey: env.JWT_SECRET_deprecated },
-    API: { dbKey: "API_TOKEN", envKey: env.VIDEO_REVIEW_API_TOKEN },
+    // The DB stores only the hash, so the env token is hashed too and callers always compare hashes.
+    API: { dbKey: "API_TOKEN", envKey: env.VIDEO_REVIEW_API_TOKEN && hash("sha256", env.VIDEO_REVIEW_API_TOKEN) },
 } as const;
 
 const cache = new Map<string, string>();
@@ -81,16 +82,21 @@ export async function signToken(payload: Record<string, any>): Promise<string> {
     return jwt.sign(payload, secret, { expiresIn: "1d" });
 }
 
+function matchesHash(token: string, storedHash: string) {
+    const sent = Buffer.from(hash("sha256", token));
+    const stored = Buffer.from(storedHash);
+    return sent.length === stored.length && timingSafeEqual(sent, stored);
+}
+
 export async function authorize(req: Request, passedRoles: Role[]) {
     const apiToken = req.headers.get("x-api-token");
 
     if (apiToken) {
-        const apiTokenHash = hash("sha256", apiToken);
         const storedHash = await getApiSecretHash();
         if (!storedHash) {
             throw new ServerError("api token configuration is missing", 500);
         }
-        if (apiTokenHash !== storedHash && apiToken !== storedHash) {
+        if (!matchesHash(apiToken, storedHash)) {
             throw new ServerError("invalid api token", 401);
         }
 
