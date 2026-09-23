@@ -1,0 +1,46 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web-runtime
+            dockerfile: docker/web/Dockerfile
+          - name: web-prod
+            dockerfile: docker/web/Dockerfile.prod
+          - name: video-processing
+            dockerfile: docker/video-processing/Dockerfile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/build-images
+        with:
+          name: ${{ matrix.name }}
+          dockerfile: ${{ matrix.dockerfile }}
+          version: ${{ github.ref_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  cli:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/build-cli
+        with:
+          package: "true"
+      - name: Attach the binaries to the release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: maintenance/dist/*
+          # GitHub writes the body from the pull request titles merged since the last tag.
+          generate_release_notes: true

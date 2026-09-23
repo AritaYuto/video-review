@@ -9,6 +9,11 @@
             "matchPackageNames": ["@shadcn/lint"],
             "dependencyDashboardApproval": false,
             "schedule": ["before 9am on monday"]
+        },
+        {
+            "description": "Actions are pinned to commit SHAs, which nobody can read well enough to approve from the dashboard.",
+            "matchManagers": ["github-actions"],
+            "dependencyDashboardApproval": false
         }
     ]
 }

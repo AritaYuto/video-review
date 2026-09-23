@@ -1,0 +1,41 @@
+name: Build a Docker image
+description: Builds one image from the matrix and, when asked, pushes it to ghcr
+
+inputs:
+  name:
+    description: Image name, used as the last segment of the ghcr path
+    required: true
+  dockerfile:
+    description: Path to the Dockerfile
+    required: true
+  version:
+    description: Tag to publish, such as v0.1.0. Leave empty to build without pushing
+    required: false
+    default: ""
+  github-token:
+    description: Token with packages:write, only needed when publishing
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+    - name: Log in to ghcr
+      if: inputs.version != ''
+      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Build ${{ inputs.name }}
+      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      with:
+        context: .
+        file: ${{ inputs.dockerfile }}
+        push: ${{ inputs.version != '' }}
+        tags: ${{ inputs.version != '' && format('ghcr.io/{0}/{1}:{2}', github.repository, inputs.name, inputs.version) || '' }}
+        provenance: false
