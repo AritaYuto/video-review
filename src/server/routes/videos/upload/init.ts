@@ -4,6 +4,7 @@ import { createRouter } from "@/server/lib/openapi/router";
 import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { VideoReviewStorage } from "@/server/lib/storage";
+import { env } from "@/server/lib/env/storage-env";
 import path from "path";
 import { createSession } from "@/server/lib/upload-session";
 import { UploadStorageType } from "@/lib/db-types";
@@ -159,7 +160,9 @@ export const initRouter = createRouter()
 
                     const url = await VideoReviewStorage.uploadURL(session.id, storageKey, "video/mp4");
                     console.log("[upload.init] upload url issued");
-                    complete(c.json({ url, session }));
+                    // The chunk size is a property of this deployment (an upload limit in front
+                    // of the server), so the clients are told rather than configured.
+                    complete(c.json({ url, session, chunkSize: env.VIDEO_REVIEW_UPLOAD_CHUNK_MB * 1024 * 1024 }));
                 } catch (err) {
                     fail(err);
                 }

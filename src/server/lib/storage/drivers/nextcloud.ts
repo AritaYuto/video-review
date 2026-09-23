@@ -6,11 +6,14 @@ import { lookup } from "mime-types";
 
 export class NextCloudDriver implements FileDriver {
     readonly davBaseURL: string;
+    /** Nextcloud assembles chunked uploads under this collection, not under the files tree. */
+    readonly davUploadsURL: string;
     readonly authHeader: string;
     readonly rootPath: string;
 
     constructor(baseURL: string, userName: string, password: string, rootPath: string = "video-review") {
         this.davBaseURL = `${baseURL}/remote.php/dav/files/${encodeURIComponent(userName)}`;
+        this.davUploadsURL = `${baseURL}/remote.php/dav/uploads/${encodeURIComponent(userName)}`;
         const credentials = Buffer.from(`${userName}:${password}`).toString("base64");
         this.authHeader = `Basic ${credentials}`;
         this.rootPath = rootPath;
@@ -72,7 +75,7 @@ export class NextCloudDriver implements FileDriver {
             return `/api/v1/drawing/upload/transfer?session_id=${session_id}`
         }
         // "video/mp4"
-        return `/api/v1/videos/upload/transfer?session_id=${session_id}`
+        return "/api/v1/videos/upload/tus";
     }
 
     async fallbackURL(storageKey: string): Promise<string> {
@@ -113,7 +116,7 @@ export class NextCloudDriver implements FileDriver {
     }
 
     async createDirectory(path: string): Promise<void> {
-        const url = `${this.davBaseURL}/${path}`;
+        const url = `${this.davBaseURL}/${encodeURI(path)}`;
         const res = await fetch(url, {
             method: "MKCOL",
             headers: this.getHeaders(),
@@ -137,7 +140,11 @@ export class NextCloudDriver implements FileDriver {
         };
     }
 
+    /**
+     * The storage key comes from a video title, so it can hold spaces, "%" or non-ASCII. It is
+     * escaped here, once, rather than at each call site; the base URL is already escaped.
+     */
     pathUnderRoot(path: string): string {
-        return `${this.davBaseURL}/${this.rootPath}/${path}`;
+        return `${this.davBaseURL}/${encodeURI(`${this.rootPath}/${path}`)}`;
     }
 }

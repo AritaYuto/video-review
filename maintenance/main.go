@@ -94,10 +94,10 @@ func main() {
 	}
 	apiToken := *token
 	if apiToken == "" {
-		apiToken := os.Getenv("VIDEO_REVIEW_API_TOKEN")
-		if apiToken == "" {
-			apiToken = os.Getenv("ADMIN_MAINTENANCE_TOKEN")
-		}
+		apiToken = os.Getenv("VIDEO_REVIEW_API_TOKEN")
+	}
+	if apiToken == "" {
+		apiToken = os.Getenv("ADMIN_MAINTENANCE_TOKEN")
 	}
 
 	if baseURL == "" {

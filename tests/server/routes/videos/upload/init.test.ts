@@ -139,6 +139,8 @@ describe("videos upload initRouter (DB)", () => {
                 storage: "local",
                 storageKey: expectedStorageKey,
             },
+            // The clients do not carry an upload size of their own; the server states it.
+            chunkSize: 16 * 1024 * 1024,
         });
 
         const video = await prisma.video.findFirst({

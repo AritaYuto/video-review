@@ -7,6 +7,11 @@ export function booleanEnv(key?: string): boolean {
     return key === "true"
 }
 
+export function positiveNumberEnv(value: string | undefined, fallback: number): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export function typeEnv<T>(key: string | undefined, defaultType: string | undefined): T {
     if(!key || key === "") return defaultType as T;
     return key as T;

@@ -102,7 +102,7 @@ export class LocalDriver implements FileDriver {
             return `/api/v1/drawing/upload/transfer?session_id=${session_id}`
         }
         // "video/mp4"
-        return `/api/v1/videos/upload/transfer?session_id=${session_id}`
+        return "/api/v1/videos/upload/tus";
     }
 
     async fallbackURL(storageKey: string): Promise<string> {

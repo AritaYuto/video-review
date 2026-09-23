@@ -31,6 +31,9 @@ type UploadSessionWithURL struct {
 		NextRev    int       `json:"nextRev"`
 		CreatedAt  time.Time `json:"createdAt"`
 	} `json:"session"`
+	// Size of one chunk, decided by the server because the limit that matters sits in front
+	// of it.
+	ChunkSize int64 `json:"chunkSize"`
 }
 
 type UploadStatus struct {

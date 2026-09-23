@@ -1,22 +1,13 @@
 package commands
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
-	"path/filepath"
-	"time"
 	. "videoreview-maintenance/internal/lib"
-)
-
-const (
-	uploadStatusInterval    = 2 * time.Second
-	uploadStatusMaxAttempts = 150
 )
 
 func RunUploadVideo(cmd string, args []string) {
@@ -94,61 +85,19 @@ func RunUploadVideo(cmd string, args []string) {
 			return
 		}
 	} else {
-		// local or nextCloud upload
-		body := &bytes.Buffer{}
-		writer := multipart.NewWriter(body)
-
-		part, err := writer.CreateFormFile("file", filepath.Base(*videoPath))
+		// Chunked upload: the bytes go up in pieces, so an upload size limit in front of the
+		// server never sees the whole file at once.
+		info, err := file.Stat()
 		if err != nil {
-			fmt.Println("failed to create multipart file:", err)
+			fmt.Println("failed to read video file size:", err)
 			return
 		}
-		_, err = io.Copy(part, file)
-		if err != nil {
-			fmt.Println("failed to write file to multipart:", err)
-			return
-		}
-		writer.Close()
 
-		req, err := http.NewRequest("PUT", GlobalConfig.BaseURL+session.URL, body)
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-		req.Header.Set("x-api-token", GlobalConfig.APIToken)
-
-		if err != nil {
-			fmt.Println("failed to create request for upload:", err)
-			return
-		}
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
+		uploader := newTusUploader(GlobalConfig.BaseURL+session.URL, GlobalConfig.APIToken, session.ChunkSize)
+		if err := uploader.Upload(file, info.Size(), session.Session.ID); err != nil {
 			fmt.Println("failed to upload video:", err)
 			return
 		}
-		defer resp.Body.Close()
-		if resp.StatusCode >= 400 {
-			b, _ := io.ReadAll(resp.Body)
-			fmt.Printf("failed to upload video: status %d: %s\n", resp.StatusCode, string(b))
-			return
-		}
-	}
-
-	// The server reports "progress" until the bytes show up, so wait between attempts.
-	uploaded := false
-	for attempt := 0; attempt < uploadStatusMaxAttempts; attempt++ {
-		status, err := uploadStatus(session.Session.ID)
-		if err != nil {
-			fmt.Println("failed to get upload status:", err)
-			return
-		}
-		if status.Status == "uploaded" {
-			uploaded = true
-			break
-		}
-		time.Sleep(uploadStatusInterval)
-	}
-
-	if !uploaded {
-		fmt.Println("timed out waiting for the uploaded file to appear in storage")
-		return
 	}
 
 	Fetch(FetchOptions{
@@ -158,22 +107,4 @@ func RunUploadVideo(cmd string, args []string) {
 			"session_id": session.Session.ID,
 		},
 	})
-}
-
-func uploadStatus(sessionID string) (UploadStatus, error) {
-	var status UploadStatus
-	b, err := FetchRaw(FetchOptions{
-		Method: GET,
-		Path:   "/api/v1/upload-status",
-		Query: map[string]string{
-			"session_id": sessionID,
-		},
-	})
-	if err != nil {
-		return status, err
-	}
-	if err := json.Unmarshal(b, &status); err != nil {
-		return status, err
-	}
-	return status, nil
 }

@@ -76,9 +76,15 @@ export default function VideoListPanel() {
                 </SidebarFooter>
 
                 <VideoSearchDialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} />
-                <VideoUploadDialog open={uploadDialogOpen} onClose={() => {
-                    fetchVideos();
+                <VideoUploadDialog open={uploadDialogOpen} onClose={async (uploadedVideoId) => {
                     setUploadDialogOpen(false);
+                    await fetchVideos();
+
+                    // The tree is virtualised and a new folder can land outside the rendered
+                    // window, so selecting the video brings it into view.
+                    if (uploadedVideoId) {
+                        router.replace(`/video-review/review/${uploadedVideoId}`);
+                    }
                 }} />
             </Sidebar>
 

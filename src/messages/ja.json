@@ -33,6 +33,7 @@
         "cancel": "キャンセル",
         "upload": "アップロード",
         "uploading": "アップロード中...",
+        "uploadingPercent": "アップロード中... {percent}%",
         "errorUpload": "動画のアップロードに失敗しました。管理者へ連絡してください",
         "errorUploadTooLarge": "ファイルが大きすぎて拒否されました。サーバーの前段にある proxy のアップロード上限を確認してください"
     },
@@ -54,6 +55,7 @@
     },
     "video-list-panel": {
         "title": "動画リスト",
+        "upload": "動画をアップロード",
         "thumbnails": "サムネイル",
         "thumbnailsClose": "サムネイルを閉じる"
     },
