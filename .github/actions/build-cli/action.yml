@@ -33,3 +33,5 @@ runs:
         mkdir -p dist
         GOOS=linux GOARCH=amd64 go build -o dist/video-review-cli-linux-amd64 .
         GOOS=windows GOARCH=amd64 go build -o dist/video-review-cli-windows-amd64.exe .
+        GOOS=darwin GOARCH=arm64 go build -o dist/video-review-cli-darwin-arm64 .
+        GOOS=darwin GOARCH=amd64 go build -o dist/video-review-cli-darwin-amd64 .
