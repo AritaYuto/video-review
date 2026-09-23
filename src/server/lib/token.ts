@@ -49,6 +49,12 @@ export async function getSecret({ dbKey, envKey }: SecretKey): Promise<string | 
     return fromEnv;
 }
 
+// Call after writing a SystemSecret row; otherwise this process keeps serving the old
+// value until restart, and a rotated API token would never actually be revoked.
+export function invalidateSecret({ dbKey }: SecretKey) {
+    cache.delete(dbKey);
+}
+
 export const getJwtSecret = () => getSecret(Secrets.JWT);
 
 export const getApiSecretHash = () => getSecret(Secrets.API);
