@@ -10,7 +10,6 @@ namespace VideoReview.Editor.API
         public static string ServerUrl { get; set; } = Environment.GetEnvironmentVariable("VIDEO_REVIEW_SERVER_URL") ?? string.Empty;
         public static string ApiToken { get; set; } =
             Environment.GetEnvironmentVariable("VIDEO_REVIEW_API_TOKEN")
-            ?? Environment.GetEnvironmentVariable("ADMIN_MAINTENANCE_TOKEN")
             ?? string.Empty;
 
         public static int TimeoutMs { get; set; } = 300000;

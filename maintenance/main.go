@@ -96,9 +96,6 @@ func main() {
 	if apiToken == "" {
 		apiToken = os.Getenv("VIDEO_REVIEW_API_TOKEN")
 	}
-	if apiToken == "" {
-		apiToken = os.Getenv("ADMIN_MAINTENANCE_TOKEN")
-	}
 
 	if baseURL == "" {
 		panic("VIDEO_REVIEW_SERVER_URL is not set")

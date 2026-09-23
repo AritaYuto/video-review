@@ -82,9 +82,7 @@ export async function signToken(payload: Record<string, any>): Promise<string> {
 }
 
 export async function authorize(req: Request, passedRoles: Role[]) {
-    // x-api-token (VIDEO_REVIEW_API_TOKEN) is the primary method; x-maintenance-token is legacy.
     const apiToken = req.headers.get("x-api-token");
-    const maintenanceToken = req.headers.get("x-maintenance-token");
 
     if (apiToken) {
         const apiTokenHash = hash("sha256", apiToken);
@@ -95,10 +93,6 @@ export async function authorize(req: Request, passedRoles: Role[]) {
         if (apiTokenHash === storedHash || apiToken === storedHash) {
             return { type: "api-token" as const, role: "admin" as const };
         }
-    }
-
-    if (maintenanceToken && maintenanceToken === env.VIDEO_REVIEW_ADMIN_MAINTENANCE_TOKEN_deprecated) {
-        return { type: "api-token" as const, role: "admin" as const };
     }
 
     const authHeader = req.headers.get("authorization");

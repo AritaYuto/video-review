@@ -45,11 +45,7 @@ func buildRequest(opt FetchOptions) (*http.Request, error) {
 		return nil, err
 	}
 
-	// NOTE: temporary compatibility for migration.
-	// Send the same token as both x-api-token and x-maintenance-token.
-	// This will be removed once ADMIN_MAINTENANCE_TOKEN is fully deprecated.
 	req.Header.Set("x-api-token", GlobalConfig.APIToken)
-	req.Header.Set("x-maintenance-token", GlobalConfig.APIToken)
 	if opt.Json != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
