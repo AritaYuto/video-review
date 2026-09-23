@@ -90,9 +90,11 @@ export async function authorize(req: Request, passedRoles: Role[]) {
         if (!storedHash) {
             throw new ServerError("api token configuration is missing", 500);
         }
-        if (apiTokenHash === storedHash || apiToken === storedHash) {
-            return { type: "api-token" as const, role: "admin" as const };
+        if (apiTokenHash !== storedHash && apiToken !== storedHash) {
+            throw new ServerError("invalid api token", 401);
         }
+
+        return { type: "api-token" as const, role: "admin" as const };
     }
 
     const authHeader = req.headers.get("authorization");

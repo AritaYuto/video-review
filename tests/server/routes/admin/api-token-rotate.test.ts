@@ -54,7 +54,9 @@ describe("POST /maintenance/api-token/rotate", () => {
 
         await rotate(OLD_TOKEN);
 
-        expect((await statusRequest(OLD_TOKEN)).status).toBe(401);
+        const res = await statusRequest(OLD_TOKEN);
+        expect(res.status).toBe(401);
+        expect(await res.json()).toEqual({ error: "invalid api token" });
     });
 
     it("accepts the new token right after rotating", async () => {
