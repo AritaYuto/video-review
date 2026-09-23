@@ -21,7 +21,7 @@ jobs:
           - name: video-processing
             dockerfile: docker/video-processing/Dockerfile
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/build-images
         with:
           name: ${{ matrix.name }}
@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/build-cli
         with:
           package: "true"
