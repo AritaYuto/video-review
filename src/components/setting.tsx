@@ -52,7 +52,7 @@ export function SettingPopover() {
         <Popover>
             <PopoverTrigger asChild>
                 <div className="absolute bottom-4 left-4 flex gap-2 opacity-40 hover:opacity-100 transition">
-                    <Button size="icon" variant="ghost" className="relative">
+                    <Button size="icon" variant="ghost" className="relative" aria-label={t("title")}>
                         <FontAwesomeIcon icon={faGear} className="text-primary" />
                     </Button>
                 </div>
