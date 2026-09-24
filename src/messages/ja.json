@@ -198,7 +198,7 @@
             "users": "ユーザー",
             "apiToken": "API Token",
             "integrations": "連携",
-            "maintenance": "メンテナンス"
+            "videos": "動画管理"
         },
         "empty": "まだ設定項目はありません",
         "users": {
@@ -232,6 +232,35 @@
             "newTokenHint": "Ctrl+C でコピーしてください。再表示されません",
             "loadFailed": "状態の取得に失敗しました",
             "failed": "トークンの生成に失敗しました"
+        },
+        "videos": {
+            "loadFailed": "動画の取得に失敗しました",
+            "filterPlaceholder": "タイトル・フォルダで絞り込み",
+            "noMatch": "条件に合う動画はありません",
+            "revisionRow": "リビジョン {revision}（{date} アップロード）",
+            "toggleRevisions": "{title} のリビジョンを表示",
+            "columns": {
+                "expand": "リビジョン",
+                "title": "タイトル",
+                "folder": "フォルダ",
+                "updatedAt": "更新日",
+                "revisions": "リビジョン",
+                "actions": "操作"
+            },
+            "delete": {
+                "action": "Delete",
+                "wholeLabel": "{title} の全リビジョンを削除",
+                "revisionLabel": "{title} のリビジョン {revision} を削除",
+                "title": "動画のファイルを削除",
+                "wholeSummary": "{title} の全リビジョンのファイルを削除し、動画は一覧から消えます",
+                "revisionSummary": "{title} のリビジョン {revisions} のファイルを削除します",
+                "irreversible": "元に戻せません",
+                "confirmLabel": "確認のため <word>{confirmWord}</word> と入力してください",
+                "submit": "Delete",
+                "cancel": "キャンセル",
+                "failed": "ファイルの削除に失敗しました",
+                "filesLeft": "一部のファイルを消せず、ストレージに残りました"
+            }
         }
     }
 }

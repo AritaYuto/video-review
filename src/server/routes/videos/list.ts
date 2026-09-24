@@ -138,8 +138,8 @@ export const listRouter = createRouter()
 
         if (filterTree) {
             whereVideo.OR = [
-                { title: { contains: filterTree } },
-                { folderKey: { contains: filterTree } },
+                { title: { contains: filterTree, mode: "insensitive" } },
+                { folderKey: { contains: filterTree, mode: "insensitive" } },
             ];
         }
 

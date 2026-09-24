@@ -2,13 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { AdminSection } from "@/components/admin/admin-section";
+import { VideosTable } from "@/components/admin/videos-section/videos-table";
 
-export function MaintenanceSection() {
+export function VideosSection() {
     const t = useTranslations("admin-settings");
 
     return (
-        <AdminSection title={t("sections.maintenance")}>
-            <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        <AdminSection title={t("sections.videos")}>
+            <VideosTable />
         </AdminSection>
     );
 }

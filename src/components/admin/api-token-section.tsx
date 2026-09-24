@@ -2,25 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { api } from "@/lib/api-client";
+import { api, readError } from "@/lib/api-client";
 import { AdminSection } from "@/components/admin/admin-section";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Spinner } from "@/ui/spinner";
 
-// Error routes without a content schema type json() as never, so read the body loosely.
-async function readError(res: { status: number; json: () => Promise<unknown> }): Promise<string> {
-    try {
-        const body = await res.json() as { error?: string } | null;
-        return body?.error ?? `HTTP ${res.status}`;
-    } catch {
-        return `HTTP ${res.status}`;
-    }
-}
-
 export function ApiTokenSection() {
     const t = useTranslations("admin-settings");
-    // null while the status is loading.
     const [configured, setConfigured] = useState<boolean | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -28,13 +17,19 @@ export function ApiTokenSection() {
 
     useEffect(() => {
         let cancelled = false;
-        api.admin.maintenance["api-token"].status.$get()
-            .then(async res => {
+
+        void (async () => {
+            try {
+                const res = await api.admin.maintenance["api-token"].status.$get();
                 if (res.status !== 200) throw new Error(await readError(res));
-                return (await res.json()).configured;
-            })
-            .then(c => { if (!cancelled) setConfigured(c); })
-            .catch(e => { if (!cancelled) setError(`${t("apiToken.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`); });
+
+                const { configured } = await res.json();
+                if (!cancelled) setConfigured(configured);
+            } catch (e) {
+                if (!cancelled) setError(`${t("apiToken.loadFailed")}: ${e instanceof Error ? e.message : String(e)}`);
+            }
+        })();
+
         return () => { cancelled = true; };
     }, []);
 

@@ -198,7 +198,7 @@
             "users": "Users",
             "apiToken": "API Token",
             "integrations": "Integrations",
-            "maintenance": "Maintenance"
+            "videos": "Videos"
         },
         "empty": "Nothing to configure here yet.",
         "users": {
@@ -232,6 +232,35 @@
             "newTokenHint": "Copy it now with Ctrl+C. It is not shown again.",
             "loadFailed": "Failed to load the status",
             "failed": "Failed to generate the token"
+        },
+        "videos": {
+            "loadFailed": "Failed to load the videos",
+            "filterPlaceholder": "Filter by title or folder...",
+            "noMatch": "No video matches the filter.",
+            "revisionRow": "Revision {revision}, uploaded {date}",
+            "toggleRevisions": "Show the revisions of {title}",
+            "columns": {
+                "expand": "Revisions",
+                "title": "Title",
+                "folder": "Folder",
+                "updatedAt": "Updated",
+                "revisions": "Revisions",
+                "actions": "Actions"
+            },
+            "delete": {
+                "action": "Delete",
+                "wholeLabel": "Delete every revision of {title}",
+                "revisionLabel": "Delete revision {revision} of {title}",
+                "title": "Delete the video files",
+                "wholeSummary": "Every revision file of {title} is deleted, and the video leaves the list.",
+                "revisionSummary": "Revision {revisions} of {title} will be deleted.",
+                "irreversible": "This cannot be undone.",
+                "confirmLabel": "Type <word>{confirmWord}</word> to confirm",
+                "submit": "Delete",
+                "cancel": "Cancel",
+                "failed": "Failed to delete the files",
+                "filesLeft": "Some files could not be removed and are still in storage."
+            }
         }
     }
 }

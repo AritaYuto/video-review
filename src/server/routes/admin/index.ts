@@ -8,6 +8,7 @@ import { authorize } from "@/server/lib/token";
 import { ServerError } from "@/server/lib/server-error";
 import { errorResponse } from "@/server/lib/openapi/error-response";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { ASSIGNABLE_ROLES } from "@/lib/role";
 import bcrypt from "bcrypt";
 import { hash, randomBytes } from "crypto";
 
@@ -24,7 +25,7 @@ const CreateUserBody = z.object({
 
 const UpdateRoleBody = z.object({
     userId: z.string().optional(),
-    role: z.enum(["viewer", "admin"]).optional(),
+    role: z.enum(ASSIGNABLE_ROLES).optional(),
 });
 
 const UserListResponse = z.object({
@@ -33,6 +34,7 @@ const UserListResponse = z.object({
         email: z.string().nullable(),
         displayName: z.string(),
         role: z.string(),
+        avatarPath: z.string().nullable(),
         createdAt: z.string(),
     })),
 });
@@ -266,9 +268,8 @@ export const adminRouter = createRouter()
             return c.json({ error: "unauthorized" }, 401);
         }
 
-        // Explicit select so identities (and their secret hashes) are never loaded.
+        // The row itself holds no secret: those live on Identity, which is not included here.
         const users = await prisma.user.findMany({
-            select: { id: true, email: true, displayName: true, role: true, createdAt: true },
             orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         });
         return c.json({

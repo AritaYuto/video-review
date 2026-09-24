@@ -19,6 +19,11 @@ export type VideoWithRevision = Video & {
   latestRevision: Pick<VideoRevision, "revision" | "uploadedAt" | "tags" | "filePath"> | null;
 };
 
+// What the video list adds for includeRevisions=true, so only ask for this type with the flag.
+export type VideoWithRevisionList = VideoWithRevision & {
+  revisions: VideoRevision[];
+};
+
 export type VideoEventLink = { label?: string; url: string };
 
 export type VideoEventWithKind = Omit<VideoEvent, "links"> & {
