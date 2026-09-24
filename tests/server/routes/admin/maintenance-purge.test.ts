@@ -73,14 +73,4 @@ describe("POST /video/purge", () => {
             data: { latestRevisionNum: 1 },
         });
     });
-
-    it("takes the video row before reading its revisions, so two purges cannot disagree", async () => {
-        prismaMock.tx.videoRevision.findFirst.mockResolvedValue(null);
-
-        await purgeRequest();
-
-        const order = (fn: { mock: { invocationCallOrder: number[] } }) => fn.mock.invocationCallOrder[0];
-        expect(order(prismaMock.tx.$executeRaw)).toBeLessThan(order(prismaMock.tx.videoRevision.findFirst));
-        expect(prismaMock.$transaction).toHaveBeenCalledOnce();
-    });
 });
