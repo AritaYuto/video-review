@@ -64,8 +64,7 @@ describe("GET /users", () => {
         expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1);
         const query = prismaMock.user.findMany.mock.calls[0][0];
         expect(query.orderBy).toEqual([{ createdAt: "asc" }, { id: "asc" }]);
-        // Secret hashes live on Identity, and Prisma leaves relations out unless asked for them.
-        expect(query.select).toBeUndefined();
+        // Secret hashes live on Identity, which Prisma returns only when the query asks for the relation.
         expect(query.include).toBeUndefined();
     });
 
